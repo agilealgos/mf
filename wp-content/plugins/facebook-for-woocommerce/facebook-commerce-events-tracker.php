@@ -182,8 +182,8 @@ if ( ! class_exists( 'WC_Facebookcommerce_EventsTracker' ) ) :
 
 			$products = array_values(
 				array_map(
-					function( $item ) {
-						return wc_get_product( $item->ID );
+					function( $post ) {
+						return wc_get_product( $post );
 					},
 					$wp_query->posts
 				)
@@ -744,17 +744,17 @@ if ( ! class_exists( 'WC_Facebookcommerce_EventsTracker' ) ) :
 		 */
 		public function set_last_product_added_to_cart_upon_redirect( $redirect, $product = null ) {
 
-			// Bail if the session variable has been set.
-			if ( WC()->session->get( 'facebook_for_woocommerce_last_product_added_to_cart', 0 ) > 0 ) {
+			// Bail if the session variable has been set or WC()->session is null.
+			if ( ! isset( WC()->session ) || WC()->session->get( 'facebook_for_woocommerce_last_product_added_to_cart', 0 ) > 0 ) {
 				return $redirect;
 			}
 
 			$product_id = 0;
 
 			if ( $product instanceof \WC_Product ) {
-				$product_id = $_POST['variation_id'] ?? $product->get_id();
-			} elseif ( isset( $_GET['add-to-cart'] ) && is_numeric( $_GET['add-to-cart'] ) ) {
-				$product_id = $_GET['add-to-cart'];
+				$product_id = isset( $_POST['variation_id'] ) ?  wc_clean( wp_unslash( $_POST['variation_id'] ) ) : $product->get_id();
+			} elseif ( isset( $_GET['add-to-cart'] ) && is_numeric( wc_clean( wp_unslash( $_GET['add-to-cart'] ) ) ) ) {
+				$product_id = wc_clean( wp_unslash( $_GET['add-to-cart'] ) );
 			}
 
 			WC()->session->set( 'facebook_for_woocommerce_last_product_added_to_cart', (int) $product_id );
@@ -817,7 +817,7 @@ if ( ! class_exists( 'WC_Facebookcommerce_EventsTracker' ) ) :
 		 */
 		public function inject_initiate_checkout_event() {
 
-			if ( ! $this->is_pixel_enabled() || WC()->cart->get_cart_contents_count() === 0 || $this->pixel->is_last_event( 'InitiateCheckout' ) ) {
+			if ( ! $this->is_pixel_enabled() || null === WC()->cart || WC()->cart->get_cart_contents_count() === 0 || $this->pixel->is_last_event( 'InitiateCheckout' ) ) {
 				return;
 			}
 

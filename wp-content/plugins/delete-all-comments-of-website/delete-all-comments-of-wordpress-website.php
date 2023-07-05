@@ -4,7 +4,7 @@
     Plugin URI: http://www.navneetsoni.com/plugins/delete-comments
     Description: Plugin to delete all comments of wordpress website (Approved, Pending, Spam)
     Author: Navneet Soni
-    Version: 4.9
+    Version: 5.1
     Author URI: http://www.navneetsoni.com 
     */
 	
