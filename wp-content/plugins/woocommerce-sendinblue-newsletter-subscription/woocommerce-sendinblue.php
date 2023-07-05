@@ -6,7 +6,7 @@
  * Author: Sendinblue
  * Text Domain: woocommerce-sendinblue-newsletter-subscription
  * Domain Path: /languages
- * Version: 3.0.7
+ * Version: 3.0.8
  * Author URI: https://www.sendinblue.com/?r=wporg
  * Requires at least: 4.3
  * Tested up to: 6.0
@@ -45,7 +45,7 @@ define('SENDINBLUE_WC_USER_CONNECTION_ID', 'sendinblue_woocommerce_user_connecti
 define('SENDINBLUE_WC_SETTINGS', 'sendinblue_woocommerce_user_connection_settings');
 define('SENDINBLUE_WC_EMAIL_SETTINGS', 'sendinblue_woocommerce_email_options_settings');
 define('API_KEY_V3_OPTION_NAME', 'sib_wc_api_key_v3');
-define('SENDINBLUE_WC_PLUGIN_VERSION', '3.0.7');
+define('SENDINBLUE_WC_PLUGIN_VERSION', '3.0.8');
 define('SENDINBLUE_WORDPRESS_SHOP_VERSION', $GLOBALS['wp_version']);
 define('SENDINBLUE_WOOCOMMERCE_UPDATE', 'sendinblue_plugin_update_call_apiv3');
 define('SENDINBLUE_REDIRECT', 'sendinblue_woocommerce_redirect');
@@ -126,6 +126,13 @@ function sendinblue_woocommerce_load()
     $api_manager->add_hooks();
     update_woocom_email_settings();
 }
+
+//Declare HPOS Compatibility
+add_action( 'before_woocommerce_init', function() {
+	if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
+		\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
+	}
+} );
 
 function sendinblue_woocommerce_init()
 {

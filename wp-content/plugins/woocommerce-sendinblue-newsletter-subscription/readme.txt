@@ -169,6 +169,10 @@ If you need some assistance, you can post an issue in the Support tab, or send u
 
 == Changelog ==
 
+= 3.0.8 =
+* Plugin made compatible with WooCommerce HPOS
+* Improved the “Reply To” of WooCommerce mails sent through the plugin
+
 = 3.0.7 =
 * Enhanced plugin code
 * Added tags for all emails sent through the plugin. Tags will be displayed in the transactional email logs on the Brevo platform

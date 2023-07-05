@@ -333,8 +333,7 @@ final class Assets {
 			return $this->assets;
 		}
 
-		$base_url = $this->context->url( 'dist/assets/' );
-
+		$base_url     = $this->context->url( 'dist/assets/' );
 		$dependencies = $this->get_asset_dependencies();
 
 		// Register plugin scripts.
@@ -420,6 +419,15 @@ final class Assets {
 					'global'        => '_googlesitekitTrackingData',
 					'data_callback' => function() {
 						return $this->get_inline_tracking_data();
+					},
+				)
+			),
+			new Script_Data(
+				'googlesitekit-modules-data',
+				array(
+					'global'        => '_googlesitekitModulesData',
+					'data_callback' => function() {
+						return $this->get_inline_modules_data();
 					},
 				)
 			),
@@ -603,6 +611,13 @@ final class Assets {
 				'googlesitekit-settings',
 				array(
 					'src'          => $base_url . 'js/googlesitekit-settings.js',
+					'dependencies' => $this->get_asset_dependencies( 'dashboard-sharing' ),
+				)
+			),
+			new Script(
+				'googlesitekit-ad-blocking-recovery',
+				array(
+					'src'          => $base_url . 'js/googlesitekit-ad-blocking-recovery.js',
 					'dependencies' => $this->get_asset_dependencies( 'dashboard' ),
 				)
 			),
@@ -707,6 +722,7 @@ final class Assets {
 			'webStoriesActive' => defined( 'WEBSTORIES_VERSION' ),
 			'postTypes'        => $this->get_post_types(),
 			'storagePrefix'    => $this->get_storage_prefix(),
+			'referenceDate'    => apply_filters( 'googlesitekit_reference_date', null ),
 		);
 
 		/**
@@ -919,6 +935,25 @@ final class Assets {
 	}
 
 	/**
+	 * Gets inline modules data.
+	 *
+	 * @since 1.96.0
+	 *
+	 * @return array The inline modules data to be output.
+	 */
+	private function get_inline_modules_data() {
+
+		/**
+		 * Filters the inline modules data to pass to JS.
+		 *
+		 * @since 1.96.0
+		 *
+		 * @param array $data Modules data.
+		 */
+		return apply_filters( 'googlesitekit_inline_modules_data', array() );
+	}
+
+	/**
 	 * Adds support for async and defer attributes to enqueued scripts.
 	 *
 	 * @since 1.0.0
@@ -1026,4 +1061,5 @@ final class Assets {
 
 		return wp_hash( $current_user->user_login . '|' . $session_token . '|' . $blog_id );
 	}
+
 }
