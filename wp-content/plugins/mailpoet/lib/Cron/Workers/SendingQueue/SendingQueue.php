@@ -23,6 +23,7 @@ use MailPoet\Models\StatisticsNewsletters as StatisticsNewslettersModel;
 use MailPoet\Models\Subscriber as SubscriberModel;
 use MailPoet\Newsletter\NewslettersRepository;
 use MailPoet\Newsletter\Sending\ScheduledTasksRepository;
+use MailPoet\Newsletter\Sending\SendingQueuesRepository;
 use MailPoet\Segments\SegmentsRepository;
 use MailPoet\Segments\SubscribersFinder;
 use MailPoet\Subscribers\SubscribersRepository;
@@ -81,6 +82,9 @@ class SendingQueue {
   /** @var SubscribersRepository */
   private $subscribersRepository;
 
+  /*** @var SendingQueuesRepository */
+  private $sendingQueuesRepository;
+
   public function __construct(
     SendingErrorHandler $errorHandler,
     SendingThrottlingHandler $throttlingHandler,
@@ -95,6 +99,7 @@ class SendingQueue {
     ScheduledTasksRepository $scheduledTasksRepository,
     MailerTask $mailerTask,
     SubscribersRepository $subscribersRepository,
+    SendingQueuesRepository $sendingQueuesRepository,
     $newsletterTask = false
   ) {
     $this->errorHandler = $errorHandler;
@@ -112,6 +117,7 @@ class SendingQueue {
     $this->links = $links;
     $this->scheduledTasksRepository = $scheduledTasksRepository;
     $this->subscribersRepository = $subscribersRepository;
+    $this->sendingQueuesRepository = $sendingQueuesRepository;
   }
 
   public function process($timer = false) {
@@ -165,6 +171,7 @@ class SendingQueue {
 
     // pre-process newsletter (render, replace shortcodes/links, etc.)
     $newsletterEntity = $this->newsletterTask->preProcessNewsletter($newsletterEntity, $queue);
+
     if (!$newsletterEntity) {
       $this->deleteTask($queue);
       return;
@@ -174,6 +181,11 @@ class SendingQueue {
     if (!$newsletter) {
       return;
     }
+
+    $isTransactional = in_array($newsletter->type, [
+      NewsletterEntity::TYPE_AUTOMATION_TRANSACTIONAL,
+      NewsletterEntity::TYPE_WC_TRANSACTIONAL_EMAIL,
+    ]);
 
     // clone the original object to be used for processing
     $_newsletter = (object)$newsletter->asArray();
@@ -196,6 +208,17 @@ class SendingQueue {
 
     // get subscribers
     $subscriberBatches = new BatchIterator($queue->taskId, $this->getBatchSize());
+    if ($subscriberBatches->count() === 0) {
+      $this->loggerFactory->getLogger(LoggerFactory::TOPIC_NEWSLETTERS)->info(
+        'no subscribers to process',
+        ['task_id' => $queue->taskId]
+      );
+      $task = $queue->getSendingQueueEntity()->getTask();
+      if ($task) {
+        $this->scheduledTasksRepository->invalidateTask($task);
+      }
+      return;
+    }
     /** @var int[] $subscribersToProcessIds - it's required for PHPStan */
     foreach ($subscriberBatches as $subscribersToProcessIds) {
       $this->loggerFactory->getLogger(LoggerFactory::TOPIC_NEWSLETTERS)->info(
@@ -211,8 +234,11 @@ class SendingQueue {
       } else {
         // No segments = Welcome emails or some Automatic emails.
         // Welcome emails or some Automatic emails use segments only for scheduling and store them as a newsletter option
-        $foundSubscribers = SubscriberModel::whereIn('id', $subscribersToProcessIds)
-          ->where('status', SubscriberModel::STATUS_SUBSCRIBED)
+        $foundSubscribers = SubscriberModel::whereIn('id', $subscribersToProcessIds);
+        $foundSubscribers = $newsletter->type === NewsletterEntity::TYPE_AUTOMATION_TRANSACTIONAL ?
+          $foundSubscribers->whereNotEqual('status', SubscriberModel::STATUS_BOUNCED) :
+          $foundSubscribers->where('status', SubscriberModel::STATUS_SUBSCRIBED);
+        $foundSubscribers = $foundSubscribers
           ->whereNull('deleted_at')
           ->findMany();
         $foundSubscribersIds = SubscriberModel::extractSubscribersIds($foundSubscribers);
@@ -241,25 +267,37 @@ class SendingQueue {
       // reschedule bounce task to run sooner, if needed
       $this->reScheduleBounceTask();
 
-      $queue = $this->processQueue(
-        $queue,
-        $_newsletter,
-        $foundSubscribers,
-        $timer
-      );
-      $this->loggerFactory->getLogger(LoggerFactory::TOPIC_NEWSLETTERS)->info(
-        'after queue chunk processing',
-        ['newsletter_id' => $newsletter->id, 'task_id' => $queue->taskId]
-      );
-      if ($queue->status === ScheduledTaskEntity::STATUS_COMPLETED) {
+      if ($newsletterEntity->getStatus() !== NewsletterEntity::STATUS_CORRUPT) {
+        $queue = $this->processQueue(
+          $queue,
+          $_newsletter,
+          $foundSubscribers,
+          $timer
+        );
+        if (!$isTransactional) {
+          $now = Carbon::createFromTimestamp((int)current_time('timestamp'));
+          $this->subscribersRepository->bulkUpdateLastSendingAt($foundSubscribersIds, $now);
+        }
         $this->loggerFactory->getLogger(LoggerFactory::TOPIC_NEWSLETTERS)->info(
-          'completed newsletter sending',
+          'after queue chunk processing',
           ['newsletter_id' => $newsletter->id, 'task_id' => $queue->taskId]
         );
-        $this->newsletterTask->markNewsletterAsSent($newsletterEntity, $queue);
-        $this->statsNotificationsScheduler->schedule($newsletterEntity);
+        if ($queue->status === ScheduledTaskEntity::STATUS_COMPLETED) {
+          $this->loggerFactory->getLogger(LoggerFactory::TOPIC_NEWSLETTERS)->info(
+            'completed newsletter sending',
+            ['newsletter_id' => $newsletter->id, 'task_id' => $queue->taskId]
+          );
+          $this->newsletterTask->markNewsletterAsSent($newsletterEntity, $queue);
+          $this->statsNotificationsScheduler->schedule($newsletterEntity);
+        }
+        $this->enforceSendingAndExecutionLimits($timer);
+      } else {
+        $this->sendingQueuesRepository->pause($queue->getSendingQueueEntity());
+        $this->loggerFactory->getLogger(LoggerFactory::TOPIC_NEWSLETTERS)->error(
+          'Can\'t send corrupt newsletter',
+          ['newsletter_id' => $newsletter->id, 'task_id' => $queue->taskId]
+        );
       }
-      $this->enforceSendingAndExecutionLimits($timer);
     }
   }
 
@@ -277,6 +315,9 @@ class SendingQueue {
     $statistics = [];
     $metas = [];
     $oneClickUnsubscribeUrls = [];
+    $sendingQueueEntity = $queue->getSendingQueueEntity();
+    $sendingQueueMeta = $sendingQueueEntity->getMeta() ?? [];
+    $campaignId = $sendingQueueMeta['campaignId'] ?? null;
 
     $newsletterEntity = $this->newslettersRepository->findOneById($newsletter->id);
 
@@ -307,7 +348,11 @@ class SendingQueue {
       $unsubscribeUrls[] = $this->links->getUnsubscribeUrl($queue->id, $subscriberEntity);
       $oneClickUnsubscribeUrls[] = $this->links->getOneClickUnsubscribeUrl($queue->id, $subscriberEntity);
 
-      $metas[] = $this->mailerMetaInfo->getNewsletterMetaInfo($newsletter, $subscriberEntity);
+      $metasForSubscriber = $this->mailerMetaInfo->getNewsletterMetaInfo($newsletterEntity, $subscriberEntity);
+      if ($campaignId) {
+        $metasForSubscriber['campaign_id'] = $campaignId;
+      }
+      $metas[] = $metasForSubscriber;
 
       // keep track of values for statistics purposes
       $statistics[] = [
@@ -346,7 +391,11 @@ class SendingQueue {
         $preparedSubscribers,
         $statistics,
         $timer,
-        ['unsubscribe_url' => $unsubscribeUrls, 'meta' => $metas, 'one_click_unsubscribe' => $oneClickUnsubscribeUrls]
+        [
+          'unsubscribe_url' => $unsubscribeUrls,
+          'meta' => $metas,
+          'one_click_unsubscribe' => $oneClickUnsubscribeUrls,
+        ]
       );
     }
     return $queue;

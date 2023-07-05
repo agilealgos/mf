@@ -5,17 +5,17 @@ if (!defined('ABSPATH')) exit;
 
 /*
  * Plugin Name: MailPoet
- * Version: 4.6.1
+ * Version: 4.20.1
  * Plugin URI: https://www.mailpoet.com
  * Description: Create and send newsletters, post notifications and welcome emails from your WordPress.
  * Author: MailPoet
  * Author URI: https://www.mailpoet.com
- * Requires at least: 5.8
+ * Requires at least: 6.0
  * Text Domain: mailpoet
  * Domain Path: /lang
  *
- * WC requires at least: 6.9.0
- * WC tested up to: 7.1.0
+ * WC requires at least: 7.6.0
+ * WC tested up to: 7.8.0
  *
  * @package WordPress
  * @author MailPoet
@@ -23,12 +23,15 @@ if (!defined('ABSPATH')) exit;
  */
 
 $mailpoetPlugin = [
-  'version' => '4.6.1',
+  'version' => '4.20.1',
   'filename' => __FILE__,
   'path' => dirname(__FILE__),
   'autoloader' => dirname(__FILE__) . '/vendor/autoload.php',
   'initializer' => dirname(__FILE__) . '/mailpoet_initializer.php',
 ];
+
+const MAILPOET_MINIMUM_REQUIRED_WP_VERSION = '6.0';
+const MAILPOET_MINIMUM_REQUIRED_WOOCOMMERCE_VERSION = '6.4';// Older versions lead to fatal errors
 
 function mailpoet_deactivate_plugin() {
   deactivate_plugins(plugin_basename(__FILE__));
@@ -38,7 +41,7 @@ function mailpoet_deactivate_plugin() {
 }
 
 // Check for minimum supported WP version
-if (version_compare(get_bloginfo('version'), '5.8', '<')) {
+if (version_compare(get_bloginfo('version'), MAILPOET_MINIMUM_REQUIRED_WP_VERSION, '<')) {
   add_action('admin_notices', 'mailpoet_wp_version_notice');
   // deactivate the plugin
   add_action('admin_init', 'mailpoet_deactivate_plugin');
@@ -46,11 +49,25 @@ if (version_compare(get_bloginfo('version'), '5.8', '<')) {
 }
 
 // Check for minimum supported PHP version
-if (version_compare(phpversion(), '7.2.0', '<')) {
+if (version_compare(phpversion(), '7.3.0', '<')) {
   add_action('admin_notices', 'mailpoet_php_version_notice');
   // deactivate the plugin
   add_action('admin_init', 'mailpoet_deactivate_plugin');
   return;
+}
+
+// Check for minimum supported WooCommerce version
+if (!function_exists('is_plugin_active')) {
+  require_once ABSPATH . 'wp-admin/includes/plugin.php';
+}
+if (is_plugin_active('woocommerce/woocommerce.php')) {
+  $woocommerceVersion = get_plugin_data(WP_PLUGIN_DIR . '/woocommerce/woocommerce.php')['Version'];
+  if (version_compare($woocommerceVersion, MAILPOET_MINIMUM_REQUIRED_WOOCOMMERCE_VERSION, '<')) {
+    add_action('admin_notices', 'mailpoet_woocommerce_version_notice');
+    // deactivate the plugin
+    add_action('admin_init', 'mailpoet_deactivate_plugin');
+    return;
+  }
 }
 
 // Display WP version error notice
@@ -58,7 +75,37 @@ function mailpoet_wp_version_notice() {
   $notice = str_replace(
     '[link]',
     '<a href="https://kb.mailpoet.com/article/152-minimum-requirements-for-mailpoet-3#wp_version" target="_blank">',
-    __('MailPoet plugin requires WordPress version 5.8 or newer. Please read our [link]instructions[/link] on how to resolve this issue.', 'mailpoet')
+    sprintf(
+      // translators: %s is the number of minimum WordPress version that MailPoet requires
+      __('MailPoet plugin requires WordPress version %s or newer. Please read our [link]instructions[/link] on how to resolve this issue.', 'mailpoet'),
+      MAILPOET_MINIMUM_REQUIRED_WP_VERSION
+    )
+  );
+  $notice = str_replace('[/link]', '</a>', $notice);
+  printf(
+    '<div class="error"><p>%1$s</p></div>',
+    wp_kses(
+      $notice,
+      [
+        'a' => [
+          'href' => true,
+          'target' => true,
+        ],
+      ]
+    )
+  );
+}
+
+// Display WooCommerce version error notice
+function mailpoet_woocommerce_version_notice() {
+  $notice = str_replace(
+    '[link]',
+    '<a href="https://kb.mailpoet.com/article/152-minimum-requirements-for-mailpoet-3#woocommerce-version" target="_blank">',
+    sprintf(
+      // translators: %s is the number of minimum WooCommerce version that MailPoet requires
+      __('MailPoet plugin requires WooCommerce version %s or newer. Please update your WooCommerce plugin version, or read our [link]instructions[/link] for additional options on how to resolve this issue.', 'mailpoet'),
+      MAILPOET_MINIMUM_REQUIRED_WOOCOMMERCE_VERSION
+    )
   );
   $notice = str_replace('[/link]', '</a>', $notice);
   printf(
@@ -77,7 +124,7 @@ function mailpoet_wp_version_notice() {
 
 // Display PHP version error notice
 function mailpoet_php_version_notice() {
-  $noticeP1 = __('MailPoet requires PHP version 7.2 or newer (8.0 recommended). You are running version [version].', 'mailpoet');
+  $noticeP1 = __('MailPoet requires PHP version 7.3 or newer (8.1 recommended). You are running version [version].', 'mailpoet');
   $noticeP1 = str_replace('[version]', phpversion(), $noticeP1);
 
   $noticeP2 = __('Please read our [link]instructions[/link] on how to upgrade your site.', 'mailpoet');
@@ -91,7 +138,7 @@ function mailpoet_php_version_notice() {
   $noticeP3 = __('If you can’t upgrade the PHP version, [link]install this version[/link] of MailPoet. Remember to not update MailPoet ever again!', 'mailpoet');
   $noticeP3 = str_replace(
     '[link]',
-    '<a href="https://downloads.wordpress.org/plugin/mailpoet.3.74.3.zip" target="_blank">',
+    '<a href="https://downloads.wordpress.org/plugin/mailpoet.4.16.0.zip" target="_blank">',
     $noticeP3
   );
   $noticeP3 = str_replace('[/link]', '</a>', $noticeP3);

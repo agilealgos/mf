@@ -11,6 +11,7 @@ use MailPoet\AutomaticEmails\AutomaticEmails;
 use MailPoet\Automation\Engine\Engine;
 use MailPoet\Automation\Engine\Hooks as AutomationHooks;
 use MailPoet\Automation\Integrations\MailPoet\MailPoetIntegration;
+use MailPoet\Automation\Integrations\WooCommerce\WooCommerceIntegration;
 use MailPoet\Cron\CronTrigger;
 use MailPoet\Cron\DaemonActionSchedulerRunner;
 use MailPoet\InvalidStateException;
@@ -23,6 +24,7 @@ use MailPoet\Statistics\Track\SubscriberActivityTracker;
 use MailPoet\Util\ConflictResolver;
 use MailPoet\Util\Helpers;
 use MailPoet\Util\Notices\PermanentNotices;
+use MailPoet\Util\Url;
 use MailPoet\WooCommerce\Helper as WooCommerceHelper;
 use MailPoet\WooCommerce\TransactionalEmailHooks as WCTransactionalEmails;
 use MailPoet\WP\Functions as WPFunctions;
@@ -110,11 +112,17 @@ class Initializer {
   /** @var MailPoetIntegration */
   private $automationMailPoetIntegration;
 
+  /** @var WooCommerceIntegration */
+  private $woocommerceIntegration;
+
   /** @var PersonalDataExporters */
   private $personalDataExporters;
 
   /** @var DaemonActionSchedulerRunner */
   private $actionSchedulerRunner;
+
+  /** @var Url */
+  private $urlHelper;
 
   const INITIALIZED = 'MAILPOET_INITIALIZED';
 
@@ -147,8 +155,10 @@ class Initializer {
     AssetsLoader $assetsLoader,
     Engine $automationEngine,
     MailPoetIntegration $automationMailPoetIntegration,
+    WooCommerceIntegration $woocommerceIntegration,
     PersonalDataExporters $personalDataExporters,
-    DaemonActionSchedulerRunner $actionSchedulerRunner
+    DaemonActionSchedulerRunner $actionSchedulerRunner,
+    Url $urlHelper
   ) {
     $this->rendererFactory = $rendererFactory;
     $this->accessControl = $accessControl;
@@ -176,8 +186,10 @@ class Initializer {
     $this->assetsLoader = $assetsLoader;
     $this->automationEngine = $automationEngine;
     $this->automationMailPoetIntegration = $automationMailPoetIntegration;
+    $this->woocommerceIntegration = $woocommerceIntegration;
     $this->personalDataExporters = $personalDataExporters;
     $this->actionSchedulerRunner = $actionSchedulerRunner;
+    $this->urlHelper = $urlHelper;
   }
 
   public function init() {
@@ -255,6 +267,10 @@ class Initializer {
 
     WPFunctions::get()->addAction(AutomationHooks::INITIALIZE, [
       $this->automationMailPoetIntegration,
+      'register',
+    ]);
+    WPFunctions::get()->addAction(AutomationHooks::INITIALIZE, [
+      $this->woocommerceIntegration,
       'register',
     ]);
 
@@ -341,10 +357,16 @@ class Initializer {
   public function afterPluginActivation() {
     if (!$this->wpFunctions->isAdmin() || !defined(self::INITIALIZED) || !$this->wpFunctions->getOption(self::PLUGIN_ACTIVATED)) return;
 
-    $this->changelog->redirectToLandingPage();
+    $currentUrl = $this->urlHelper->getCurrentUrl();
 
-    // done with afterPluginActivation actions
+    // wp automatically redirect to `wp-admin/plugins.php?activate=true&...` after plugin activation
+    $activatedByWpAdmin = !empty(strpos($currentUrl, 'plugins.php')) && isset($_GET['activate']) && (bool)$_GET['activate'];
+    if (!$activatedByWpAdmin) return; // not activated by wp. Do not redirect e.g WooCommerce NUX
+
+    // done with afterPluginActivation actions. Delete before redirect
     $this->wpFunctions->deleteOption(self::PLUGIN_ACTIVATED);
+
+    $this->changelog->redirectToLandingPage();
   }
 
   public function maybeDbUpdate() {

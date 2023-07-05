@@ -5,9 +5,11 @@ namespace MailPoet\Subscribers;
 if (!defined('ABSPATH')) exit;
 
 
+use DateTimeInterface;
 use MailPoet\Config\SubscriberChangesNotifier;
 use MailPoet\Doctrine\Repository;
 use MailPoet\Entities\SegmentEntity;
+use MailPoet\Entities\StatisticsUnsubscribeEntity;
 use MailPoet\Entities\SubscriberCustomFieldEntity;
 use MailPoet\Entities\SubscriberEntity;
 use MailPoet\Entities\SubscriberSegmentEntity;
@@ -53,18 +55,22 @@ class SubscribersRepository extends Repository {
   }
 
   public function getTotalSubscribers(): int {
+    return $this->getCountOfSubscribersForStates([
+      SubscriberEntity::STATUS_SUBSCRIBED,
+      SubscriberEntity::STATUS_UNCONFIRMED,
+      SubscriberEntity::STATUS_INACTIVE,
+    ]);
+  }
+
+  public function getCountOfSubscribersForStates(array $states): int {
     $query = $this->entityManager
       ->createQueryBuilder()
       ->select('count(n.id)')
       ->from(SubscriberEntity::class, 'n')
       ->where('n.deletedAt IS NULL AND n.status IN (:statuses)')
-      ->setParameter('statuses', [
-        SubscriberEntity::STATUS_SUBSCRIBED,
-        SubscriberEntity::STATUS_UNCONFIRMED,
-        SubscriberEntity::STATUS_INACTIVE,
-      ])
+      ->setParameter('statuses', $states)
       ->getQuery();
-    return (int)$query->getSingleScalarResult();
+    return intval($query->getSingleScalarResult());
   }
 
   public function invalidateTotalSubscribersCache(): void {
@@ -285,6 +291,21 @@ class SubscribersRepository extends Repository {
     return count($ids);
   }
 
+  public function bulkUpdateLastSendingAt(array $ids, DateTimeInterface $dateTime): int {
+    if (empty($ids)) {
+      return 0;
+    }
+    $this->entityManager->createQueryBuilder()
+      ->update(SubscriberEntity::class, 's')
+      ->set('s.lastSendingAt', ':lastSendingAt')
+      ->where('s.id IN (:ids)')
+      ->setParameter('lastSendingAt', $dateTime)
+      ->setParameter('ids', $ids)
+      ->getQuery()
+      ->execute();
+    return count($ids);
+  }
+
   public function findWpUserIdAndEmailByEmails(array $emails): array {
     return $this->entityManager->createQueryBuilder()
       ->select('s.wpUserId AS wp_user_id, LOWER(s.email) AS email')
@@ -338,12 +359,56 @@ class SubscribersRepository extends Repository {
   }
 
   public function maybeUpdateLastEngagement(SubscriberEntity $subscriberEntity): void {
-    $now = CarbonImmutable::createFromTimestamp((int)$this->wp->currentTime('timestamp'));
+    $now = $this->getCurrentDateTime();
     // Do not update engagement if was recently updated to avoid unnecessary updates in DB
     if ($subscriberEntity->getLastEngagementAt() && $subscriberEntity->getLastEngagementAt() > $now->subMinute()) {
       return;
     }
     // Update last engagement
+    $subscriberEntity->setLastEngagementAt($now);
+    $this->flush();
+  }
+
+  public function maybeUpdateLastOpenAt(SubscriberEntity $subscriberEntity): void {
+    $now = $this->getCurrentDateTime();
+    // Avoid unnecessary DB calls
+    if ($subscriberEntity->getLastOpenAt() && $subscriberEntity->getLastOpenAt() > $now->subMinute()) {
+      return;
+    }
+    $subscriberEntity->setLastOpenAt($now);
+    $subscriberEntity->setLastEngagementAt($now);
+    $this->flush();
+  }
+
+  public function maybeUpdateLastClickAt(SubscriberEntity $subscriberEntity): void {
+    $now = $this->getCurrentDateTime();
+    // Avoid unnecessary DB calls
+    if ($subscriberEntity->getLastClickAt() && $subscriberEntity->getLastClickAt() > $now->subMinute()) {
+      return;
+    }
+    $subscriberEntity->setLastClickAt($now);
+    $subscriberEntity->setLastEngagementAt($now);
+    $this->flush();
+  }
+
+  public function maybeUpdateLastPurchaseAt(SubscriberEntity $subscriberEntity): void {
+    $now = $this->getCurrentDateTime();
+    // Avoid unnecessary DB calls
+    if ($subscriberEntity->getLastPurchaseAt() && $subscriberEntity->getLastPurchaseAt() > $now->subMinute()) {
+      return;
+    }
+    $subscriberEntity->setLastPurchaseAt($now);
+    $subscriberEntity->setLastEngagementAt($now);
+    $this->flush();
+  }
+
+  public function maybeUpdateLastPageViewAt(SubscriberEntity $subscriberEntity): void {
+    $now = $this->getCurrentDateTime();
+    // Avoid unnecessary DB calls
+    if ($subscriberEntity->getLastPageViewAt() && $subscriberEntity->getLastPageViewAt() > $now->subMinute()) {
+      return;
+    }
+    $subscriberEntity->setLastPageViewAt($now);
     $subscriberEntity->setLastEngagementAt($now);
     $this->flush();
   }
@@ -370,7 +435,82 @@ class SubscribersRepository extends Repository {
       ->getQuery()
       ->getSingleScalarResult();
 
-    return is_int($maxSubscriberId) ? $maxSubscriberId : 0;
+    return intval($maxSubscriberId);
+  }
+
+  /**
+   * Returns count of subscribers who subscribed after given date regardless of their current status.
+   * @return int
+   */
+  public function getCountOfLastSubscribedAfter(\DateTimeInterface $subscribedAfter): int {
+    $result = $this->entityManager->createQueryBuilder()
+      ->select('COUNT(s.id)')
+      ->from(SubscriberEntity::class, 's')
+      ->where('s.lastSubscribedAt > :lastSubscribedAt')
+      ->andWhere('s.deletedAt IS NULL')
+      ->setParameter('lastSubscribedAt', $subscribedAfter)
+      ->getQuery()
+      ->getSingleScalarResult();
+    return intval($result);
+  }
+
+  /**
+   * Returns count of subscribers who unsubscribed after given date regardless of their current status.
+   * @return int
+   */
+  public function getCountOfUnsubscribedAfter(\DateTimeInterface $unsubscribedAfter): int {
+    $result = $this->entityManager->createQueryBuilder()
+      ->select('COUNT(DISTINCT s.id)')
+      ->from(StatisticsUnsubscribeEntity::class, 'su')
+      ->join('su.subscriber', 's')
+      ->andWhere('su.createdAt > :unsubscribedAfter')
+      ->andWhere('s.deletedAt IS NULL')
+      ->setParameter('unsubscribedAfter', $unsubscribedAfter)
+      ->getQuery()
+      ->getSingleScalarResult();
+    return intval($result);
+  }
+
+  /**
+   * Returns count of subscribers who subscribed to a list after given date regardless of their current global status.
+   */
+  public function getListLevelCountsOfSubscribedAfter(\DateTimeInterface $date): array {
+    $data = $this->entityManager->createQueryBuilder()
+      ->select('seg.id, seg.name, seg.type, seg.averageEngagementScore, COUNT(ss.id) as count')
+      ->from(SubscriberSegmentEntity::class, 'ss')
+      ->join('ss.subscriber', 's')
+      ->join('ss.segment', 'seg')
+      ->where('ss.updatedAt > :date')
+      ->andWhere('ss.status = :segment_status')
+      ->andWhere('s.lastSubscribedAt > :date') // subscriber subscribed at some point after the date
+      ->andWhere('s.deletedAt IS NULL')
+      ->andWhere('seg.deletedAt IS NULL') // no trashed lists and disabled WP Users list
+      ->setParameter('date', $date)
+      ->setParameter('segment_status', SubscriberEntity::STATUS_SUBSCRIBED)
+      ->groupBy('ss.segment')
+      ->getQuery()
+      ->getArrayResult();
+    return $data;
+  }
+
+  /**
+   * Returns count of subscribers who unsubscribed from a list after given date regardless of their current global status.
+   */
+  public function getListLevelCountsOfUnsubscribedAfter(\DateTimeInterface $date): array {
+    return $this->entityManager->createQueryBuilder()
+      ->select('seg.id, seg.name, seg.type, seg.averageEngagementScore, COUNT(ss.id) as count')
+      ->from(SubscriberSegmentEntity::class, 'ss')
+      ->join('ss.subscriber', 's')
+      ->join('ss.segment', 'seg')
+      ->where('ss.updatedAt > :date')
+      ->andWhere('ss.status = :segment_status')
+      ->andWhere('s.deletedAt IS NULL')
+      ->andWhere('seg.deletedAt IS NULL') // no trashed lists and disabled WP Users list
+      ->setParameter('date', $date)
+      ->setParameter('segment_status', SubscriberEntity::STATUS_UNSUBSCRIBED)
+      ->groupBy('ss.segment')
+      ->getQuery()
+      ->getArrayResult();
   }
 
   /**
@@ -423,5 +563,9 @@ class SubscribersRepository extends Repository {
     });
 
     return count($subscribers);
+  }
+
+  private function getCurrentDateTime(): CarbonImmutable {
+    return CarbonImmutable::createFromTimestamp((int)$this->wp->currentTime('timestamp'));
   }
 }

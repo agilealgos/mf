@@ -23,6 +23,7 @@ class AutomationMapper {
   }
 
   public function buildAutomation(Automation $automation): array {
+
     return [
       'id' => $automation->getId(),
       'name' => $automation->getName(),
@@ -44,8 +45,10 @@ class AutomationMapper {
           'next_steps' => array_map(function (NextStep $nextStep) {
             return $nextStep->toArray();
           }, $step->getNextSteps()),
+          'filters' => $step->getFilters() ? $step->getFilters()->toArray() : null,
         ];
       }, $automation->getSteps()),
+      'meta' => (object)$automation->getAllMetas(),
     ];
   }
 

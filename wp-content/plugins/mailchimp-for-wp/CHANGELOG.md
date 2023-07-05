@@ -1,6 +1,31 @@
 Changelog
 =========
 
+#### 4.9.5 - Jun 7, 2023
+
+- Fix generated HTML for list/audience choice fields.
+- Fix deprecation warning in includes/admin/class-review-notice.php.
+- Update JavaScript dependencies.
+
+
+#### 4.9.4 - May 2, 2023
+
+- Fallback to default checkbox label if none given. Thanks to [Shojib Khan](https://github.com/kshojib).
+- Improve WooCommerce integration settings page by disabling position field if integration is disabled. Thanks to [Shojib Khan](https://github.com/kshojib).
+- Update JavaScript dependencies.
+
+
+#### 4.9.3 - Mar 31, 2023
+
+- Defend against breaking change in latest WPForms update.
+
+
+#### 4.9.2 - Mar 21, 2023
+
+- Add support for a field named `MARKETING_PERMISSIONS` to enable GDPR fields configured in Mailchimp. A [sample code snippet can be found here](https://github.com/ibericode/mailchimp-for-wordpress/blob/master/sample-code-snippets/forms/gdpr-marketing-permissions.md).
+- Remove Google reCaptcha feature. This was already disabled if you were not already using it.
+
+
 #### 4.9.1 - Feb 7, 2023
 
 - Fix generated value attribute for fields of type choice (dropdown, checkboxes, radio fields).
