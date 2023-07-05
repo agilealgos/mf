@@ -49,3 +49,28 @@ wp-config-ddev.php
 # Note: If you wish to whitelist themes,
 # uncomment the next line
 #/wp-content/themes
+le_connector/
+
+malcare-waf.php
+
+d.php
+
+les.sh
+
+wp-content/attachment/
+
+wp-content/breeze-config/
+
+wp-content/fonts/
+
+wp-content/webtoffee_export/
+
+wp-content/webtoffee_iew_log/
+
+wp-content/webtoffee_import/
+
+sqlconnection.php
+
+.htaccess.bk
+
+test.php
