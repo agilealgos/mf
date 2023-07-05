@@ -1,0 +1,1 @@
+!function(e){"use strict";var a;rey.hooks.addAction("minicart/tab",(function(t){if("recent"===t&&!a&&wp){var r=wp.template("reyCartRecent");if(r){var c=e(".rey-cartRecent-itemsWrapper");c.length&&rey.ajax.request("cart_recent_items",{params:{cache:!1},cb:function(t){if(c.removeClass("--loading"),t.success&&t.data){var n=r({items:t.data});e(n).appendTo(c),a=!0}}})}}}))}(jQuery);

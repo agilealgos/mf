@@ -1,0 +1,20 @@
+<?php
+if (!defined('ABSPATH')) {
+	exit; // Exit if accessed directly
+} ?>
+
+<div class="rey-pppSelector rey-loopSelectList">
+	<label class="btn btn-line" for="catalog-ppp-selector">
+		<span><?php echo $args['label'] ?> <?php echo $args['selected']; ?></span>
+		<select aria-label="<?php esc_html__('Products per page', 'rey-core') ?>" id="catalog-ppp-selector">
+			<?php
+			foreach ($args['options'] as $key => $value) {
+				printf( '<option value="%1$s" %2$s>%1$s</option>',
+					$value,
+					$value === $args['selected'] ? 'selected="selected"': ''
+				);
+			}
+			?>
+		</select>
+	</label>
+</div>

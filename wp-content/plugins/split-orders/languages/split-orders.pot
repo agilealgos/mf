@@ -1,0 +1,209 @@
+# Copyright (C) 2022 Vibe Agency
+# This file is distributed under the GNU General Public License v3.0.
+msgid ""
+msgstr ""
+"Project-Id-Version: WooCommerce Split Orders 1.6.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/split-orders\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2022-06-01T11:17:16+01:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.6.0\n"
+"X-Domain: split-orders\n"
+
+#. Plugin Name of the plugin
+msgid "WooCommerce Split Orders"
+msgstr ""
+
+#. Plugin URI of the plugin
+msgid "https://woocommerce.com/products/split-orders"
+msgstr ""
+
+#. Description of the plugin
+msgid "Split orders into multiple separate orders for processing separately."
+msgstr ""
+
+#. Author of the plugin
+msgid "Vibe Agency"
+msgstr ""
+
+#. Author URI of the plugin
+msgid "https://vibeagency.uk"
+msgstr ""
+
+#: includes/addons/class-braintree.php:85
+msgid "<strong>Warning:</strong> Refunding a split order before the payment has settled may void the whole transaction."
+msgstr ""
+
+#: includes/addons/class-braintree.php:105
+msgid "Braintree does not support capturing payments in multiple parts. <br />Capturing payment before splitting is recommended."
+msgstr ""
+
+#: includes/addons/class-sequential-order-numbers-pro.php:29
+msgid "Append order number suffix"
+msgstr ""
+
+#: includes/addons/class-sequential-order-numbers-pro.php:30
+msgid "Enable order number suffix"
+msgstr ""
+
+#: includes/addons/class-sequential-order-numbers-pro.php:31
+msgid "Assign the same order number to split orders as the order they were split from, with an index appended, e.g. #123-1"
+msgstr ""
+
+#: includes/addons/class-stripe.php:58
+msgid "Stripe does not support capturing payments in multiple parts. <br />Capturing payment before splitting is recommended."
+msgstr ""
+
+#: includes/class-admin.php:33
+#: includes/class-admin.php:66
+#: includes/emails/class-customer-order-split.php:40
+msgid "Split order"
+msgstr ""
+
+#: includes/class-admin.php:76
+msgid "Complete split"
+msgstr ""
+
+#: includes/class-ajax.php:76
+#: includes/class-ajax.php:79
+msgid "Error occurred creating order"
+msgstr ""
+
+#: includes/class-orders.php:172
+msgid "Order split"
+msgstr ""
+
+#. translators: 1: Link to the order split from 2: The order number of the order split from
+#: includes/class-orders.php:349
+msgid "Order split from <a href=\"%1$s\">#%2$s</a>."
+msgstr ""
+
+#. translators: 1: Link to the order 2: The order number of the order split to
+#: includes/class-orders.php:358
+msgid "Order split into <a href=\"%1$s\">#%2$s</a>."
+msgstr ""
+
+#: includes/class-paypal.php:33
+msgid "PayPal does not support capturing payments in multiple parts. <br />Capturing payment before splitting is recommended."
+msgstr ""
+
+#: includes/class-settings.php:31
+#: includes/class-settings.php:50
+msgid "Split orders"
+msgstr ""
+
+#: includes/class-settings.php:52
+msgid "The following options are used to configure the Split Orders extension."
+msgstr ""
+
+#: includes/class-settings.php:56
+msgid "Additional fields"
+msgstr ""
+
+#: includes/class-settings.php:57
+msgid ""
+"These fields will be copied to the new order created by a split in addition to the standard fields.<br /><br />\n"
+"\t\t\t\t\t\t\t   Input each field on a new line, or separated by a comma."
+msgstr ""
+
+#: includes/class-settings.php:65
+msgid "Order status"
+msgstr ""
+
+#: includes/class-settings.php:66
+msgid "This option will set the order status for the new split order."
+msgstr ""
+
+#. translators: %s: Settings
+#: includes/class-settings.php:114
+msgid "<a href=\"%s\">Settings</a>"
+msgstr ""
+
+#: includes/class-settings.php:128
+msgid "Same as the original"
+msgstr ""
+
+#: includes/class-split-orders.php:198
+#: includes/class-split-orders.php:207
+msgid "Nope"
+msgstr ""
+
+#: includes/class-woocommerce-payments.php:56
+msgid "WooCommerce Payments does not support capturing payments in multiple parts. <br />Capturing payment before splitting is recommended."
+msgstr ""
+
+#: includes/emails/class-customer-order-split.php:41
+msgid "Split order emails are sent to customers when an order of theirs has been split."
+msgstr ""
+
+#. translators: %s: list of placeholders
+#: includes/emails/class-customer-order-split.php:65
+msgid "Available placeholders: %s"
+msgstr ""
+
+#: includes/emails/class-customer-order-split.php:68
+msgid "Enable/Disable"
+msgstr ""
+
+#: includes/emails/class-customer-order-split.php:70
+msgid "Enable this email notification"
+msgstr ""
+
+#: includes/emails/class-customer-order-split.php:74
+msgid "Subject"
+msgstr ""
+
+#: includes/emails/class-customer-order-split.php:82
+msgid "Explanation text"
+msgstr ""
+
+#: includes/emails/class-customer-order-split.php:90
+msgid "Email heading"
+msgstr ""
+
+#: includes/emails/class-customer-order-split.php:98
+msgid "Email type"
+msgstr ""
+
+#: includes/emails/class-customer-order-split.php:100
+msgid "Choose which format of email to send."
+msgstr ""
+
+#: includes/emails/class-customer-order-split.php:142
+msgid "Just to let you know - we have split your order so each part can be processed separately."
+msgstr ""
+
+#: includes/emails/class-customer-order-split.php:160
+#: includes/emails/class-customer-order-split.php:169
+msgid "Your order has been split"
+msgstr ""
+
+#: includes/partials/popup.php:27
+msgid "Product"
+msgstr ""
+
+#: includes/partials/popup.php:28
+msgid "Quantity"
+msgstr ""
+
+#: includes/partials/popup.php:29
+msgid "Quantity to Split"
+msgstr ""
+
+#: includes/partials/popup.php:51
+msgid "SKU:"
+msgstr ""
+
+#: includes/partials/popup.php:59
+msgid "Variation ID:"
+msgstr ""
+
+#. translators: %s: Customer first name
+#: templates/emails/customer-order-split.php:38
+#: templates/emails/plain/customer-order-split.php:38
+msgid "Hi %s,"
+msgstr ""

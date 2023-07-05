@@ -1,0 +1,1 @@
+!function(e){"use strict";rey.hooks.addAction("elementor/init",(function(e){e.registerElement({name:"reycore-woo-pdp-tabs-blocks.default",cb:function(e,t){t(".wc-tabs-wrapper, .woocommerce-tabs, #rating",e).trigger("init")}}),e.registerElement({name:"reycore-woo-pdp-reviews.default",cb:function(e,t){t("#rating",e).trigger("init")}})}))}(jQuery);

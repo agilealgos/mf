@@ -1,0 +1,1 @@
+!function(t){"use strict";var e=function(e){var n=0,i=(e=e||t(document),t(e).find(".rey-filterBtn__count"));i.length&&(n=i.attr("data-count")),rey.elements.body.setAttribute("data-active-filters",n)};t(document).ready((function(){e()})),rey.hooks.addAction("ajaxfilters/finished",(function(t){e(t)}))}(jQuery);

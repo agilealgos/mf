@@ -1,0 +1,7 @@
+.cp-auto-apply-enabled {
+    display: inline-flex;
+    padding: 2px 8px;
+    border-radius: 6px;
+    color: white;
+    background: #35a2f7;
+}

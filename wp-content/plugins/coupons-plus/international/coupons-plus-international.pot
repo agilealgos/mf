@@ -1,0 +1,487 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2022-05-04T09:14:48+02:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.3.0-alpha-d72f134\n"
+"X-Domain: coupons-plus-international\n"
+
+#: conditions/builtIn/conditions/CartSubtotal.php:16
+msgid "Cart Subtotal"
+msgstr ""
+
+#: conditions/builtIn/conditions/CheckoutField.php:18
+msgid "Checkout Field"
+msgstr ""
+
+#: conditions/builtIn/conditions/CouponUsageNumberOfTimes.php:19
+msgid "Number Of Times Used"
+msgstr ""
+
+#: conditions/builtIn/conditions/CouponUsageNumberOfTimes.php:43
+msgid "All Time"
+msgstr ""
+
+#: conditions/builtIn/conditions/CouponUsageNumberOfTimes.php:44
+msgid "Every Day"
+msgstr ""
+
+#: conditions/builtIn/conditions/CouponUsageNumberOfTimes.php:45
+msgid "Every Week"
+msgstr ""
+
+#: conditions/builtIn/conditions/CouponUsageNumberOfTimes.php:46
+msgid "Every Month"
+msgstr ""
+
+#: conditions/builtIn/conditions/CouponUsageNumberOfTimes.php:47
+msgid "Every Year"
+msgstr ""
+
+#: conditions/builtIn/conditions/CustomerPurchaseHistory.php:23
+msgid "Customer Purchase History"
+msgstr ""
+
+#: conditions/builtIn/conditions/CustomerType.php:15
+msgid "Customer Type"
+msgstr ""
+
+#: conditions/builtIn/conditions/CustomerType.php:28
+msgid "Guest"
+msgstr ""
+
+#: conditions/builtIn/conditions/CustomerType.php:29
+msgid "With An Account"
+msgstr ""
+
+#: conditions/builtIn/conditions/CustomUserMeta.php:18
+msgid "Custom User Meta Data"
+msgstr ""
+
+#: conditions/builtIn/conditions/Date.php:16
+msgid "Date"
+msgstr ""
+
+#: conditions/builtIn/conditions/Date.php:28
+msgid "Day"
+msgstr ""
+
+#: conditions/builtIn/conditions/Date.php:29
+msgid "Range"
+msgstr ""
+
+#: conditions/builtIn/conditions/UserRegistrationTime.php:16
+msgid "Account Registration Date"
+msgstr ""
+
+#: conditions/builtIn/conditions/UserRegistrationTime.php:28
+msgid "Time"
+msgstr ""
+
+#: conditions/builtIn/conditions/UserRegistrationTime.php:29
+msgid "In Range"
+msgstr ""
+
+#: conditions/builtIn/conditions/UserRegistrationTime.php:36
+msgid "Hours Ago"
+msgstr ""
+
+#: conditions/builtIn/conditions/UserRegistrationTime.php:37
+msgid "Days Ago"
+msgstr ""
+
+#: conditions/builtIn/conditions/UserRegistrationTime.php:42
+#: Quantities/AmountValidator.php:30
+msgid "From"
+msgstr ""
+
+#: conditions/builtIn/conditions/UserRegistrationTime.php:45
+#: Quantities/AmountValidator.php:33
+msgid "To"
+msgstr ""
+
+#: conditions/builtIn/conditions/UserRole.php:15
+msgid "User Role"
+msgstr ""
+
+#: conditions/builtIn/conditions/UserRole.php:32
+#: conditions/builtIn/filters/Products.php:34
+#: validators/InclusionValueValidator.php:29
+msgid "Allowed"
+msgstr ""
+
+#: conditions/builtIn/conditions/UserRole.php:33
+#: validators/StringValidator.php:23
+msgid "Not"
+msgstr ""
+
+#: conditions/builtIn/filters/CombinedCostOfItems.php:20
+msgid "Combined Cost of Items"
+msgstr ""
+
+#: conditions/builtIn/filters/FeaturedProducts.php:20
+msgid "Featured Products"
+msgstr ""
+
+#: conditions/builtIn/filters/FeaturedProducts.php:33
+msgid "Only Featured Products"
+msgstr ""
+
+#: conditions/builtIn/filters/FeaturedProducts.php:34
+msgid "Not Featured Products"
+msgstr ""
+
+#: conditions/builtIn/filters/InCategories.php:20
+msgid "In Categories"
+msgstr ""
+
+#: conditions/builtIn/filters/InCategories.php:33
+msgid "Categories"
+msgstr ""
+
+#: conditions/builtIn/filters/InTags.php:20
+msgid "In Tags"
+msgstr ""
+
+#: conditions/builtIn/filters/NumberOfItems.php:30
+msgid "Number of Items"
+msgstr ""
+
+#: conditions/builtIn/filters/Products.php:20
+msgid "Products"
+msgstr ""
+
+#: conditions/builtIn/filters/Products.php:35
+#: validators/InclusionValueValidator.php:30
+msgid "Forbidden"
+msgstr ""
+
+#: coupon/columns/meta/ANDColumnMeta.php:13
+msgid "And"
+msgstr ""
+
+#: coupon/columns/meta/ANDColumnMeta.php:18
+msgid "All filter/condition groups must pass. Context not shared between groups."
+msgstr ""
+
+#: coupon/columns/meta/ORColumnMeta.php:13
+msgid "Or"
+msgstr ""
+
+#: coupon/columns/meta/ORColumnMeta.php:18
+msgid "At least one filters/conditions group must pass. Context not shared between groups."
+msgstr ""
+
+#: coupon/columns/meta/SimpleColumnMeta.php:13
+#: coupon/columns/offerColumns/meta/SimpleOfferColumnMeta.php:13
+msgid "Simple"
+msgstr ""
+
+#: coupon/columns/meta/SimpleColumnMeta.php:18
+msgid "All filters/conditions must pass. One context shared among all conditions/filters."
+msgstr ""
+
+#: coupon/columns/offerColumns/meta/ANDOffersColumnMeta.php:13
+msgid "And (Offers)"
+msgstr ""
+
+#: coupon/columns/offerColumns/meta/ANDOffersColumnMeta.php:18
+msgid "One single set of offers for all contexts. All filters/conditions must pass in order for the offer to apply. Context not shared between groups."
+msgstr ""
+
+#: coupon/columns/offerColumns/meta/MultiOffersColumnMeta.php:13
+msgid "Multi"
+msgstr ""
+
+#: coupon/columns/offerColumns/meta/MultiOffersColumnMeta.php:18
+msgid "Offers will be applied to ANY of the passing filters/conditions groups. Context not shared between groups."
+msgstr ""
+
+#: coupon/columns/offerColumns/meta/OROffersColumnMeta.php:13
+msgid "Or (Offers)"
+msgstr ""
+
+#: coupon/columns/offerColumns/meta/OROffersColumnMeta.php:18
+msgid "One single set of offers for all contexts. At least one filters/conditions group must pass in order for the offer to apply. Context not shared between groups."
+msgstr ""
+
+#: coupon/columns/offerColumns/meta/SimpleOfferColumnMeta.php:18
+msgid "All filters/conditions must pass in order for the offer to apply. One context shared among all conditions/filters. Items filtered by the filters will be passed to the offers."
+msgstr ""
+
+#: coupon/columns/offerColumns/meta/TieredOffersColumnMeta.php:13
+msgid "Tiered"
+msgstr ""
+
+#: coupon/columns/offerColumns/meta/TieredOffersColumnMeta.php:18
+msgid "Offers will be applied from the first passing filters/conditions groups. Context not shared between groups."
+msgstr ""
+
+#: data/export/DashboardData.php:168
+msgid "Add condition"
+msgstr ""
+
+#: data/export/DashboardData.php:169
+msgid "Add filter"
+msgstr ""
+
+#: data/export/DashboardData.php:170
+msgid "Add condition or filter"
+msgstr ""
+
+#: data/export/DashboardData.php:171
+msgid "Add offer"
+msgstr ""
+
+#: data/export/DashboardData.php:172
+msgid "Add row"
+msgstr ""
+
+#: data/export/DashboardData.php:173
+msgid "Add context (group)"
+msgstr ""
+
+#: data/export/DashboardData.php:176
+msgid "Create Column"
+msgstr ""
+
+#: events/CustomGlobalEventsValidator.php:24
+msgid "Almost Ready! WooCommerce needs to be installed and activated for Coupons+ to work."
+msgstr ""
+
+#: offers/builtIn/BundlePrice.php:19
+msgid "Bundle Price"
+msgstr ""
+
+#: offers/builtIn/BundlePrice.php:24
+msgid "Sets a single price for all the filtered items."
+msgstr ""
+
+#: offers/builtIn/Discount.php:25
+msgid "Discount"
+msgstr ""
+
+#: offers/builtIn/Discount.php:30
+msgid "Sets a discount on the filtered items or the whole cart."
+msgstr ""
+
+#: offers/builtIn/Discount.php:38
+msgid "Type"
+msgstr ""
+
+#: offers/builtIn/Discount.php:48
+msgid "Filtered items"
+msgstr ""
+
+#: offers/builtIn/Discount.php:49
+msgid "Cart subtotal"
+msgstr ""
+
+#: offers/builtIn/Discount.php:53
+msgid "With no limit"
+msgstr ""
+
+#: offers/builtIn/Discount.php:54
+msgid "Limit to:"
+msgstr ""
+
+#: offers/builtIn/ExtraProduct.php:31
+msgid "Extra Product"
+msgstr ""
+
+#: offers/builtIn/ExtraProduct.php:36
+msgid "Automatically adds extra products to the cart."
+msgstr ""
+
+#: offers/builtIn/ExtraProduct.php:44
+msgid "Specific Product"
+msgstr ""
+
+#: offers/builtIn/ExtraProduct.php:45
+msgid "Product from Filtered Items"
+msgstr ""
+
+#: offers/builtIn/ExtraProduct.php:48
+msgid "Product"
+msgstr ""
+
+#: offers/builtIn/ExtraProduct.php:57
+#: offers/builtIn/ExtraProduct.php:62
+msgid "Quantity"
+msgstr ""
+
+#: offers/builtIn/ShippingDiscount.php:18
+msgid "Shipping Discount"
+msgstr ""
+
+#: offers/builtIn/ShippingDiscount.php:23
+msgid "Applies a discount on the cart's shipping total."
+msgstr ""
+
+#: presets/BuiltIn.php:17
+msgid "BOGOS & 2 for 1s"
+msgstr ""
+
+#: presets/BuiltIn.php:91
+msgid "New Customers Only"
+msgstr ""
+
+#: presets/BuiltIn.php:149
+msgid "Shipping Discounts"
+msgstr ""
+
+#: presets/BuiltIn.php:177
+msgid "Bundle Pricing"
+msgstr ""
+
+#: presets/BuiltIn.php:221
+msgid "Tiered Discounts"
+msgstr ""
+
+#: presets/BuiltIn.php:306
+msgid "Multi Discounts"
+msgstr ""
+
+#: Quantities/AmountValidator.php:20
+msgid "Exactly"
+msgstr ""
+
+#: Quantities/AmountValidator.php:21
+msgid "At least"
+msgstr ""
+
+#: Quantities/AmountValidator.php:22
+msgid "Maximum"
+msgstr ""
+
+#: Quantities/AmountValidator.php:23
+msgid "In range"
+msgstr ""
+
+#: validators/FieldValidator.php:18
+msgid "Name"
+msgstr ""
+
+#: validators/FieldValidator.php:23
+msgid "Text"
+msgstr ""
+
+#: validators/FieldValidator.php:24
+msgid "Number"
+msgstr ""
+
+#: validators/FieldValidator.php:25
+msgid "Field Exists"
+msgstr ""
+
+#: validators/FieldValidator.php:28
+msgid "Data"
+msgstr ""
+
+#: validators/InclusionValueValidator.php:23
+msgid "Values"
+msgstr ""
+
+#: validators/StringValidator.php:18
+msgid "Value"
+msgstr ""
+
+#: validators/StringValidator.php:22
+msgid "Is"
+msgstr ""
+
+#: validators/StringValidator.php:27
+msgid "Starts with"
+msgstr ""
+
+#: validators/StringValidator.php:28
+msgid "Doesn't start with"
+msgstr ""
+
+#: validators/StringValidator.php:30
+msgid "Ends with"
+msgstr ""
+
+#: validators/StringValidator.php:31
+msgid "Doesn't end with"
+msgstr ""
+
+#: validators/StringValidator.php:37
+msgid "Contains"
+msgstr ""
+
+#: validators/StringValidator.php:38
+msgid "Doesn't contain"
+msgstr ""
+
+#: app/scripts/dashboard/build/static/js/main.30bc6c67.js:2
+msgid "Conditions"
+msgstr ""
+
+#: app/scripts/dashboard/build/static/js/main.30bc6c67.js:2
+msgid "Select a Filter"
+msgstr ""
+
+#: app/scripts/dashboard/build/static/js/main.30bc6c67.js:2
+msgid "If you want to add a condition, create a new column to the right"
+msgstr ""
+
+#: app/scripts/dashboard/build/static/js/main.30bc6c67.js:2
+msgid "Filters"
+msgstr ""
+
+#: app/scripts/dashboard/build/static/js/main.30bc6c67.js:2
+msgid "Select a Condition"
+msgstr ""
+
+#: app/scripts/dashboard/build/static/js/main.30bc6c67.js:2
+msgid "A column may only have conditions or filters but not both"
+msgstr ""
+
+#: app/scripts/dashboard/build/static/js/main.30bc6c67.js:2
+msgid "If you want to add a filter, create a new column to the right"
+msgstr ""
+
+#: app/scripts/dashboard/build/static/js/main.30bc6c67.js:2
+msgid "Documentation"
+msgstr ""
+
+#: app/scripts/dashboard/build/static/js/main.30bc6c67.js:2
+msgid ""
+"Read the guide on using conditions and filters to unlock the power of "
+"Coupons+"
+msgstr ""
+
+#: app/scripts/dashboard/build/static/js/main.30bc6c67.js:2
+msgid "No Conditions or Filters!"
+msgstr ""
+
+#: app/scripts/dashboard/build/static/js/main.30bc6c67.js:2
+msgid "At"
+msgstr ""
+
+#: app/scripts/dashboard/build/static/js/main.30bc6c67.js:2
+msgid "% off"
+msgstr ""
+
+#: app/scripts/dashboard/build/static/js/main.30bc6c67.js:2
+msgid "item"
+msgstr ""
+
+#: app/scripts/dashboard/build/static/js/main.30bc6c67.js:2
+msgid "items"
+msgstr ""
+
+#: app/scripts/dashboard/build/static/js/main.30bc6c67.js:2
+msgid "Product..."
+msgstr ""
+
+#: app/scripts/dashboard/build/static/js/main.30bc6c67.js:2
+msgid "Enter the name of a product..."
+msgstr ""

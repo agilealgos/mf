@@ -1,0 +1,38 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+#adminmenu img,
+.wp-menu-image,
+.wp-menu-image::before {
+    border-style: none;
+}
+
+#coupons-plus {
+    font-family: 'Epilogue', sans-serif;
+    position: absolute;
+    width: 100%;
+    min-height: 100vh;
+    top: 0;
+    z-index: 1000;
+
+    @apply p-4 
+           bg-gray-200;
+}
+
+#coupons-plus .cp-select__multi-value__label {
+    white-space: normal;
+}
+
+#coupons-plus .cp-select__clear-indicator,
+#coupons-plus .cp-select__dropdown-indicator {
+    @apply px-1
+}
+
+#coupons-plus .cp-select__control {
+    @apply space-x-1 flex flex-row justify-between items-center min-h-10 text-left rounded-4 border-px border-gray-300 focus:border-blue-normal focus:outline-none cursor-default hover:cursor-pointer text-base select-none text-gray-650 bg-gray-100;
+}
+
+#coupons-plus .cp-select__multi-value {
+    @apply bg-gray-150 rounded-4;
+}

@@ -1,0 +1,530 @@
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Sequential Order Numbers for WooCommerce\n"
+"POT-Creation-Date: 2022-03-03 14:07+0530\n"
+"PO-Revision-Date: 2021-11-25 11:25+0530\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+"X-Generator: Poedit 3.0.1\n"
+"X-Poedit-Basepath: ..\n"
+"X-Poedit-Flags-xgettext: --add-comments=translators:\n"
+"X-Poedit-WPHeader: wt-advanced-order-number.php\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-KeywordsList: __;_e;_n:1,2;_x:1,2c;_ex:1,2c;_nx:4c,1,2;esc_attr__;"
+"esc_attr_e;esc_attr_x:1,2c;esc_html__;esc_html_e;esc_html_x:1,2c;_n_noop:1,2;"
+"_nx_noop:3c,1,2;__ngettext_noop:1,2\n"
+"X-Poedit-SearchPath-0: .\n"
+"X-Poedit-SearchPathExcluded-0: *.min.js\n"
+
+#: admin/class-wt-advanced-order-number-admin.php:30
+#: includes/class-wt-advanced-order-number-settings.php:176
+msgid "Preview : "
+msgstr ""
+
+#: admin/class-wt-advanced-order-number-admin.php:31
+msgid " (Pro) "
+msgstr ""
+
+#: admin/class-wt-advanced-order-number-admin.php:49
+#: includes/class-wt-advanced-order-number-settings.php:54
+#: includes/class-wt-advanced-order-number-settings.php:107
+msgid "Settings"
+msgstr ""
+
+#: admin/class-wt-advanced-order-number-admin.php:50
+msgid "Support"
+msgstr ""
+
+#: admin/class-wt-advanced-order-number-admin.php:51
+msgid "Review"
+msgstr ""
+
+#: admin/class-wt-advanced-order-number-admin.php:52
+msgid "Premium Upgrade"
+msgstr ""
+
+#: admin/views/wt-advanced-order-number-admin-settings-page.php:2
+msgid "Click to select the date format"
+msgstr ""
+
+#: admin/views/wt-advanced-order-number-admin-settings-page.php:5
+msgid "Date formats"
+msgstr ""
+
+#: admin/views/wt-advanced-order-number-admin-settings-page.php:11
+msgid "Pick one or more date formats from predefined formats listed below:"
+msgstr ""
+
+#: admin/views/wt-advanced-order-number-admin-settings-page.php:16
+msgid "Format"
+msgstr ""
+
+#: admin/views/wt-advanced-order-number-admin-settings-page.php:16
+msgid "Output"
+msgstr ""
+
+#: admin/views/wt-advanced-order-number-admin-settings-page.php:63
+msgid "For e.g, Input [y]/[m]/[d] to get the order date format as "
+msgstr ""
+
+#: admin/views/wt-bottom-banner.php:3
+msgid ""
+"Upgrade to Sequential Order Number for WooCommerce Pro to get hold of "
+"advanced features."
+msgstr ""
+
+#: admin/views/wt-bottom-banner.php:6
+#: includes/class-wt-advanced-order-number-free-to-pro.php:63
+msgid "UPGRADE TO PREMIUM"
+msgstr ""
+
+#: admin/views/wt-comparison-table.php:24
+msgid "Add order number prefix"
+msgstr ""
+
+#: admin/views/wt-comparison-table.php:29
+msgid "Set order number length"
+msgstr ""
+
+#: admin/views/wt-comparison-table.php:34
+msgid "Dynamic preview of order numbers"
+msgstr ""
+
+#: admin/views/wt-comparison-table.php:39
+msgid "Custom starting number for orders"
+msgstr ""
+
+#: admin/views/wt-comparison-table.php:44
+msgid "Keep existing order numbers"
+msgstr ""
+
+#: admin/views/wt-comparison-table.php:49
+msgid "Easy custom order number search"
+msgstr ""
+
+#: admin/views/wt-comparison-table.php:54
+msgid "Order tracking"
+msgstr ""
+
+#: admin/views/wt-comparison-table.php:59
+msgid "Custom suffix for order numbers"
+msgstr ""
+
+#: admin/views/wt-comparison-table.php:64
+msgid "Add order date as suffix"
+msgstr ""
+
+#: admin/views/wt-comparison-table.php:69
+msgid "Auto-reset order numbers"
+msgstr ""
+
+#: admin/views/wt-comparison-table.php:74
+msgid "Separate order number sequence for free orders"
+msgstr ""
+
+#: admin/views/wt-comparison-table.php:79
+msgid "Custom increment for order sequence"
+msgstr ""
+
+#: admin/views/wt-comparison-table.php:84
+msgid "Premium suppport"
+msgstr ""
+
+#: admin/views/wt-comparison-table.php:89
+msgid "Order number templates"
+msgstr ""
+
+#: admin/views/wt-comparison-table.php:90
+msgid "Limited"
+msgstr ""
+
+#: admin/views/wt-comparison-table.php:125
+msgid "FEATURES"
+msgstr ""
+
+#: admin/views/wt-comparison-table.php:126
+msgid "FREE"
+msgstr ""
+
+#: admin/views/wt-comparison-table.php:127
+msgid "PREMIUM"
+msgstr ""
+
+#: includes/class-wt-advanced-order-number-free-to-pro.php:57
+msgid "Sequential Order Number for WooCommerce Pro"
+msgstr ""
+
+#: includes/class-wt-advanced-order-number-free-to-pro.php:71
+msgid "30 Day Money Back Guarantee"
+msgstr ""
+
+#: includes/class-wt-advanced-order-number-free-to-pro.php:77
+msgid "Fast and Superior Support"
+msgstr ""
+
+#: includes/class-wt-advanced-order-number-free-to-pro.php:89
+#: includes/class-wt-advanced-order-number-free-vs-pro.php:43
+msgid "Add custom suffix for order numbers."
+msgstr ""
+
+#: includes/class-wt-advanced-order-number-free-to-pro.php:95
+#: includes/class-wt-advanced-order-number-free-vs-pro.php:44
+msgid "Date suffix in order numbers."
+msgstr ""
+
+#: includes/class-wt-advanced-order-number-free-to-pro.php:101
+#: includes/class-wt-advanced-order-number-free-vs-pro.php:45
+msgid "Auto reset sequence per month/year etc."
+msgstr ""
+
+#: includes/class-wt-advanced-order-number-free-to-pro.php:111
+#: includes/class-wt-advanced-order-number-free-vs-pro.php:46
+msgid "Custom sequence for free orders."
+msgstr ""
+
+#: includes/class-wt-advanced-order-number-free-to-pro.php:117
+#: includes/class-wt-advanced-order-number-free-vs-pro.php:47
+msgid "More order number templates."
+msgstr ""
+
+#: includes/class-wt-advanced-order-number-free-to-pro.php:123
+#: includes/class-wt-advanced-order-number-free-vs-pro.php:48
+msgid "Increment sequence in custom series."
+msgstr ""
+
+#: includes/class-wt-advanced-order-number-review_request.php:53
+#, php-format
+msgid ""
+"Hey, we at %sWebToffee%s would like to thank you for using our plugin. We "
+"would really appreciate if you could take a moment to drop a quick review "
+"that will inspire us to keep going."
+msgstr ""
+
+#: includes/class-wt-advanced-order-number-review_request.php:56
+msgid "Remind me later"
+msgstr ""
+
+#: includes/class-wt-advanced-order-number-review_request.php:57
+msgid "Not interested"
+msgstr ""
+
+#: includes/class-wt-advanced-order-number-review_request.php:58
+msgid "Review now"
+msgstr ""
+
+#: includes/class-wt-advanced-order-number-settings.php:23
+msgid "Sequential Order Number"
+msgstr ""
+
+#: includes/class-wt-advanced-order-number-settings.php:55
+msgid "Free vs. Pro"
+msgstr ""
+
+#: includes/class-wt-advanced-order-number-settings.php:109
+msgid "Set custom sequential order numbers for WooCommerce orders."
+msgstr ""
+
+#: includes/class-wt-advanced-order-number-settings.php:113
+#: includes/class-wt-advanced-order-number-settings.php:247
+msgid " "
+msgstr ""
+
+#: includes/class-wt-advanced-order-number-settings.php:123
+msgid "Order number format"
+msgstr ""
+
+#: includes/class-wt-advanced-order-number-settings.php:125
+msgid "Select an order number format with number, prefix, or date."
+msgstr ""
+
+#: includes/class-wt-advanced-order-number-settings.php:131
+msgid "[Number]"
+msgstr ""
+
+#: includes/class-wt-advanced-order-number-settings.php:132
+msgid "[Prefix][Number]"
+msgstr ""
+
+#: includes/class-wt-advanced-order-number-settings.php:133
+msgid "[Date][Number]"
+msgstr ""
+
+#: includes/class-wt-advanced-order-number-settings.php:134
+msgid "[Prefix][Date][Number]"
+msgstr ""
+
+#: includes/class-wt-advanced-order-number-settings.php:138
+msgid "Prefix"
+msgstr ""
+
+#: includes/class-wt-advanced-order-number-settings.php:140
+msgid ""
+"Prefix will be appended at the beginning of the order number. For eg, if you "
+"enter WT- as the prefix with start number as 100, then your first order "
+"number will be WT-100."
+msgstr ""
+
+#: includes/class-wt-advanced-order-number-settings.php:147
+msgid "Order date format"
+msgstr ""
+
+#: includes/class-wt-advanced-order-number-settings.php:148
+#, php-format
+msgid ""
+"Pick a date format from a list of %s predefined formats %s. You can use "
+"alphanumeric characters as separators."
+msgstr ""
+
+#: includes/class-wt-advanced-order-number-settings.php:149
+msgid " Order date prefix will appear after default prefix"
+msgstr ""
+
+#: includes/class-wt-advanced-order-number-settings.php:152
+msgid "Choose date format"
+msgstr ""
+
+#: includes/class-wt-advanced-order-number-settings.php:155
+msgid "Order number length"
+msgstr ""
+
+#: includes/class-wt-advanced-order-number-settings.php:161
+msgid ""
+"Maintains a fixed length for order number padded with ‘0’ excluding prefix. "
+"E.g, Entering order number length as 7 with order number 123 and prefix ‘wt’ "
+"will generate a sequential order number as wt0000123."
+msgstr ""
+
+#: includes/class-wt-advanced-order-number-settings.php:169
+msgid "Start Number"
+msgstr ""
+
+#: includes/class-wt-advanced-order-number-settings.php:175
+msgid ""
+"The start number will be the first number for your order. For eg, if you "
+"enter 100 as starting number, the first order number will be 100."
+msgstr ""
+
+#: includes/class-wt-advanced-order-number-settings.php:182
+msgid "Apply for all orders"
+msgstr ""
+
+#: includes/class-wt-advanced-order-number-settings.php:183
+msgid " Enable to apply the above format for all existing orders."
+msgstr ""
+
+#: includes/class-wt-advanced-order-number-settings.php:184
+msgid "Leave it unchecked to apply number format only for new orders."
+msgstr ""
+
+#: includes/class-wt-advanced-order-number-settings.php:191
+msgid "Track orders"
+msgstr ""
+
+#: includes/class-wt-advanced-order-number-settings.php:192
+#: includes/class-wt-advanced-order-number-settings.php:201
+msgid "Enable"
+msgstr ""
+
+#: includes/class-wt-advanced-order-number-settings.php:194
+msgid ""
+"Enable to track sequential order number if you are currently using shortcode "
+"[woocommerce_order_tracking] to track orders."
+msgstr ""
+
+#: includes/class-wt-advanced-order-number-settings.php:200
+msgid "Search orders"
+msgstr ""
+
+#: includes/class-wt-advanced-order-number-settings.php:203
+msgid ""
+"Enable to search the sequential order numbers from WooCommerce orders page."
+msgstr ""
+
+#: includes/class-wt-advanced-order-number-settings.php:209
+msgid "Separate sequence for free orders"
+msgstr ""
+
+#: includes/class-wt-advanced-order-number-settings.php:210
+msgid "Enable to create separate order number sequence for free orders"
+msgstr ""
+
+#: includes/class-wt-advanced-order-number-settings.php:218
+msgid "Increment counter"
+msgstr ""
+
+#: includes/class-wt-advanced-order-number-settings.php:219
+msgid ""
+"Order number sequence will be incremented by this value. For eg, if 2 is "
+"given, the order sequence will be 2, 4, 6 etc."
+msgstr ""
+
+#: includes/class-wt-advanced-order-number-settings.php:228
+msgid "Reset sequential order number"
+msgstr ""
+
+#: includes/class-wt-advanced-order-number-settings.php:229
+msgid ""
+"Resets order number sequence based on the selected interval. If monthly is "
+"chosen, the order sequence will start a new sequence at the beginning of "
+"each month."
+msgstr ""
+
+#: includes/class-wt-advanced-order-number-settings.php:235
+msgid "Never"
+msgstr ""
+
+#: includes/class-wt-advanced-order-number-settings.php:236
+msgid "Daily"
+msgstr ""
+
+#: includes/class-wt-advanced-order-number-settings.php:237
+msgid "Monthly"
+msgstr ""
+
+#: includes/class-wt-advanced-order-number-settings.php:238
+msgid "Yearly"
+msgstr ""
+
+#: includes/class-wt-advanced-order-number-settings.php:249
+#, php-format
+msgid ""
+"Unlock the pro benefits by upgrading to %s Sequential Order Number for "
+"WooCommerce Pro%s "
+msgstr ""
+
+#: includes/class-wt-advanced-order-number-settings.php:271
+msgid "Sequential order numbers for WooCommerce | Developed by"
+msgstr ""
+
+#: includes/class-wt-seqordnum-uninstall-feedback.php:28
+msgid "Issue with order number/order_id"
+msgstr ""
+
+#: includes/class-wt-seqordnum-uninstall-feedback.php:33
+msgid "Payment"
+msgstr ""
+
+#: includes/class-wt-seqordnum-uninstall-feedback.php:35
+#: includes/class-wt-seqordnum-uninstall-feedback.php:41
+#: includes/class-wt-seqordnum-uninstall-feedback.php:47
+msgid "Which plugin/vendor?"
+msgstr ""
+
+#: includes/class-wt-seqordnum-uninstall-feedback.php:39
+msgid "Shipping"
+msgstr ""
+
+#: includes/class-wt-seqordnum-uninstall-feedback.php:45
+msgid "Conflict with Invoice plugin"
+msgstr ""
+
+#: includes/class-wt-seqordnum-uninstall-feedback.php:51
+#: includes/class-wt-seqordnum-uninstall-feedback.php:83
+msgid "Other"
+msgstr ""
+
+#: includes/class-wt-seqordnum-uninstall-feedback.php:53
+#: includes/class-wt-seqordnum-uninstall-feedback.php:73
+#: includes/class-wt-seqordnum-uninstall-feedback.php:85
+msgid "Could you tell us a bit more?"
+msgstr ""
+
+#: includes/class-wt-seqordnum-uninstall-feedback.php:59
+msgid "I found a better plugin"
+msgstr ""
+
+#: includes/class-wt-seqordnum-uninstall-feedback.php:61
+#: includes/class-wt-seqordnum-uninstall-feedback.php:79
+msgid "Which plugin?"
+msgstr ""
+
+#: includes/class-wt-seqordnum-uninstall-feedback.php:65
+msgid "The plugin is great, but I need specific feature that you don't support"
+msgstr ""
+
+#: includes/class-wt-seqordnum-uninstall-feedback.php:67
+msgid "Could you tell us more about that feature?"
+msgstr ""
+
+#: includes/class-wt-seqordnum-uninstall-feedback.php:71
+msgid "It's not what I was looking for"
+msgstr ""
+
+#: includes/class-wt-seqordnum-uninstall-feedback.php:77
+msgid "A conflict with another plugin"
+msgstr ""
+
+#: includes/class-wt-seqordnum-uninstall-feedback.php:104
+msgid "If you have a moment, please let us know why you are deactivating:"
+msgstr ""
+
+#: includes/class-wt-seqordnum-uninstall-feedback.php:141
+msgid ""
+"We do not collect any personal data when you submit this form. It's your "
+"feedback that we value."
+msgstr ""
+
+#: includes/class-wt-seqordnum-uninstall-feedback.php:142
+msgid "Privacy Policy"
+msgstr ""
+
+#: includes/class-wt-seqordnum-uninstall-feedback.php:148
+msgid "Go to support"
+msgstr ""
+
+#: includes/class-wt-seqordnum-uninstall-feedback.php:149
+msgid "Submit & Deactivate"
+msgstr ""
+
+#: includes/class-wt-seqordnum-uninstall-feedback.php:150
+msgid "Cancel"
+msgstr ""
+
+#: includes/class-wt-seqordnum-uninstall-feedback.php:151
+msgid "I rather wouldn't say"
+msgstr ""
+
+#: wt-advanced-order-number.php:55
+#, php-format
+msgid ""
+"The plugins %s and %s cannot be active in your store at the same time. "
+"Kindly deactivate one of these prior to activating the other."
+msgstr ""
+
+#: wt-advanced-order-number.php:55
+msgid "Go to plugins page"
+msgstr ""
+
+#: wt-advanced-order-number.php:145
+#, php-format
+msgid ""
+"%s Sequential Order Number for WooCommerce %s is enabled but not effective. "
+"It requires %s WooCommerce %s in order to work."
+msgstr ""
+
+#. Plugin Name of the plugin/theme
+msgid "Sequential Order Numbers for WooCommerce"
+msgstr ""
+
+#. Plugin URI of the plugin/theme
+msgid "https://wordpress.org/plugins/wt-woocommerce-sequential-order-numbers/"
+msgstr ""
+
+#. Description of the plugin/theme
+msgid ""
+"Automatically sets sequential order number for WooCommerce orders placed by "
+"either customers or by admin through backend."
+msgstr ""
+
+#. Author of the plugin/theme
+msgid "WebToffee"
+msgstr ""
+
+#. Author URI of the plugin/theme
+msgid "https://www.webtoffee.com/"
+msgstr ""
