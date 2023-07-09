@@ -4,10 +4,10 @@
   Plugin URI: https://underconstructionpage.com/
   Description: Put your site behind a great looking under construction, coming soon, maintenance mode or landing page.
   Author: WebFactory Ltd
-  Version: 3.96
+  Version: 3.97
   Requires at least: 4.0
   Requires PHP: 5.2
-  Tested up to: 6.1
+  Tested up to: 6.2
   Author URI: https://www.webfactoryltd.com/
   Text Domain: under-construction-page
 
@@ -346,7 +346,7 @@ class UCP
             'is_activated' => UCP_license::is_activated(),
             'dialog_upsell_title' => '<img alt="' . esc_attr__('UnderConstructionPage PRO', 'under-construction-page') . '" title="' . esc_attr__('UnderConstructionPage PRO', 'under-construction-page') . '" src="' . UCP_PLUGIN_URL . 'images/ucp_pro_logo_white.png' . '">',
             'weglot_dialog_upsell_title' => '<img alt="' . esc_attr__('Weglot', 'under-construction-page') . '" title="' . esc_attr__('Weglot', 'under-construction-page') . '" src="' . UCP_PLUGIN_URL . 'images/weglot-logo-white.png' . '">',
-            'weglot_install_url' => add_query_arg(array('action' => 'install_weglot'), admin_url('admin.php')),
+            'weglot_install_url' => add_query_arg(array('action' => 'install_weglot', '_wpnonce' => wp_create_nonce('install_weglot')), admin_url('admin.php')),
             'nonce_dismiss_survey' => wp_create_nonce('ucp_dismiss_survey'),
             'nonce_submit_survey' => wp_create_nonce('ucp_submit_survey'),
             'nonce_submit_support_message' => wp_create_nonce('ucp_submit_support_message'),
@@ -776,7 +776,7 @@ class UCP
     {
         $notices = get_option(UCP_NOTICES_KEY);
         $dismiss_url = add_query_arg(array('action' => 'ucp_dismiss_notice', 'notice' => 'whitelisted', 'redirect' => urlencode($_SERVER['REQUEST_URI'])), admin_url('admin.php'));
-
+        $dismiss_url = wp_nonce_url($dismiss_url, 'ucp_dismiss_notice');
         if (
             empty($notices['dismiss_whitelisted']) &&
             is_user_logged_in() &&
@@ -827,6 +827,7 @@ class UCP
         ) {
             $rate_url = 'https://wordpress.org/support/plugin/under-construction-page/reviews/#new-post';
             $dismiss_url = add_query_arg(array('action' => 'ucp_dismiss_notice', 'notice' => 'rate', 'redirect' => urlencode($_SERVER['REQUEST_URI'])), admin_url('admin.php'));
+            $dismiss_url = wp_nonce_url($dismiss_url, 'ucp_dismiss_notice');
 
             echo '<div id="ucp_rate_notice" class="notice-info notice"><p>Hi' . esc_html($name) . '!<br>We saw you\'ve been using the <b class="ucp-logo" style="font-weight: bold;">UnderConstructionPage</b> plugin for a few days (that\'s awesome!) and wanted to ask for your help to <b>make the plugin better</b>.<br>We just need a minute of your time to rate the plugin. It helps us out a lot!';
 
@@ -852,6 +853,7 @@ class UCP
         ) {
             $translate_url = self::generate_web_link('translate-notification', 'translate-the-plugin/');
             $dismiss_url = add_query_arg(array('action' => 'ucp_dismiss_notice', 'notice' => 'translate', 'redirect' => urlencode($_SERVER['REQUEST_URI'])), admin_url('admin.php'));
+            $dismiss_url = wp_nonce_url($dismiss_url, 'ucp_dismiss_notice');
 
             echo '<div id="ucp_rate_notice" class="notice-info notice"><p>Hi' . esc_html($name) . ',<br>Help us translate UCP into your language and <b>get a PRO license for free</b>!<br>We want to make <b class="ucp-logo" style="font-weight: bold;">UnderConstructionPage</b> accessible to as many users as possible by translating it into their language. And we need your help!';
 
@@ -868,6 +870,7 @@ class UCP
             !$shown && $promo == 'welcome'
         ) {
             $dismiss_url = add_query_arg(array('action' => 'ucp_dismiss_notice', 'notice' => 'welcome', 'redirect' => urlencode($_SERVER['REQUEST_URI'])), admin_url('admin.php'));
+            $dismiss_url = wp_nonce_url($dismiss_url, 'ucp_dismiss_notice');
 
             echo '<div id="ucp_rate_notice" class="notice-info notice"><p>Hi' . esc_html($name) . ',<br>';
             echo 'We have a <a class="open-ucp-upsell" data-pro-ad="notification-welcome-text" href="#">special time-sensitive offer</a> available just for another <b class="ucp-countdown">59min</b>! A <b>20% DISCOUNT</b> on our most popular lifetime licenses!<br>No nonsense! Pay once and use the plugin forever. <a class="open-ucp-upsell" data-pro-ad="notification-welcome-text2" href="#">Get</a> more than 50+ extra features, 250+ premium themes and over two million professional images.</p>';
@@ -885,6 +888,7 @@ class UCP
             !$shown && $promo == 'olduser'
         ) {
             $dismiss_url = add_query_arg(array('action' => 'ucp_dismiss_notice', 'notice' => 'olduser', 'redirect' => urlencode($_SERVER['REQUEST_URI'])), admin_url('admin.php'));
+            $dismiss_url = wp_nonce_url($dismiss_url, 'ucp_dismiss_notice');
 
             echo '<div id="ucp_rate_notice" class="notice-info notice"><p>Hi' . esc_html($name) . ',<br>';
             echo 'We have a <a class="open-ucp-upsell" data-pro-ad="notification-olduser-text" href="#">special offer</a> only for <b>users like you</b> who\'ve been using the UnderConstructionPage for a longer period of time: a <b>special DISCOUNT</b> on our most popular lifetime licenses!<br>No nonsense! Pay once and use the plugin forever.<br><a class="open-ucp-upsell" data-pro-ad="notification-olduser-text" href="#">Upgrade now</a> to <b>PRO</b> &amp; get more than 50+ extra features, 220+ premium themes and over two million HD images.</p>';
@@ -900,6 +904,8 @@ class UCP
     // handle dismiss button for notices
     static function dismiss_notice()
     {
+        check_admin_referer( 'ucp_dismiss_notice' );
+        
         if (empty($_GET['notice'])) {
             wp_safe_redirect(admin_url());
             exit;
@@ -2388,6 +2394,8 @@ class UCP
     // auto download / install / activate Weglot plugin
     static function install_weglot()
     {
+        check_ajax_referer('install_weglot');
+        
         if (false === current_user_can('administrator')) {
             wp_die('Sorry, you have to be an admin to run this action.');
         }

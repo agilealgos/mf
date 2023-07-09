@@ -3,8 +3,8 @@ Contributors: WebFactory
 Tags: coming soon page, under construction mode, under construction, under construction page, coming soon, launch page, coming soon mode, offline page, landing page, bunny fonts
 Requires at least: 4.0
 Requires PHP: 5.2
-Tested up to: 6.1
-Stable tag: 3.96
+Tested up to: 6.2
+Stable tag: 3.97
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -140,6 +140,10 @@ Or if needed, upload manually;
 
 
 == Changelog ==
+
+= 3.97 =
+* 2023/02/10
+* nonce fixes; thank you Wordfence!
 
 = 3.96 =
 * 2023/01/16
