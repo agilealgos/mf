@@ -101,7 +101,7 @@ jQuery( document ).on( 'ready', function(){
 		}
 		var data = {
 			action	:'wps_rma_save_return_request',
-			products: selected_product,
+			products: selected_product, 
 			amount	: refund_amount,
 			subject	: rr_subject,
 			reason	: rr_reason,
@@ -126,8 +126,8 @@ jQuery( document ).on( 'ready', function(){
 			{
 				//Send return request
 				$.ajax({
-					url: wrael_common_param.ajaxurl, 
-					type: 'POST',  
+					url: wrael_common_param.ajaxurl,
+					type: 'POST',
 					data: data,
 					dataType :'json',	
 					success: function(response) 

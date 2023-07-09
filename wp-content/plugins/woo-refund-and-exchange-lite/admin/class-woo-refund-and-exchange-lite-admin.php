@@ -45,6 +45,19 @@ class Woo_Refund_And_Exchange_Lite_Admin {
 	 * @param string $version     The version of this plugin.
 	 */
 	public function __construct( $plugin_name, $version ) {
+		$pro_version = null;
+		$pro_slug = 'woocommerce-rma-for-return-refund-and-exchange/mwb-woocommerce-rma.php';
+		if ( ! function_exists( 'get_plugins' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		}
+		$all_plugins   = get_plugins();
+		if ( isset( $all_plugins[ $pro_slug ] ) ) {
+			$pro_version = $all_plugins[ $pro_slug ]['Version'];
+		}
+		if ( ( is_null( $pro_version ) || ( $pro_version > '5.0.9' || ( ! is_plugin_active( $pro_slug ) && $pro_version <= '5.0.9' ) ) ) ) {
+			require_once WOO_REFUND_AND_EXCHANGE_LITE_DIR_PATH . 'admin/partials/pro_setting_templates/admin_setting/class-wps-rma-policies-settings.php';
+			require_once WOO_REFUND_AND_EXCHANGE_LITE_DIR_PATH . 'admin/partials/pro_setting_templates/admin_setting/class-wps-rma-settings-extend.php';
+		}
 		$this->plugin_name = $plugin_name;
 		$this->version     = $version;
 
@@ -978,5 +991,189 @@ class Woo_Refund_And_Exchange_Lite_Admin {
 	 */
 	public function wps_rma_get_count( $status = 'all', $action = 'count', $type = false ) {
 		return 0;
+	}
+
+		/**
+		 * Plugin org setting tab addon
+		 *
+		 * @param array $mwr_default_tabs .
+		 */
+	public function wps_rma_plugin_admin_settings_tabs_addon_before( $mwr_default_tabs ) {
+		$rma_pro_activate = 'wps_rma_pro_class';
+		if ( function_exists( 'wps_rma_pro_active' ) && wps_rma_pro_active() ) {
+			$rma_pro_activate = null;
+		}
+		$mwr_default_tabs['rma-return-refund-exchange-for-woocommerce-pro-exchange'] = array(
+			'title'     => esc_html__( 'Exchange', 'woo-refund-and-exchange-lite' ),
+			'name'      => 'rma-return-refund-exchange-for-woocommerce-pro-exchange',
+			'class'     => $rma_pro_activate,
+			'file_path' => WOO_REFUND_AND_EXCHANGE_LITE_DIR_PATH . 'admin/partials/pro_setting_templates/rma-return-refund-exchange-for-woocommerce-pro-exchange.php',
+		);
+		$mwr_default_tabs['rma-return-refund-exchange-for-woocommerce-pro-cancel']   = array(
+			'title'     => esc_html__( 'Cancel', 'woo-refund-and-exchange-lite' ),
+			'name'      => 'rma-return-refund-exchange-for-woocommerce-pro-cancel',
+			'class'     => $rma_pro_activate,
+			'file_path' => WOO_REFUND_AND_EXCHANGE_LITE_DIR_PATH . 'admin/partials/pro_setting_templates/rma-return-refund-exchange-for-woocommerce-pro-cancel.php',
+		);
+		return $mwr_default_tabs;
+	}
+
+	/**
+	 * Plugin org setting tab addon
+	 *
+	 * @param array $mwr_default_tabs .
+	 */
+	public function wps_rma_plugin_admin_settings_tabs_addon_after( $mwr_default_tabs ) {
+		$rma_pro_activate = 'wps_rma_pro_class';
+		if ( function_exists( 'wps_rma_pro_active' ) && wps_rma_pro_active() ) {
+			$rma_pro_activate = null;
+		}
+		$mwr_default_tabs['rma-return-refund-exchange-for-woocommerce-pro-wallet']           = array(
+			'title'     => esc_html__( 'Wallet', 'woo-refund-and-exchange-lite' ),
+			'name'      => 'rma-return-refund-exchange-for-woocommerce-pro-wallet',
+			'class'     => $rma_pro_activate,
+			'file_path' => WOO_REFUND_AND_EXCHANGE_LITE_DIR_PATH . 'admin/partials/pro_setting_templates/rma-return-refund-exchange-for-woocommerce-pro-wallet.php',
+		);
+		$mwr_default_tabs['rma-return-refund-exchange-for-woocommerce-pro-global-shipping']  = array(
+			'title'     => esc_html__( 'Global Shipping', 'woo-refund-and-exchange-lite' ),
+			'name'      => 'rma-return-refund-exchange-for-woocommerce-pro-global-shipping',
+			'class'     => $rma_pro_activate,
+			'file_path' => WOO_REFUND_AND_EXCHANGE_LITE_DIR_PATH . 'admin/partials/pro_setting_templates/rma-return-refund-exchange-for-woocommerce-pro-global-shipping.php',
+		);
+		$mwr_default_tabs['rma-return-refund-exchange-for-woocommerce-pro-returnship-label'] = array(
+			'title'     => esc_html__( 'Integration', 'woo-refund-and-exchange-lite' ),
+			'name'      => 'rma-return-refund-exchange-for-woocommerce-pro-returnship-label',
+			'class'     => $rma_pro_activate,
+			'file_path' => WOO_REFUND_AND_EXCHANGE_LITE_DIR_PATH . 'admin/partials/pro_setting_templates/rma-return-refund-exchange-for-woocommerce-pro-returnship-label.php',
+		);
+		return $mwr_default_tabs;
+	}
+
+	/**
+	 * General setting extend
+	 *
+	 * @param array $wps_rma_settings_general .
+	 */
+	public function wps_rma_general_setting_extend( $wps_rma_settings_general ) {
+		$setting_obj = new Wps_Rma_Settings_Extend();
+		return $setting_obj->wps_rma_general_setting_extend_set( $wps_rma_settings_general );
+	}
+
+	/**
+	 * Refund setting extend
+	 *
+	 * @param array $wps_rma_settings_refund .
+	 */
+	public function wps_rma_refund_setting_extend( $wps_rma_settings_refund ) {
+		$setting_obj = new Wps_Rma_Settings_Extend();
+		return $setting_obj->wps_rma_refund_setting_extend_set( $wps_rma_settings_refund );
+
+	}
+
+	/**
+	 * Refund appearance setting extend
+	 *
+	 * @param array $refund_app_setting_extend .
+	 */
+	public function wps_rma_refund_appearance_setting_extend( $refund_app_setting_extend ) {
+		$setting_obj = new Wps_Rma_Settings_Extend();
+		return $setting_obj->wps_rma_refund_appearance_setting_extend_set( $refund_app_setting_extend );
+
+	}
+
+	/**
+	 * Exchange setting register.
+	 *
+	 * @param array $wps_rma_settings_exchange .
+	 */
+	public function wps_rma_exchange_settings_array( $wps_rma_settings_exchange ) {
+		$setting_obj = new Wps_Rma_Settings_Extend();
+		return $setting_obj->wps_rma_exchange_settings_array_set( $wps_rma_settings_exchange );
+	}
+
+	/**
+	 * Cancel setting register.
+	 *
+	 * @param array $wps_rma_settings_cancel .
+	 */
+	public function wps_rma_cancel_settings_array( $wps_rma_settings_cancel ) {
+		$setting_obj = new Wps_Rma_Settings_Extend();
+		return $setting_obj->wps_rma_cancel_settings_array_set( $wps_rma_settings_cancel );
+
+	}
+
+	/**
+	 * Wallet setting register.
+	 *
+	 * @param array $wps_rma_settings_wallet .
+	 */
+	public function wps_rma_wallet_settings_array( $wps_rma_settings_wallet ) {
+		$setting_obj = new Wps_Rma_Settings_Extend();
+		return $setting_obj->wps_rma_wallet_settings_array_set( $wps_rma_settings_wallet );
+	}
+
+	/**
+	 * Order message seting extend.
+	 *
+	 * @param array $cancel_setting_array .
+	 */
+	public function wps_rma_order_message_setting_extend( $cancel_setting_array ) {
+		$setting_obj = new Wps_Rma_Settings_Extend();
+		return $setting_obj->wps_rma_order_message_setting_extend_set( $cancel_setting_array );
+
+	}
+
+	/**
+	 * Policy Setting column1 extend.
+	 */
+	public function wps_rma_setting_extend_column1() {
+		$setting_obj = new Wps_Rma_Policies_Settings();
+		$setting_obj->wps_rma_setting_extend_column1_set();
+	}
+
+	/**
+	 * Policy Setting column1 extend.
+	 *
+	 * @param string $value .
+	 * @return void
+	 */
+	public function wps_rma_setting_extend_show_column1( $value ) {
+		$setting_obj = new Wps_Rma_Policies_Settings();
+		$setting_obj->wps_rma_setting_extend_show_column1_set( $value );
+	}
+
+
+	/** Policy Setting column3 extend. */
+	public function wps_rma_setting_extend_column3() {
+		$setting_obj = new Wps_Rma_Policies_Settings();
+		$setting_obj->wps_rma_setting_extend_column3_set();
+	}
+
+	/**
+	 * Policy Setting column3 extend.
+	 *
+	 * @param array $value .
+	 */
+	public function wps_rma_setting_extend_show_column3( $value ) {
+		$setting_obj = new Wps_Rma_Policies_Settings();
+		$setting_obj->wps_rma_setting_extend_show_column3_set( $value );
+	}
+
+	/** Policy Setting column5 extend */
+	public function wps_rma_setting_extend_column5() {
+		$setting_obj = new Wps_Rma_Policies_Settings();
+		$setting_obj->wps_rma_setting_extend_column5_set();
+	}
+
+	/**
+	 * Policy Setting column5 extend.
+	 *
+	 * @param string $value .
+	 * @param string $count .
+	 * @return void
+	 */
+	public function wps_rma_setting_extend_show_column5( $value, $count ) {
+		$setting_obj = new Wps_Rma_Policies_Settings();
+		$setting_obj->wps_rma_setting_extend_show_column5_set( $value, $count );
 	}
 }

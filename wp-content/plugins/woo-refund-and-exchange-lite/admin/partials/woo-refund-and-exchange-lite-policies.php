@@ -169,6 +169,6 @@ if ( empty( $rma_policies_setting ) || ( isset( $rma_policies_setting['wps_rma_s
 		?>
 	</div>
 <br><br>
-<input type="button" value="Add More" id="wps_rma_add_more">
-<input type="submit" name="save_policies_setting" value="Save Setting" class="wps_rma_save_settings">
+<input type="button" value="<?php esc_html_e( 'Add More', 'woo-refund-and-exchange-lite' ); ?>" id="wps_rma_add_more">
+<input type="submit" name="save_policies_setting" value="<?php esc_html_e( 'Save Setting', 'woo-refund-and-exchange-lite' ); ?>" class="wps_rma_save_settings">
 </form>

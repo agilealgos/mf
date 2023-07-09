@@ -30,8 +30,8 @@ if ( ! function_exists( 'wps_rma_show_buttons' ) ) {
 					}
 				}
 			}
-			$order_date = date_i18n( wc_date_format(), strtotime( $order->get_date_created() ) );
-			$today_date = date_i18n( wc_date_format() );
+			$order_date = date_i18n( 'y-m-d', strtotime( $order->get_date_created() ) );
+			$today_date = date_i18n( 'y-m-d' );
 			$order_date = apply_filters( 'wps_order_status_start_date', strtotime( $order_date ), $order );
 			$today_date = strtotime( $today_date );
 			$days       = $today_date - $order_date;

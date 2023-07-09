@@ -88,9 +88,9 @@ $message       .= '<tr>
 $message        = apply_filters( 'wps_rma_add_shipping_fee_tr', $message );
 $message       .= '</tbody>
 		</table>
-	</div>
-	<div class="Customer-detail">
-		<h4>' . esc_html__( 'Customer details', 'woo-refund-and-exchange-lite' ) . '</h4>
+	</div>';
+$customer_details =
+		'<div class="Customer-detail"><h4>' . esc_html__( 'Customer details', 'woo-refund-and-exchange-lite' ) . '</h4>
 		<ul>
 			<li><p class="info">
 				<span class="bold">' . esc_html__( 'Email', 'woo-refund-and-exchange-lite' ) . ': </span>' . $order_obj->get_billing_email() . '
@@ -109,8 +109,12 @@ $message       .= '</tbody>
 			<h4>' . esc_html__( 'Billing Address', 'woo-refund-and-exchange-lite' ) . '</h4>
 			' . $order_obj->get_formatted_billing_address() . '
 		</div>
-	</div>
-</div>';
+	</div>';
+if ( apply_filters( 'wps_rma_visible_customer_details', true ) ) {
+	$message .= $customer_details;
+}
+$message = apply_filters( 'wps_rma_do_something_after_customer_details_email', $message, $order_id );
+$message .= '</div>';
 $attachment     = array();
 $to             = get_option( 'woocommerce_email_from_address', get_option( 'admin_email' ) );
 $admin_email    = WC()->mailer()->emails['wps_rma_refund_request_email'];

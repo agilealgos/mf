@@ -49,7 +49,14 @@ do_action( 'wps_rma_show_license_info' );
 	?>
 	<div class="wps-header-container wps-bg-white wps-r-8">
 		<h1 class="wps-header-title"><?php echo esc_html( 'RETURN REFUND AND EXCHANGE FOR WOOCOMMERCE' ); ?></h1>
+		<?php
+		if ( ! is_plugin_active( 'woocommerce-rma-for-return-refund-and-exchange/mwb-woocommerce-rma.php' ) ) {
+			?>
+			<a class="wps_go_pro_link" style="background: #0aa000;color: white;font-weight: 700;padding: 2px 5px;border: 1px solid #139d09;border-radius: 5px;" target="_blank" href=""><?php esc_html_e( 'GO PRO', 'woo-refund-and-exchange-lite' ); ?></a>
+		<?php } ?>
 		<a href="https://docs.wpswings.com/woocommerce-refund-and-exchange-lite/?utm_source=wpswings-rma-doc&utm_medium=rma-org-backend&utm_campaign=rma-doc/" target="_blank" class="wps-link"><?php esc_html_e( 'Documentation', 'woo-refund-and-exchange-lite' ); ?></a>
+		<span>|</span>
+		<a href="https://youtu.be/QyfzruqwnSM" target="_blank" class="wps-link"><?php esc_html_e( 'Video', 'woo-refund-and-exchange-lite' ); ?></a>
 		<span>|</span>
 		<a href="https://wpswings.com/submit-query/?utm_source=wpswings-rma-support&utm_medium=rma-org-backend&utm_campaign=support/" target="_blank" class="wps-link"><?php esc_html_e( 'Support', 'woo-refund-and-exchange-lite' ); ?></a>
 	</div>
@@ -62,6 +69,9 @@ do_action( 'wps_rma_show_license_info' );
 				foreach ( $wrael_default_tabs as $wrael_tab_key => $wrael_default_tabs ) {
 
 					$wrael_tab_classes = 'wps-link ';
+					if ( isset( $wrael_default_tabs['class'] ) ) {
+						$wrael_tab_classes .= $wrael_default_tabs['class'] . ' ';
+					}
 					if ( ! empty( $wrael_active_tab ) && $wrael_active_tab === $wrael_tab_key ) {
 						$wrael_tab_classes .= 'active';
 					}
@@ -76,6 +86,17 @@ do_action( 'wps_rma_show_license_info' );
 		</ul>
 	</nav>
 	<section class="wps-section">
+		<div class="wps-rma__popup-for-pro-wrap">
+			<div class="wps-rma__popup-for-pro-shadow"></div>
+			<div class="wps-rma__popup-for-pro">
+				<span class="wps-rma__popup-for-pro-close">+</span>
+				<h2 class="wps-rma__popup-for-pro-title"><?php esc_html_e( 'Want More ?? Go Pro !!', 'woo-refund-and-exchange-lite' ); ?></h2>
+				<p class="wps-rma__popup-for-pro-content"><i><?php echo esc_html__( 'The Pro Version will unlock all of the feature', 'woo-refund-and-exchange-lite' ) . '<br/>' . esc_html__( 'This will easily process returns, refunds, exchange, and cancellation requests with outstanding auto re-stocking, global shipping, wallet integration, and email notifications feature making it the perfect return management system', 'woo-refund-and-exchange-lite' ); ?></i></p>
+				<div class="wps-rma__popup-for-pro-link-wrap">
+					<a target="_blank" href="https://wpswings.com/product/rma-return-refund-exchange-for-woocommerce-pro/?utm_source=wpswings-rma-pro&utm_medium=rma-org-backend&utm_campaign=upgrade-to-pro" class="wps-rma__popup-for-pro-link"><?php esc_html_e( 'Go pro now', 'woo-refund-and-exchange-lite' ); ?></a>
+				</div>
+			</div>
+		</div>
 		<div>
 			<?php
 				// desc - This hook is used for trial.

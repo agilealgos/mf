@@ -77,7 +77,7 @@ class Woo_Refund_And_Exchange_Lite {
 			$this->version = WOO_REFUND_AND_EXCHANGE_LITE_VERSION;
 		} else {
 
-			$this->version = '1.0.0';
+			$this->version = '4.2.0';
 		}
 
 		$this->plugin_name = 'return-refund-and-exchange-for-woocommerce';
@@ -231,6 +231,49 @@ class Woo_Refund_And_Exchange_Lite {
 		$this->loader->add_action( 'wp_ajax_wps_rma_refund_amount', $wrael_plugin_admin, 'wps_rma_refund_amount' );
 
 		$this->loader->add_action( 'admin_menu', $wrael_plugin_admin, 'wps_rma_lite_admin_menus' );
+
+		$pro_version = null;
+		$pro_slug    = 'woocommerce-rma-for-return-refund-and-exchange/mwb-woocommerce-rma.php';
+		if ( ! function_exists( 'get_plugins' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		}
+		$all_plugins   = get_plugins();
+		if ( isset( $all_plugins[ $pro_slug ] ) ) {
+			$pro_version = $all_plugins[ $pro_slug ]['Version'];
+		}
+
+		if ( ( is_null( $pro_version ) || ( $pro_version > '5.0.9' || ( ! is_plugin_active( $pro_slug ) && $pro_version <= '5.0.9' ) ) ) ) {
+
+			// pro setting register
+			// Setting addon in the lite start.
+			$this->loader->add_filter( 'wps_rma_plugin_admin_settings_tabs_addon_before', $wrael_plugin_admin, 'wps_rma_plugin_admin_settings_tabs_addon_before', 10 );
+			$this->loader->add_filter( 'wps_rma_plugin_admin_settings_tabs_addon_after', $wrael_plugin_admin, 'wps_rma_plugin_admin_settings_tabs_addon_after', 10 );
+
+			$this->loader->add_filter( 'wps_rma_refund_setting_extend', $wrael_plugin_admin, 'wps_rma_refund_setting_extend', 10 );
+
+			$this->loader->add_filter( 'wps_rma_exchange_settings_array', $wrael_plugin_admin, 'wps_rma_exchange_settings_array', 10 );
+
+			$this->loader->add_filter( 'wps_rma_general_setting_extend', $wrael_plugin_admin, 'wps_rma_general_setting_extend', 10 );
+
+			$this->loader->add_filter( 'wps_rma_cancel_settings_array', $wrael_plugin_admin, 'wps_rma_cancel_settings_array', 10 );
+
+			$this->loader->add_filter( 'wps_rma_wallet_settings_array', $wrael_plugin_admin, 'wps_rma_wallet_settings_array', 10 );
+
+			$this->loader->add_filter( 'wps_rma_refund_appearance_setting_extend', $wrael_plugin_admin, 'wps_rma_refund_appearance_setting_extend', 10 );
+
+			$this->loader->add_filter( 'wps_rma_order_message_setting_extend', $wrael_plugin_admin, 'wps_rma_order_message_setting_extend', 10 );
+
+			if ( is_plugin_active( $pro_slug ) ) {
+
+				$this->loader->add_action( 'wps_rma_setting_extend_column5', $wrael_plugin_admin, 'wps_rma_setting_extend_column5' );
+				$this->loader->add_action( 'wps_rma_setting_extend_show_column5', $wrael_plugin_admin, 'wps_rma_setting_extend_show_column5', 10, 2 );
+			}
+
+			$this->loader->add_action( 'wps_rma_setting_extend_show_column1', $wrael_plugin_admin, 'wps_rma_setting_extend_show_column1' );
+			$this->loader->add_action( 'wps_rma_setting_extend_show_column3', $wrael_plugin_admin, 'wps_rma_setting_extend_show_column3', 10 );
+			$this->loader->add_action( 'wps_rma_setting_extend_column1', $wrael_plugin_admin, 'wps_rma_setting_extend_column1', 10 );
+			$this->loader->add_action( 'wps_rma_setting_extend_column3', $wrael_plugin_admin, 'wps_rma_setting_extend_column3' );
+		}
 	}
 
 	/**

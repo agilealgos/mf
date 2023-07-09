@@ -395,4 +395,87 @@ jQuery(document).ready(function() {
 			}
 		});
 	});
+	// pro setting tag
+	setTimeout(function(){
+		jQuery('.wps_rma_pro_class').parents('.wps-form-group').addClass('wps_rma_pro_class_wrap');
+	},1)
+
+	$('#wps_wrma_ship_products').select2();
+	if ( $( '#wps_enable_ship_setting' ).is( ':checked' ) ) {
+		$('#add_fee').show();
+	}else{
+	$('#add_fee').hide();
+	}
+	$('#wps_enable_ship_setting').on( 'change' , function(){
+	if ( $( '#wps_enable_ship_setting' ).is( ':checked' ) ) {
+		$('#add_fee').show();
+	}else{
+		$('#add_fee').hide();
+	}
+	});
+
+
+	// Integration tab setting code start
+	$( '.wps_rma_shipping_label_setting' ).show();
+	$( '.wps_rma_shipping_setting' ).hide();
+	$( '.wps_rma_shiprocket_setting').hide();
+	$( '.show_returnship_label' ).addClass('shipClass');
+	$('.wps_wrma_return_loader').hide();
+	$('.wps_wrma_returnship_loader').hide();
+	$( '.wps_rma_shiprocket_setting').hide();
+
+	$( document ).on( 'click', '.show_returnship_label', function() {
+		$( '.wps_rma_shipping_label_setting' ).show();
+	  $( '.show_returnship_label' ).addClass('shipClass');
+	  $( '.show_shipintegration' ).removeClass('shipClass');
+	  $( '.show_shiprocketintegration' ).removeClass('shipClass');
+		$( '.wps_rma_shipping_setting' ).hide();
+		$( '.wps_rma_shiprocket_setting').hide();
+	  });
+	  $( document ).on( 'click', '.show_shipintegration', function() {
+		  $( '.wps_rma_shipping_setting' ).show();
+		$( '.show_shipintegration' ).addClass('shipClass');
+		$( '.show_returnship_label' ).removeClass('shipClass');
+		$( '.show_shiprocketintegration' ).removeClass('shipClass');
+		  $( '.wps_rma_shipping_label_setting' ).hide();
+		  $( '.wps_rma_shiprocket_setting').hide();
+	  });
+	  
+	  $( document ).on( 'click', '.show_shiprocketintegration', function() {
+		$( '.wps_rma_shiprocket_setting' ).show();
+	  $( '.show_shiprocketintegration' ).addClass('shipClass');
+	  $( '.show_returnship_label' ).removeClass('shipClass');
+	  $( '.show_shipintegration' ).removeClass('shipClass');
+		$( '.wps_rma_shipping_label_setting' ).hide();
+		$( '.wps_rma_shipping_setting').hide();
+	  });
+	  
+	  $(".button_wps_rma_pro_class").parent('button').prop( "disabled", true );
+	  $(".button_wps_rma_pro_div").css( "background-color", 'rgba(0,0,0,.12)' );
+
+	// PRO popup start
+	$('.wps_rma_pro_class_wrap label,.wps_rma_pro_div label').attr('for', '');
+
+	$(document).on('click', '.wps_rma_pro_class_wrap,.wps_rma_pro_div', function() {
+		$('.wps-rma__popup-for-pro-shadow').show();
+		$('.wps-rma__popup-for-pro').addClass('active-pro');
+	})
+
+	$(document).on('click', '.wps-rma__popup-for-pro-close', function() {
+		$('.wps-rma__popup-for-pro-shadow').hide();
+		$('.wps-rma__popup-for-pro').removeClass('active-pro');
+	})
+
+	$(document).on('click', '.wps-rma__popup-for-pro-shadow', function() {
+		$(this).hide();
+		$('.wps-rma__popup-for-pro').removeClass('active-pro');
+	})
+
+	$(document).on('click', '.wps_go_pro_link', function(e) {
+		e.preventDefault();
+		$('.wps-rma__popup-for-pro-shadow').show();
+		$('.wps-rma__popup-for-pro').addClass('active-pro');
+	})
+	$('.button_wps_rma_pro_div').css('pointer-events','none');
+
 });

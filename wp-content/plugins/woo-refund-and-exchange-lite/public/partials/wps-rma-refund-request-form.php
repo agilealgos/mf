@@ -93,7 +93,7 @@ if ( isset( $condition ) && 'yes' === $condition ) {
 				<tbody>
 					<?php
 					$wps_total_actual_price = 0;
-					$wps_rma_check_tax      = get_option( $order_id . 'check_tax', false );
+					$wps_rma_check_tax      = get_option( 'refund_wps_rma_tax_handling' );
 					$show_purchase_note     = $order_obj->has_status(
 					// Purchases note on the order.
 						apply_filters( 'woocommerce_purchase_note_order_statuses', array( 'completed', 'processing' ) )
@@ -113,7 +113,7 @@ if ( isset( $condition ) && 'yes' === $condition ) {
 						if ( $item_qty > 0 ) {
 							if ( isset( $item['variation_id'] ) && $item['variation_id'] > 0 ) {
 								$variation_id = $item['variation_id'];
-								$product_id   = $item['product_id'];
+								$product_id   = $variation_id;
 							} else {
 								$product_id = $item['product_id'];
 							}
@@ -123,7 +123,16 @@ if ( isset( $condition ) && 'yes' === $condition ) {
 							$thumbnail       = wp_get_attachment_image( $product->get_image_id(), 'thumbnail' );
 							$coupon_discount = get_option( 'wps_rma_refund_deduct_coupon', 'no' );
 							if ( 'on' === $coupon_discount ) {
-								$tax_inc = $item->get_total() + $item->get_subtotal_tax();
+								$total_tax = $item->get_taxes();
+								if ( isset( $total_tax['total'][1] ) ) {
+
+									$final_total_tax = $total_tax['total'][1];
+									$tax_inc = $item->get_total() + $final_total_tax;
+
+								} else {
+
+									$tax_inc = $item->get_total() + $item->get_subtotal_tax();
+								}
 								$tax_exc = $item->get_total() - $item->get_subtotal_tax();
 							} else {
 								$tax_inc = $item->get_subtotal() + $item->get_subtotal_tax();
@@ -146,7 +155,7 @@ if ( isset( $condition ) && 'yes' === $condition ) {
 							<tr class="wps_rma_return_column" data-productid="<?php echo esc_html( $product_id ); ?>" data-variationid="<?php echo esc_html( $item['variation_id'] ); ?>" data-itemid="<?php echo esc_html( $item_id ); ?>">
 								<?php
 								// To show extra column field value in the tbody.
-								do_action( 'wps_rma_add_extra_column_field_value', $item_id, $product_id );
+								do_action( 'wps_rma_add_extra_column_field_value', $item_id, $product_id, $order_obj );
 								?>
 								<td class="product-name">
 									<input type="hidden" name="wps_rma_product_amount" class="wps_rma_product_amount" value="<?php echo esc_html( $wps_actual_price / $item->get_quantity() ); ?>">
@@ -363,9 +372,9 @@ if ( isset( $condition ) && 'yes' === $condition ) {
 					if ( isset( $return_attachment ) && ! empty( $return_attachment ) ) {
 						if ( 'on' === $return_attachment ) {
 							?>
+							<label><b><?php esc_html_e( 'Attach Files', 'woo-refund-and-exchange-lite' ); ?></b></label>
+							<span class="wps_field_mendatory">*</span>
 							<div class="wps_rma_attach_files">
-								<label><b><?php esc_html_e( 'Attach Files', 'woo-refund-and-exchange-lite' ); ?></b></label>
-								<span class="wps_field_mendatory">*</span>
 								<p>
 									<span id="wps_rma_return_request_files">
 									<input type="hidden" name="wps_rma_return_request_order" value="<?php echo esc_html( $order_id ); ?>">
@@ -404,7 +413,10 @@ if ( isset( $condition ) && 'yes' === $condition ) {
 		</div>
 		<div class="wps_rma_customer_detail">
 			<?php
-			wc_get_template( 'order/order-details-customer.php', array( 'order' => $order_obj ) );
+			if ( apply_filters( 'wps_rma_visible_customer_details', true ) ) {
+				wc_get_template( 'order/order-details-customer.php', array( 'order' => $order_obj ) );
+			}
+			do_action( 'wps_rma_do_something_after_customer_details', $order_id );
 			?>
 		</div>
 	</div>

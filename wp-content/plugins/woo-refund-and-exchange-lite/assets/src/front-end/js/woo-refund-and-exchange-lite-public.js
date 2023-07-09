@@ -61,4 +61,22 @@ jQuery( document ).on( 'ready', function(){
 			$( '#bank_details' ).hide();
 		}
 	});
+	// Layout enhancement JS starts
+    $(document).on('click', '.wps_rma_li_wrap_info', function(e) {
+        $('.wps_rma_li_wrap_info').removeClass('active');
+        $(this).addClass("active");
+    })
+
+    $('.wps_rma_refund_info_wrap').addClass('active-tab');
+
+    $(document).on('click', '.wps_rma_li_refund', function(e) {
+        $('.wps_rma_refund_info_wrap,.wps_rma_exchange_info_wrap').removeClass('active-tab');
+        $('.wps_rma_refund_info_wrap').addClass('active-tab');
+    })
+
+    $(document).on('click', '.wps_rma_li_exchange', function(e) {
+        $('.wps_rma_refund_info_wrap,.wps_rma_exchange_info_wrap').removeClass('active-tab');
+        $('.wps_rma_exchange_info_wrap').addClass('active-tab');
+    })
+    // Layout enhancement JS ends
 });
