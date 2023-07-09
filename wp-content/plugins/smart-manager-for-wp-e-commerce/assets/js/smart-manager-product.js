@@ -26,11 +26,13 @@ if(typeof window.smart_manager_product === 'undefined'){
 
 
 jQuery(document).on('sm_dashboard_change', '#sm_editor_grid', function() {
-	
-	//Code to hide the 'show variations' checkbox
 	if( window.smart_manager.dashboard_key != 'product' ) {
+		//Code to hide the 'show variations' checkbox
 		if( jQuery(".sm_top_bar_action_btns:nth-last-child(2)").find('#sm_products_show_variations_span').length > 0 ) {
 			jQuery(".sm_top_bar_action_btns:nth-last-child(2) #sm_products_show_variations_span").remove();
+		}
+		if( jQuery(".sm_top_bar_action_btns:nth-last-child(3)").find('#import_csv_sm_editor_grid').length > 0 ) {
+			jQuery(".sm_top_bar_action_btns:nth-last-child(3) #import_csv_sm_editor_grid").remove();
 		}
 		return;
 	}
@@ -48,8 +50,9 @@ jQuery(document).on('sm_dashboard_change', '#sm_editor_grid', function() {
 .on('smart_manager_post_load_grid','#sm_editor_grid', function() {
 	if( window.smart_manager.dashboard_key == 'product' ) {
 		window.smart_manager.excludedEditedFieldKeys = ['postmeta/meta_key=_product_attributes/meta_value=_product_attributes'];
-		//Call to function for 'show variations' checkbox
-		window.smart_manager.showVariationsHtml();
+		
+		window.smart_manager.showVariationsHtml(); //Call to function for 'show variations' checkbox
+		window.smart_manager.showImportButtonHtml(); //Call to function for 'import CSV' button
 
 		// ,'posts_post_status'
 		let variationsDisabledColumns = new Array('posts_post_title','posts_post_date','posts_post_date_gmt','posts_post_modified','posts_post_modified_gmt','posts_post_content','posts_post_excerpt','posts_post_password','terms_product_cat','postmeta_meta_key__default_attributes_meta_value__default_attributes','custom_product_attributes','terms_product_type','terms_product_visibility','terms_product_visibility_featured','postmeta_meta_key__wc_mmax_prd_opt_enable_meta_value__wc_mmax_prd_opt_enable','postmeta_meta_key__wc_mmax_min_meta_value__wc_mmax_min','postmeta_meta_key__wc_mmax_max_meta_value__wc_mmax_max','postmeta_meta_key_allow_combination_meta_value_allow_combination','postmeta_meta_key_minimum_allowed_quantity_meta_value_minimum_allowed_quantity','postmeta_meta_key_maximum_allowed_quantity_meta_value_maximum_allowed_quantity','postmeta_meta_key_group_of_quantity_meta_value_group_of_quantity','postmeta_meta_key_min_quantity_meta_value_min_quantity','postmeta_meta_key_max_quantity_meta_value_max_quantity','postmeta_meta_key_minmax_do_not_count_meta_value_minmax_do_not_count','postmeta_meta_key_minmax_cart_exclude_meta_value_minmax_cart_exclude','postmeta_meta_key_minmax_category_group_of_exclude_meta_value_minmax_category_group_of_exclude');
@@ -260,8 +263,6 @@ jQuery(document).on('sm_dashboard_change', '#sm_editor_grid', function() {
 			onUpdate: initializeChosen
 		}
 		window.smart_manager.showModal()
-
-	
 })
 
 .off('click', '#edit_attributes_add').on('click', '#edit_attributes_add', function(){
@@ -319,7 +320,6 @@ jQuery(document).on('sm_dashboard_change', '#sm_editor_grid', function() {
 
 	window.smart_manager.prodAttrDisplayIndex++;
 })
-
 //Function to handle Product Attribute Inline Edit
 Smart_Manager.prototype.prodAttributeInlineEdit = function(params){
 	if('undefined' === typeof(window.smart_manager.editedAttribueSlugs)){
@@ -408,6 +408,24 @@ Smart_Manager.prototype.prodAttributeInlineEdit = function(params){
 
 	window.smart_manager.hot.setDataAtRowProp(params.coords.row, 'postmeta_meta_key__product_attributes_meta_value__product_attributes', ((Object.keys(productAttributesPostmeta).length > 0) ? JSON.stringify(productAttributesPostmeta) : ''), 'sm.longstring_product_attributes_inline_update');
 	window.smart_manager.hot.setDataAtCell(params.coords.row, params.coords.col, attributesEditedText, 'sm.longstring_product_attributes_inline_update');
+}
+
+//Function to handle 'import CSV' button
+Smart_Manager.prototype.showImportButtonHtml = function() {
+	if( jQuery(".sm_top_bar_action_btns:nth-last-child(3)").find('#import_csv_sm_editor_grid').length == 0 ) {
+		jQuery(".sm_top_bar_action_btns:nth-last-child(3)").append('<div id="import_csv_sm_editor_grid" title="'+_x('Import CSV', 'tooltip', 'smart-manager-for-wp-e-commerce')+'">'+
+			'<svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">'+
+				'<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m6.75 12l-3-3m0 0l-3 3m3-3v6m-1.5-15H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />'+
+			'</svg>'+
+			'<span>'+_x('Import CSV', 'button', 'smart-manager-for-wp-e-commerce')+'</span>'+
+		'</div>');
+	}
+
+	jQuery('.sm_top_bar_action_btns:nth-last-child(3) #import_csv_sm_editor_grid').off('click').on('click',function() {
+		if(window.smart_manager.WCProductImportURL){
+			window.open(window.smart_manager.WCProductImportURL, '_blank');
+		}
+	})
 }
 
 //Function to handle 'show variations' checkbox

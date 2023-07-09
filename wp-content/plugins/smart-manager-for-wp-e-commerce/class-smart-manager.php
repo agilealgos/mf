@@ -15,13 +15,17 @@ class Smart_Manager {
 			$upgrade 		= '',
 			$update_msg 	= '',
 			$success_msg 	= '',
-			$sm_dashboards_final = '',
+			$sm_dashboards_final = array(),
 			$sm_accessible_views = array(),
 			$sm_owned_views = array(),
 			$sm_public_views = array(),
 			$sm_view_post_types = array(),
 			$all_views = array(),
-			$taxonomy_dashboards = array();
+			$taxonomy_dashboards = array(),
+			$dupdater = '',
+			$dupgrade = '',
+			$sm_public_dashboards = array(),
+			$show_pricing_page = false;
 
 	protected static $_instance = null;
 
@@ -130,7 +134,6 @@ class Smart_Manager {
 		$this->plugin_path  = untrailingslashit( plugin_dir_path( SM_PLUGIN_FILE ) );
 		$this->plugin_url   = untrailingslashit( plugins_url( '/', SM_PLUGIN_FILE ) );
 		$this->update_msg   = 'editing';
-
 		define( 'SM_PLUGIN_DIR', dirname( $plugin ) );
 		define( 'SM_PLUGIN_BASE_NM', $plugin );
 		define( 'SM_TEXT_DOMAIN', 'smart-manager-for-wp-e-commerce' );
@@ -180,7 +183,7 @@ class Smart_Manager {
 		$this->plugin_info = $plugin_info [SM_PLUGIN_BASE_NM];
 		
 		if( is_callable( array( 'Smart_Manager', 'get_version' ) ) ) {
-			self::get_version();
+			$this->version = self::get_version();
 		}
 		
 		$this->updater = rand(3,3);
@@ -274,6 +277,14 @@ class Smart_Manager {
 	public function includes() {
 
 		global $current_user;
+
+		//for settings
+		if( file_exists( $this->plugin_path . '/classes/class-smart-manager-settings.php' ) ){
+			include_once $this->plugin_path . '/classes/class-smart-manager-settings.php';
+			if( defined( 'SMPRO' ) && SMPRO === true && file_exists( SM_PRO_URL . 'classes/class-smart-manager-pro-settings.php' ) ) {
+				include_once SM_PRO_URL . 'classes/class-smart-manager-pro-settings.php';
+			}
+		}
 
 		if( file_exists( $this->plugin_path . '/classes/class-smart-manager-install.php' ) ) { 
 			include_once $this->plugin_path . '/classes/class-smart-manager-install.php';
@@ -372,9 +383,14 @@ class Smart_Manager {
 		add_action( 'admin_footer', array( &$this, 'add_plugin_social_links' ) );
 
 		add_action( 'admin_footer', array( $this, 'smart_manager_support_ticket_content' ) );
-		add_action( 'admin_footer', array( $this, 'manage_with_smart_manager' ) );
+		if( 'yes' === Smart_Manager_Settings::get( 'show_manage_with_smart_manager_button' ) ) {
+			add_action( 'admin_footer', array( $this, 'manage_with_smart_manager' ) );
+		}
 
 		add_action( 'admin_menu', array( $this, 'add_menu_access' ), 9 );
+		if( 'yes' === Smart_Manager_Settings::get( 'show_smart_manager_menu_in_admin_bar' ) ) {
+			add_action( 'admin_bar_menu', array( $this, 'add_admin_bar_menu' ), 99 );
+		}
 
 		if (is_admin() ) {
 			add_action ( 'wp_ajax_sm_update_to_pro', array( $this, 'update_to_pro' ) );
@@ -693,7 +709,7 @@ class Smart_Manager {
 			}
 	
 			if( ( defined( 'SMPRO' ) && true === SMPRO  ) && ( ( ! empty( $current_user_role ) && 'administrator' === $current_user_role ) ) ) {
-				add_submenu_page( 'smart-manager', __( 'Settings', 'smart-manager-for-wp-e-commerce' ),  __( 'Settings', 'smart-manager-for-wp-e-commerce' ), 'manage_options', 'smart-manager&sm-settings', array( $this, 'add_admin_page' ) );
+				add_submenu_page( 'smart-manager', __( 'Access Privilege Settings', 'smart-manager-for-wp-e-commerce' ),  __( 'Access Privilege Settings', 'smart-manager-for-wp-e-commerce' ), 'manage_options', 'smart-manager&sm-settings', array( $this, 'add_admin_page' ) );
 			}
 	
 			add_submenu_page( 'smart-manager', __( 'Docs & Support', 'smart-manager-for-wp-e-commerce' ),  __( 'Docs & Support', 'smart-manager-for-wp-e-commerce' ), 'manage_options', 'smart-manager&landing-page=sm-about', array( $this, 'add_admin_page' ) );
@@ -720,7 +736,6 @@ class Smart_Manager {
 			$option_nm = Smart_Manager_Pro_Access_Privilege::$access_privilege_option_start."".$current_user_role."".Smart_Manager_Pro_Access_Privilege::$access_privilege_option_end;
 			$beta_dashboard_privileges = $wpdb->get_results( $wpdb->prepare( "SELECT option_name, option_value FROM {$wpdb->prefix}options WHERE option_name = %s", $option_nm ), 'ARRAY_A' );
 		}
-	
 		if ( ( ! empty( $result_old[0] ) && ! empty( $result_old[0]->option_value ) ) || ! empty( $beta_dashboard_privileges ) || 'administrator' === $current_user_role ) { //modified cond for client fix
 			$this->add_menu();
 		}
@@ -1021,7 +1036,7 @@ class Smart_Manager {
 			$file_nm = 'sm_custom_'.preg_replace('/[\s\-.]/','_',substr($file, (strrpos($file, '/', -3) + 1)));
 			array_push( $registered_scripts, $file_nm );
 
-			if ( $file_nm == 'sm_custom_smart_manager_js' || $file_nm == 'sm_custom_styles_js' || $file_nm == 'sm_dashboard_js' ) {
+			if ( $file_nm == 'sm_custom_smart_manager_js' || $file_nm == 'sm_custom_styles_js' || $file_nm == 'sm_custom_admin_js' ) {
 				continue;
 			}
 
@@ -1144,15 +1159,6 @@ class Smart_Manager {
 		$deleted_successful = ( ($this->dupdater * $this->dupgrade)/$this->dupdater ) * 2;
 
 		$this->sm_dashboards_final ['sm_nonce'] = wp_create_nonce( 'smart-manager-security' );
-
-		//setting limit for the records to be displayed
-		$record_per_page = get_option( '_sm_beta_set_record_limit' );
-
-		if( empty($record_per_page) ) {
-			update_option( '_sm_beta_set_record_limit', '50', 'no' );
-			$record_per_page = '50';
-		}
-
 		$batch_background_process = false;
 		$background_process_name = '';
 
@@ -1194,7 +1200,7 @@ class Smart_Manager {
 							'SM_IS_WOO21' => self::$sm_is_woo21,
 							'SM_BETA_PRO' => SMPRO,
 							'SM_APP_ADMIN_URL' => SM_APP_ADMIN_URL,
-							'record_per_page' => $record_per_page,
+							'record_per_page' => Smart_Manager_Settings::get( 'per_page_record_limit' ),
 							'sm_admin_email' => get_option('admin_email'),
 							'batch_background_process' => $batch_background_process,
 							'background_process_name' => $background_process_name,
@@ -1207,11 +1213,16 @@ class Smart_Manager {
 							'search_type' => ( ( !empty( $search_type ) ) ? $search_type : 'simple' ),
 							'wpdb_prefix' => $wpdb->prefix,
 							'trashEnabled' => $trash_enabled,
-							'background_process_running_message' => __( 'In the meanwhile, you can use Smart Manager. But before using actions like ', 'smart-manager-for-wp-e-commerce') .' <strong>'. __( 'Bulk Edit', 'smart-manager-for-wp-e-commerce') .'</strong>/ <strong>'. __('Duplicate Records', 'smart-manager-for-wp-e-commerce') .'</strong>/ <strong>'. __( 'Delete Records', 'smart-manager-for-wp-e-commerce') .'</strong>, '. __('you will have to wait for the current background process to finish.', 'smart-manager-for-wp-e-commerce' ),
+							'background_process_running_message' => __( 'In the meanwhile, you can use Smart Manager. But before using actions like ', 'smart-manager-for-wp-e-commerce') .' <strong>'. __( 'Bulk Edit', 'smart-manager-for-wp-e-commerce') .'</strong>/ <strong>'. __('Duplicate Records', 'smart-manager-for-wp-e-commerce') .'</strong>/ <strong>'. __( 'Delete Records', 'smart-manager-for-wp-e-commerce') .'</strong>/ <strong>'. __( 'Undo Tasks', 'smart-manager-for-wp-e-commerce') .'</strong>/ <strong>'. __( 'Delete Tasks', 'smart-manager-for-wp-e-commerce') .'</strong>, '. __('you will have to wait for the current background process to finish.', 'smart-manager-for-wp-e-commerce' ),
 							'trashAndDeletePermanently' => array( 'disable' => $disable_trash_and_delete_permanently, 'error_message' => $trash_and_delete_permanently_disable_message ),
-							'forceCollapseAdminMenu' => ( 'no' === get_option( 'sm_wp_force_collapse_admin_menu', 'yes' ) ) ? 0 : 1,
-							'rowHeight' => get_option( 'sm_grid_row_height', '50px' ),
+							'forceCollapseAdminMenu' => ( 'no' === Smart_Manager_Settings::get( 'wp_force_collapse_admin_menu' ) ) ? 0 : 1,
+							'rowHeight' => Smart_Manager_Settings::get( 'grid_row_height' ),
 							'defaultImagePlaceholder' => SM_IMG_URL.'image-placeholder.png',
+							'showTasksTitleModal' => ( 'no' === apply_filters( 'sm_show_tasks_title_modal', Smart_Manager_Settings::get( 'show_tasks_title_modal' ) ) ) ? 0 : 1,
+							'useNumberFieldForNumericCols' => ( 'no' === apply_filters( 'sm_use_number_field_for_numeric_cols', Smart_Manager_Settings::get( 'use_number_field_for_numeric_cols' ) ) ) ? 0 : 1,
+							'WCProductImportURL' => admin_url( 'edit.php?post_type=product&page=product_importer' ),
+							'allSettings' => Smart_Manager_Settings::get(),
+							'useDatePickerForDateTimeOrDateCols' => ( 'no' === apply_filters( 'sm_use_date_picker_for_date_or_datetime_cols', Smart_Manager_Settings::get( 'use_date_picker_for_date_or_datetime_cols' ) ) ) ? 0 : 1,
 						);
 
 		$active_plugins = (array) get_option( 'active_plugins', array() );
@@ -1530,15 +1541,7 @@ class Smart_Manager {
 					?>
 					</span>
 				</div>
-				<span id="sm_nav_bar_right" style="float: right;"> <?php
-					$settings_btn = '<a href="admin.php?page=smart-manager&sm-settings" target="_blank" title="'. __('Settings', 'smart-manager-for-wp-e-commerce') .'"><svg stroke="currentColor" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg></a>';
-					$plug_page .= '<div class="sm_nav_bar_links">
-										<a href="admin.php?page=smart-manager&landing-page=sm-faqs" target="_blank" title="'. __('Docs', 'smart-manager-for-wp-e-commerce') .'"><svg stroke="currentColor" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg></a>
-										'.( ( SMPRO === true && ! is_multisite() ) ? $settings_btn : '' ).
-									'</div>';
-					printf ( __ ( '%1s' , 'smart-manager-for-wp-e-commerce'), $plug_page );
-					?>
-				</span>
+				<span id="sm_nav_bar_right" style="float: right;"></span>
 			</div>
 		<?php
 			if (! $is_pro_updated) {
@@ -1673,18 +1676,12 @@ class Smart_Manager {
 	
 		$version = '';
 	
-		if ( function_exists('smart_manager_get_data') ) {
+		if( is_callable( array( 'Smart_Manager', 'get_data' ) ) ) {
 			$plugin_data = self::get_data();
 			$version = $plugin_data['Version'];
 		}
 	
 		return $version;
-	}
-
-	function smart_manager_print_logo() {
-		if (get_option('smart_manager_company_logo') != '') {
-			return '<img src="' . get_option('smart_manager_company_logo') . '"/>';
-		}
 	}
 
 	function manage_with_smart_manager() {
@@ -1728,6 +1725,32 @@ class Smart_Manager {
 			$html = __( 'Auto-updates are not available for this plugin.', 'smart-manager-for-wp-e-commerce' );
 		}
 		return $html;
+	}
+
+	/**
+	 * Function for handling adding of Smart Manager in wp admin menu bar.
+	 *
+	 * @param object $wp_admin_bar WP_Admin_Bar instance.
+	 * @return void.
+	 */
+	public function add_admin_bar_menu( $wp_admin_bar = null ) {
+		if ( empty( $wp_admin_bar ) ) {
+			return;
+		}
+		
+		$current_user_role = ( is_callable( array( 'Smart_Manager', 'get_current_user_role' ) ) ) ? self::get_current_user_role() : '';
+		if( ! ( ( defined( 'SMPRO' ) && true === SMPRO  ) || ( ( ! empty( $current_user_role ) && 'administrator' === $current_user_role ) ) ) ) {
+			return;
+		}
+
+		$wp_admin_bar->add_node( array(
+			'id' => 'sm-admin-bar-btn',
+			'title' => '<span class="ab-icon dashicons-before dashicons-performance"></span>Smart Manager',
+			'href' => admin_url( 'admin.php?page=smart-manager' ),
+			'meta' => array(
+				'title' => 'Smart Manager - WooCommerce Advanced Bulk Edit, Inventory Management & more'
+			)
+		) );
 	}
 }
 

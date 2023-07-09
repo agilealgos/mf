@@ -11,15 +11,21 @@ class Smart_Manager_Install {
 	 */
 	private static $db_updates = array(
 		'5.0.0' => array(
-				'create_table_for_custom_views',
-				'create_dummy_views',
-				'update_500_model_transients'
+			'create_table_for_custom_views',
+			'create_dummy_views',
+			'update_500_model_transients'
 		),
 		'5.0.1' => array(
-				'update_500_model_transients'
+			'update_500_model_transients'
 		),
 		'5.16.0' => array(
-				'update_516_alter_table'
+			'update_516_alter_table'
+		),
+		'8.0.0' => array(
+			'create_tables_for_tasks'
+		),
+		'8.9.0' => array(
+			'update_890_port_settings'
 		)
 	);
 
@@ -269,6 +275,9 @@ class Smart_Manager_Install {
 		if ( is_callable( array( __CLASS__, 'create_table_for_custom_views' ) ) ) {
 			call_user_func( array( __CLASS__, 'create_table_for_custom_views' ) );
 		}
+		if ( is_callable( array( __CLASS__, 'create_tables_for_tasks' ) ) ) {
+			call_user_func( array( __CLASS__, 'create_tables_for_tasks' ) );
+		}
 	}
 
 	public static function update_516_alter_table(){
@@ -280,6 +289,87 @@ class Smart_Manager_Install {
 				$wpdb->query( "ALTER TABLE $table_name ADD PRIMARY KEY(`product_id`), ADD UNIQUE KEY(`product_id`)" );
 			}
 		}
+	}
+
+	public static function create_tables_for_tasks() {
+		global $wpdb;
+
+		if( !( defined('SMPRO') && true === SMPRO ) ) {
+			return;
+		}
+
+		$collate = '';
+
+		if ( $wpdb->has_cap( 'collation' ) ) {
+			$collate = $wpdb->get_charset_collate();
+		}
+		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+		$task_table = "CREATE TABLE IF NOT EXISTS `{$wpdb->prefix}sm_tasks` (
+								`id` bigint NOT NULL AUTO_INCREMENT COMMENT 'id of the task',
+								`title` text NOT NULL COMMENT 'field title',
+								`date` datetime NOT NULL COMMENT 'task creation date',
+								`completed_date` datetime NULL COMMENT 'task completion date',
+								`post_type` text NOT NULL COMMENT 'field post type',
+								`author` int NOT NULL DEFAULT '0' COMMENT 'id of the user who created the task',
+								`type` enum('inline','bulk_edit') NOT NULL COMMENT 'edit functionality type',
+								`status` enum('in-progress','completed','scheduled') NOT NULL COMMENT 'field updated status',
+								`actions` longtext NOT NULL COMMENT 'serialized string of all actions executed in this task',
+								`record_count` bigint NOT NULL COMMENT 'count of records updated in this task',
+								PRIMARY KEY (`id`)
+							) $collate;";
+		dbDelta( $task_table );					
+
+		$task_details_table = "CREATE TABLE IF NOT EXISTS `{$wpdb->prefix}sm_task_details` (
+								`id` bigint NOT NULL AUTO_INCREMENT COMMENT 'task detail id',
+								`task_id` bigint NOT NULL COMMENT 'Foreign key (id) from sm_tasks table',
+								`record_id` bigint NOT NULL COMMENT 'id of the record being updated',
+								`status` enum('in-progress','completed','scheduled') NOT NULL COMMENT 'field updated status',
+								`field` text NOT NULL COMMENT 'name of the field/column being updated',
+								`action` varchar(255) NOT NULL COMMENT 'action executed on the field',
+								`prev_val` longtext NOT NULL COMMENT 'field value before updates',
+								`updated_val` longtext NOT NULL COMMENT 'field value after updates',
+								PRIMARY KEY (`id`)
+							) $collate;";
+
+		dbDelta( $task_details_table );
+	}
+
+	// Function to port settings
+	public static function update_890_port_settings(){
+		if ( ! class_exists( 'Smart_Manager_Settings' ) ) {
+			return;
+		}
+		if( empty( Smart_Manager_Settings::$db_option_key ) ){
+			return;
+		}
+
+		$settings = array(
+			'general' => array(
+				'toggle' => array(
+					'wp_force_collapse_admin_menu'                  => get_option( 'sm_wp_force_collapse_admin_menu', 'yes' ),
+					'use_number_field_for_numeric_cols'             => get_option( 'sm_use_number_field_for_numeric_cols', 'yes' ),
+					'view_trash_records'                            => get_option( 'sm_view_trash_records', 'no' ),
+					'show_manage_with_smart_manager_button'         => get_option( 'sm_show_manage_with_sm_button', 'yes' ),
+					'show_smart_manager_menu_in_admin_bar'          => get_option( 'sm_show_smart_manager_menu_in_admin_bar', 'yes' )
+				),
+				'numeric' => array(
+					'per_page_record_limit' => get_option( '_sm_beta_set_record_limit', 50 )
+				),
+				'text'  => array(
+					'grid_row_height' => get_option( 'sm_grid_row_height', '50px' )
+				)
+			)
+		);
+		
+		if( defined('SMPRO') && true === SMPRO ) {
+			$settings['general']['toggle']['show_tasks_title_modal'] = get_option( 'sm_show_tasks_title_modal', 'yes' );
+			
+			$attachment_url = get_option( 'smart_manager_company_logo', '' );
+			$attachment_id = ( ! empty( $attachment_url ) ) ? attachment_url_to_postid( $attachment_url ) : 0;
+			$settings['general']['image'] = array( 'company_logo_for_print_invoice' => $attachment_id );
+		}
+
+		update_option( Smart_Manager_Settings::$db_option_key, $settings, 'no' );
 	}
 }
 

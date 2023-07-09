@@ -124,7 +124,8 @@ if ( ! class_exists( 'Smart_Manager_Shop_Coupon' ) ) {
 				}
 
 				if( !empty( $numeric_columns ) && in_array( $src, $numeric_columns ) ) {
-					$column ['type'] = $column ['editor'] = 'numeric';
+					$column ['type'] = 'numeric';
+					$column ['editor'] = 'customNumericEditor';
 				} else if ( !empty( $checkbox_yes_no_columns ) && in_array( $src, $checkbox_yes_no_columns ) ) {
 					$column ['type'] = 'checkbox';
 					$column ['checkedTemplate'] = 'yes';

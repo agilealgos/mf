@@ -618,6 +618,28 @@ class Smart_Manager_Pricing {
 						</tr>
 						<tr>
 							<td class="sm_feature_name">
+								<strong><?php echo __( 'Undo Inline & Bulk edits', 'smart-manager-for-wp-e-commerce' ); ?></strong>
+							</td>
+							<td class="sm_free_feature_name">
+								-
+							</td>
+							<td class="sm_pro_feature_name">
+								<span class='dashicons dashicons-yes'></span>
+							</td>
+						</tr>
+						<tr>
+							<td class="sm_feature_name">
+								<strong><?php echo __( 'Rename Column Headers', 'smart-manager-for-wp-e-commerce' ); ?></strong>
+							</td>
+							<td class="sm_free_feature_name">
+								-
+							</td>
+							<td class="sm_pro_feature_name">
+								<span class='dashicons dashicons-yes'></span>
+							</td>
+						</tr>
+						<tr>
+							<td class="sm_feature_name">
 								<?php echo __( 'Import', 'smart-manager-for-wp-e-commerce' ); ?>
 							</td>
 							<td class="sm_free_feature_name">

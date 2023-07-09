@@ -53,6 +53,13 @@ if ( ! class_exists( 'Smart_Manager_Controller' ) ) {
 				$this->sm_beta_pro_background_updater = Smart_Manager_Pro_Background_Updater::instance();
 			}
 
+			// Code for scheduling action for deleting older tasks after x no. of days
+			if ( defined('SMPRO') && SMPRO === true && function_exists( 'as_has_scheduled_action' ) && ! as_has_scheduled_action( 'sm_schedule_tasks_cleanup' ) && file_exists( SM_PRO_URL . 'classes/class-smart-manager-pro-task.php' ) ) {
+				include_once $this->plugin_path . '/class-smart-manager-base.php';
+				include_once SM_PRO_URL . 'classes/class-smart-manager-pro-base.php';
+				include_once SM_PRO_URL . 'classes/class-smart-manager-pro-task.php';
+				( is_callable( array( 'Smart_Manager_Pro_Task', 'schedule_task_deletion' ) ) ) ? Smart_Manager_Pro_Task::schedule_task_deletion() : '';
+			}
 		}
 
 		public function woocommerce_attributes_updated() {
@@ -91,7 +98,6 @@ if ( ! class_exists( 'Smart_Manager_Controller' ) ) {
 
 		//Function to handle the wp-admin ajax request
 		public function request_handler() {
-
 			if (empty($_REQUEST) || empty($_REQUEST['active_module']) || empty($_REQUEST['cmd'])) return;
 
 			check_ajax_referer('smart-manager-security','security');
@@ -113,7 +119,6 @@ if ( ! class_exists( 'Smart_Manager_Controller' ) ) {
 			//Including the common utility functions class
 			include_once $plugin_path . '/class-smart-manager-'.$pro_flag_class_path.'utils.php';
 			$func_nm = $_REQUEST['cmd'];
-
 			if( !empty( $_REQUEST['module'] ) && 'custom_views' === $_REQUEST['module'] ){
 				if( class_exists( 'Smart_Manager_Pro_Views' ) ){
 					$views_obj = Smart_Manager_Pro_Views::get_instance();
@@ -124,11 +129,19 @@ if ( ! class_exists( 'Smart_Manager_Controller' ) ) {
 				return;
 			}
 
+			// Code to handle saving of settings
+			if( 'smart_manager_settings' === $_REQUEST['active_module'] && is_callable( 'Smart_Manager_Settings', 'update' ) ){
+				$settings = ( ! empty( $_REQUEST['settings'] ) ) ? json_decode( stripslashes( $_REQUEST['settings'] ), true ) : array();
+				$result = Smart_Manager_Settings::update( $settings );
+				wp_send_json( array( 'ACK'=> ( ( ! empty( $result ) ) ? 'Success' : 'Failure' ) ) );
+			}
+
 			include_once $this->plugin_path . '/class-smart-manager-base.php';
 			$this->dashboard_key = $_REQUEST['active_module'];
 			$is_taxonomy_dashboard = ( ! empty( $_REQUEST['is_taxonomy'] ) && ! empty( intval( $_REQUEST['is_taxonomy'] ) ) ) ? true : false;
 
 			$llms_file = $plugin_path . '/'. 'class-smart-manager-'.$pro_flag_class_path.'llms-base.php';
+			$tasks_file = $plugin_path . '/' . 'class-smart-manager-' . $pro_flag_class_path . 'task.php';
 
 			if( defined('SMPRO') && SMPRO === true ) {
 				$sm_pro_class_nm = 'class-smart-manager-'.$pro_flag_class_path.'base.php';
@@ -151,6 +164,9 @@ if ( ! class_exists( 'Smart_Manager_Controller' ) ) {
 
 				if( is_plugin_active( 'lifterlms/lifterlms.php' ) && file_exists( $llms_file ) ){
 					include_once $llms_file;
+				}
+				if ( isset( $_REQUEST['isTasks'] ) && file_exists( $tasks_file ) ) {
+				    include_once $tasks_file;	
 				}
 			}
 			
@@ -184,15 +200,17 @@ if ( ! class_exists( 'Smart_Manager_Controller' ) ) {
 					$class_name = 'Smart_Manager_Pro_LLMS_Base';
 				}
 			}
-
 			if( !empty( $_REQUEST['cmd'] ) && $_REQUEST['cmd'] == 'get_background_progress' ) {
 				$class_name = 'class-smart-manager-pro-background-updater.php';
 				$sm_pro_class_nm =  'Smart_Manager_Pro_Background_Updater';
+			} elseif ( isset( $_REQUEST['isTasks'] ) && ( ( ! empty( $_REQUEST['cmd'] ) && ( 'save_state' === $_REQUEST['cmd'] ) ) ) || ( ! empty( $_REQUEST['isTasks'] ) ) ) {
+				if ( ! empty( $is_taxonomy_dashboard ) && is_callable( $class_name, 'actions' ) ) {
+					$class_name::actions();
+				}
+				$class_name = 'Smart_Manager_Pro_Task';
 			}
-
 			$_REQUEST['class_nm'] = $class_name;
 			$_REQUEST['class_path'] = $sm_pro_class_nm;
-
 			if( !empty( $this->sm_beta_pro_background_updater ) && !empty( $_REQUEST['cmd'] ) && $_REQUEST['cmd'] == 'get_background_progress' ) {
 				$this->sm_beta_pro_background_updater->$func_nm();
 			} else {

@@ -8,7 +8,10 @@ function Smart_Manager() {
 	var currentDashboardModel='', dashboard_key= '', dashboardName= '', dashboard_select_options= '',sm_nonce= '', column_names= new Array(), simpleSearchText = '', advancedSearchQuery= new Array(), post_data_params = '', 
 		month_names_short = '', search_count, state_apply, dashboard_states = {}, skip_default_action, current_selected_dashboard = '';
 }
-const { __, _x, _n, _nx, sprintf } = wp.i18n;
+const { __, _x, _n, _nx} = wp.i18n;
+if(typeof sprintf === 'undefined' && wp.i18n.sprintf) { //Fix added for client
+    const sprintf = wp.i18n.sprintf;
+}
 Smart_Manager.prototype.init = function() {
 
 	this.firstLoad = true
@@ -81,6 +84,8 @@ Smart_Manager.prototype.init = function() {
 	this.advancedSearchRoute = "advancedSearch";
 	this.bulkEditRoute = "bulkEdit";
 	this.columnManagerRoute = "columnManager";
+	this.defaultRoute = "dashboard";
+	this.settingsRoute = "settings";
 	this.currentColModel = '';
 
 	this.notification = {} //object for handling all notification messages
@@ -112,6 +117,20 @@ Smart_Manager.prototype.init = function() {
 					'not like': _x('not contains', "select options - operator for 'text' data type fields", 'smart-manager-for-wp-e-commerce')
 				}
 	}
+
+	// Additional operators for advanced search for 'text' type cols
+	this.proAdvancedSearchOperators = {
+		'startsWith': _x('starts with', "select options - operator for 'text' data type fields", 'smart-manager-for-wp-e-commerce'),
+		'endsWith': _x('ends with', "select options - operator for 'text' data type fields", 'smart-manager-for-wp-e-commerce'),
+		'anyOf': _x('any of', "select options - operator for 'text' data type fields", 'smart-manager-for-wp-e-commerce'),
+		'notStartsWith': _x('not starts with', "select options - operator for 'text' data type fields", 'smart-manager-for-wp-e-commerce'),
+		'notEndsWith': _x('not ends with', "select options - operator for 'text' data type fields", 'smart-manager-for-wp-e-commerce'),
+		'notAnyOf': _x('not any of', "select options - operator for 'text' data type fields", 'smart-manager-for-wp-e-commerce')
+	}
+
+    if(window.smart_manager.possibleOperators.text){
+        window.smart_manager.possibleOperators.text = {...window.smart_manager.possibleOperators.text, ...this.proAdvancedSearchOperators}
+    }
 
 	this.savedSearch = []
 	this.savedBulkEditConditions = []
@@ -166,6 +185,12 @@ Smart_Manager.prototype.init = function() {
 	this.forceCollapseAdminMenu = (sm_beta_params.hasOwnProperty('forceCollapseAdminMenu')) ? parseInt(sm_beta_params.forceCollapseAdminMenu) : 0
 	this.defaultImagePlaceholder = (sm_beta_params.hasOwnProperty('defaultImagePlaceholder')) ? sm_beta_params.defaultImagePlaceholder : ''
 	this.rowHeight = (sm_beta_params.hasOwnProperty('rowHeight')) ? sm_beta_params.rowHeight : '50px'
+	this.showTasksTitleModal = (sm_beta_params.hasOwnProperty('showTasksTitleModal')) ? parseInt(sm_beta_params.showTasksTitleModal) : 0
+	this.useNumberFieldForNumericCols = (sm_beta_params.hasOwnProperty('useNumberFieldForNumericCols')) ? parseInt(sm_beta_params.useNumberFieldForNumericCols) : 0
+	this.isViewContainSearchParams = false
+	this.WCProductImportURL = (sm_beta_params.hasOwnProperty('WCProductImportURL')) ? sm_beta_params.WCProductImportURL : ''
+	this.allSettings = (sm_beta_params.hasOwnProperty('allSettings')) ? sm_beta_params.allSettings : {}
+	this.useDatePickerForDateTimeOrDateCols = (sm_beta_params.hasOwnProperty('useDatePickerForDateTimeOrDateCols')) ? parseInt(sm_beta_params.useDatePickerForDateTimeOrDateCols) : 0
 
 	//Code for setting the default dashboard
 	if( typeof this.sm_dashboards != 'undefined' && this.sm_dashboards != '' ) {
@@ -195,14 +220,23 @@ Smart_Manager.prototype.init = function() {
 	
 	window.smart_manager.setDashboardDisplayName();
 
-	this.loadMoreBtnHtml = "<button id='sm_editor_grid_load_items' style='height:2em;border: 1px solid #5850ec;background-color: white;border-radius: 3px;cursor: pointer;line-height: 17px;color: #5850ec;'>"+ sprintf(_x('Load More %s', 'bottom bar button', 'smart-manager-for-wp-e-commerce'), "<span>"+window.smart_manager.dashboardDisplayName+"</span>")+"</button>"
+	this.loadMoreBtnHtml = "<button id='sm_editor_grid_load_items' style='height:2em;border: 1px solid #5850ec;background-color: white;border-radius: 3px;cursor: pointer;line-height: 17px;color: #5850ec;padding: 0 0.5em;'>"+ sprintf(_x('Load More %s', 'bottom bar button', 'smart-manager-for-wp-e-commerce'), "<span>"+window.smart_manager.dashboardDisplayName+"</span>")+"</button>"
 
 	this.container = document.getElementById('sm_editor_grid');
 
 	this.body_font_size = jQuery("body").css('font-size');
 	this.body_font_family = jQuery("body").css('font-family');
 	this.editedAttribueSlugs = '';
-	this.excludeFieldKeys = [];
+	this.excludedEditedFieldKeys = [];
+	this.processName = '';
+	this.processContent = '';
+	this.updatedTitle = '';
+	this.updatedEditedData = {};
+	this.selectedAllTasks = false;
+	this.exportStore = false;
+	this.isRefreshingLoadedPage = false;
+	this.editedColumnTitles = {};
+	this.isViewAuthor = false;
 
 	//Function to set all the states on unload
 	window.onbeforeunload = function (evt) { 
@@ -259,6 +293,7 @@ Smart_Manager.prototype.setDashboardDisplayName = function(){
 		window.smart_manager.dashboardDisplayName = (window.smart_manager.sm_dashboards[window.smart_manager.viewPostTypes[viewSlug]]) ? window.smart_manager.sm_dashboards[window.smart_manager.viewPostTypes[viewSlug]] : 'records';
 		window.smart_manager.dashboardDisplayName = (window.smart_manager.dashboardDisplayName === 'records' && window.smart_manager.allTaxonomyDashboards[window.smart_manager.viewPostTypes[viewSlug]]) ? window.smart_manager.allTaxonomyDashboards[window.smart_manager.viewPostTypes[viewSlug]] : window.smart_manager.dashboardDisplayName;
 	}
+	("undefined" !== typeof(window.smart_manager.changeDashboardDisplayName) && "function" === typeof(window.smart_manager.changeDashboardDisplayName)) ? window.smart_manager.changeDashboardDisplayName(window.smart_manager.dashboardDisplayName) : '';
 }
 
 Smart_Manager.prototype.load_dashboard = function() {
@@ -311,20 +346,21 @@ Smart_Manager.prototype.createOptGroups = function(args={}) {
 
 	let parent = (!Array.isArray(args.parent)) ? Object.keys(args.parent) : args.parent,
 		child = (!Array.isArray(args.child)) ? Object.keys(args.child) : args.child,
-		options = '';
+		options = '',
+		count = 0;
 
 	child.map((key) => {
 		if((parent.includes(key) && args['is_recently_accessed']) || (!parent.includes(key) && !args['is_recently_accessed']) || args['isParentChildSame']){
+			count++;
 			options += '<option value="'+key+'" '+ ((key == window.smart_manager.dashboard_key) ? "selected" : "") +'>'+((args['is_recently_accessed']) ? args.parent[key] : args.child[key]) +'</option>';
 		}
 	});
 
-	window.smart_manager.dashboard_select_options += (options != '') ? '<optgroup label="'+args.label+'">'+options+'</optgroup>' : '';
+	window.smart_manager.dashboard_select_options += (options != '') ? '<optgroup style="text-transform:uppercase;" label="'+args.label+' ('+count+')">'+options+'</optgroup>' : '';
 }
 
 // Function to load top right bar on the page
 Smart_Manager.prototype.loadNavBar = function() {
-
 	//Code for simple & advanced search
 	let selected = '',
 	switchSearchType = ( window.smart_manager.searchType == 'simple' ) ? _x('Advanced', 'search type', 'smart-manager-for-wp-e-commerce') : _x('Simple', 'search type', 'smart-manager-for-wp-e-commerce');
@@ -371,7 +407,7 @@ Smart_Manager.prototype.loadNavBar = function() {
 					options += '<option value="'+window.smart_manager.viewPostTypes[key]+'" '+ ((key == window.smart_manager.dashboard_key) ? "selected" : "") +'>'+window.smart_manager.sm_views[key]+'</option>';
 				}
 			});
-			window.smart_manager.dashboard_select_options += (options != '') ? '<optgroup label="'+_x('Recently used views', 'dashboard option groups', 'smart-manager-for-wp-e-commerce')+'">'+options+'</optgroup>' : '';
+			window.smart_manager.dashboard_select_options += (options != '') ? '<optgroup label="'+_x('Recently used views', 'dashboard option groups', 'smart-manager-for-wp-e-commerce')+' ('+window.smart_manager.recentViews.length+')">'+options+'</optgroup>' : '';
 		}
 
 		// Code for rendering all remmaining dashboards
@@ -394,7 +430,7 @@ Smart_Manager.prototype.loadNavBar = function() {
 
 		// Code for rendering all remmaining views
 		if(Object.keys(window.smart_manager.sm_views).length > 0){
-			window.smart_manager.dashboard_select_options += '<optgroup label="'+_x('All saved views', 'dashboard option groups', 'smart-manager-for-wp-e-commerce')+'">';
+			window.smart_manager.dashboard_select_options += '<optgroup label="'+_x('All saved views', 'dashboard option groups', 'smart-manager-for-wp-e-commerce')+' ('+(Object.keys(window.smart_manager.sm_views).length - window.smart_manager.recentViews.length)+')">';
 			Object.keys(window.smart_manager.sm_views).map((key) => {
 				if(!window.smart_manager.recentViews.includes(key) && window.smart_manager.viewPostTypes.hasOwnProperty(key)){
 					window.smart_manager.dashboard_select_options += '<option value="'+window.smart_manager.viewPostTypes[key]+'" '+ ((key == window.smart_manager.dashboard_key) ? "selected" : "") +'>'+window.smart_manager.sm_views[key]+'</option>';
@@ -445,6 +481,23 @@ Smart_Manager.prototype.loadNavBar = function() {
 	jQuery('#sm_dashboard_select').empty().append(window.smart_manager.dashboard_select_options);
 	jQuery('#sm_dashboard_select').select2({ width: '15em', dropdownCssClass: 'sm_beta_dashboard_select', dropdownParent: jQuery('#sm_nav_bar') });
 
+	jQuery('#sm_nav_bar #sm_nav_bar_right').append(`<div class="sm_nav_bar_links">
+					<div>
+						<a href="admin.php?page=smart-manager&landing-page=sm-faqs" target="_blank" title="${_x('Docs', 'tooltip', 'smart-manager-for-wp-e-commerce')}">
+							<svg stroke="currentColor" fill="none" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+							</svg>
+						</a>
+					</div>
+					<div id="sm_nav_bar_settings_btn" title="${_x('Settings', 'tooltip', 'smart-manager-for-wp-e-commerce')}" style="cursor:pointer; ">
+						<a id="sm_general_settings" href="#" title="${_x('General settings', 'tooltip', 'smart-manager-for-wp-e-commerce')}">
+							<svg stroke="currentColor" fill="none" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+							</svg>
+						</a>		
+					</div>
+				</div>`);
 
 	let sm_top_bar = '<div id="sm_top_bar" style="font-weight:400 !important;width:100%;">'+
 						'<div id="sm_top_bar_left" class="sm_beta_left" style="width:'+ window.smart_manager.grid_width +'px;background-color: white;padding: 0.5em 0em 1em 0em;">'+
@@ -476,7 +529,7 @@ Smart_Manager.prototype.loadNavBar = function() {
 									'<span title="'+_x('Duplicate', 'tooltip', 'smart-manager-for-wp-e-commerce')+'">'+_x('Duplicate', 'button', 'smart-manager-for-wp-e-commerce')+'</span>'+
 									'<div class="sm_beta_dropdown_content">'+
 										'<a id="sm_beta_dup_selected" href="#">'+_x('Selected Records', 'duplicate button', 'smart-manager-for-wp-e-commerce')+'</a>'+
-										'<a id="sm_beta_dup_entire_store" href="#">'+_x('Entire Store', 'duplicate button', 'smart-manager-for-wp-e-commerce')+'</a>'+
+										'<a id="sm_beta_dup_entire_store" class="sm_entire_store" href="#">'+_x('Entire Store', 'duplicate button', 'smart-manager-for-wp-e-commerce')+'</a>'+
 									'</div>'+
 								'</div>'+
 								'<div id="del_sm_editor_grid" class="sm_beta_dropdown">'+
@@ -502,11 +555,15 @@ Smart_Manager.prototype.loadNavBar = function() {
 										'<a id="sm_custom_views_delete" href="#" class="sm-error-icon">'+_x('Delete', 'custom view button', 'smart-manager-for-wp-e-commerce')+'</a>'+
 									'</div>'+
 								'</div>'+
-								'<div id="export_csv_sm_editor_grid" title="'+_x('Export CSV', 'tooltip', 'smart-manager-for-wp-e-commerce')+'">'+
+								'<div id="export_csv_sm_editor_grid" class="sm_beta_dropdown">'+
 									'<svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">'+
-										'<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>'+
+										'<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m.75 12l3 3m0 0l3-3m-3 3v-6m-1.5-9H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />'+
 									'</svg>'+
 									'<span>'+_x('Export CSV', 'button', 'smart-manager-for-wp-e-commerce')+'</span>'+
+									'<div class="sm_beta_dropdown_content">'+
+										'<a id="sm_export_selected" href="#">'+_x('Selected Records', 'export button', 'smart-manager-for-wp-e-commerce')+'</a>'+
+										'<a id="sm_export_entire_store" class="sm_entire_store" href="#">'+_x('Entire Store', 'export button', 'smart-manager-for-wp-e-commerce')+'</a>'+
+									'</div>'+
 								'</div>'+
 							'</div>'+
 							'<div class="sm_top_bar_action_btns">'+
@@ -524,6 +581,7 @@ Smart_Manager.prototype.loadNavBar = function() {
 									'</svg>'+
 									'<span>'+_x('Columns', 'button', 'smart-manager-for-wp-e-commerce')+'</span>'+
 								'</div>'+
+								'<div id="sm_show_tasks_container"><label id="sm_show_tasks_lbl"> <input type="checkbox" name="sm_show_tasks" id="sm_show_tasks" value="sm_show_tasks">'+_x("Show Tasks","checkbox for displaying current dashboard tasks","smart-manager-for-wp-e-commerce")+'</label></div>'+
 							'</div>'+
 						'</div>'+
 					'</div>';
@@ -554,7 +612,9 @@ Smart_Manager.prototype.loadNavBar = function() {
 	(window.smart_manager.isTaxonomyDashboard()) ? jQuery('#sm_beta_move_to_trash').hide() : jQuery('#sm_beta_move_to_trash').show();
 
 	window.smart_manager.displayShowHideColumnSettings(true);
-
+	if('undefined' !== typeof(window.smart_manager.displayTasks) && 'function' === typeof(window.smart_manager.displayTasks)){
+		window.smart_manager.displayTasks({hideTasks: true}); // Hide tasks for custom view dashboard
+	}
 	//Code for Dashboard KPI
 	jQuery('#sm_dashboard_kpi').remove();
 
@@ -637,7 +697,6 @@ Smart_Manager.prototype.showLoader = function( is_show = true ) {
 }
 
 Smart_Manager.prototype.send_request = function(params, callback, callbackParams) {
-
 	if( typeof params.showLoader == 'undefined' || (typeof params.showLoader != 'undefined' && params.showLoader !== false ) ) {
 		window.smart_manager.showLoader();
 	}
@@ -905,6 +964,10 @@ Smart_Manager.prototype.setDashboardModel = function (response) {
 			window.smart_manager.initialize_advanced_search(); //initialize advanced search control
 		}
 
+		if ( "undefined" !== typeof (window.smart_manager.refreshColumnsTitleAttribute) && "function" === typeof (window.smart_manager.refreshColumnsTitleAttribute) ) {
+			window.smart_manager.refreshColumnsTitleAttribute();
+		}
+
 		jQuery('#sm_editor_grid').trigger( 'smart_manager_post_load_grid' ); //custom trigger
 	}
 }
@@ -912,7 +975,10 @@ Smart_Manager.prototype.setDashboardModel = function (response) {
 Smart_Manager.prototype.getViewSlug = function(title = '') {
 	return Object.keys(window.smart_manager.sm_views).find(key => window.smart_manager.sm_views[key] === title);
 }
-
+//Function to check if 'Tasks' is enabled or not
+Smart_Manager.prototype.isTasksEnabled = function(){
+	return (jQuery("#sm_show_tasks").is(":checked")) ? 1 : 0;
+}
 Smart_Manager.prototype.displayShowHideColumnSettings = function (isShow = true) {
     (isShow) ? jQuery('#show_hide_cols_sm_editor_grid').show() : jQuery('#show_hide_cols_sm_editor_grid').hide();
 }
@@ -941,22 +1007,26 @@ Smart_Manager.prototype.getDashboardModel = function () {
 				params.data['is_view'] = 1;
 				params.data['active_view'] = viewSlug;
 				params.data['active_module'] = (window.smart_manager.viewPostTypes.hasOwnProperty(viewSlug)) ? window.smart_manager.viewPostTypes[viewSlug] : window.smart_manager.dashboard_key;	
-				window.smart_manager.isViewAuthor(viewSlug);
+				window.smart_manager.refreshIsViewAuthor(viewSlug);
 			}
-
 			// Flag for handling taxonomy dashboards
 			params.data['is_taxonomy'] = window.smart_manager.isTaxonomyDashboard();
+			// Code for passing extra param for handling tasks
+			params.data = ("undefined" !== typeof(window.smart_manager.addTasksParams) && "function" === typeof(window.smart_manager.addTasksParams) && 1 == window.smart_manager.sm_beta_pro) ? window.smart_manager.addTasksParams(params.data) : params.data;		
 		}
 
 	window.smart_manager.send_request(params, window.smart_manager.setDashboardModel);
 }
-
 Smart_Manager.prototype.set_data = function(response) {
 	if( typeof response != 'undefined' && response != '' ) {
 		let res = {};
 
 		if( response != 'null' && window.smart_manager.isJSON( response ) ) {
 			res = JSON.parse(response);
+
+			if(res && res.hasOwnProperty('meta')){
+				window.smart_manager.isViewContainSearchParams = (res.meta.hasOwnProperty('is_view_contain_search_params') && (true === res.meta.is_view_contain_search_params || 'true' === res.meta.is_view_contain_search_params)) ? true : false;
+			}
 
 			window.smart_manager.totalRecords = parseInt(res.total_count);
 			window.smart_manager.displayTotalRecords = ( res.hasOwnProperty('display_total_count') ) ? res.display_total_count : res.total_count;
@@ -966,8 +1036,10 @@ Smart_Manager.prototype.set_data = function(response) {
 				window.smart_manager.loadedTotalRecords = 0
 			}
 
-			let loadedRecordCount = (res.hasOwnProperty('loaded_total_count')) ? parseInt(res.loaded_total_count) : res.items.length
-			window.smart_manager.loadedTotalRecords += loadedRecordCount
+			if(!window.smart_manager.isRefreshingLoadedPage){
+				let loadedRecordCount = (res.hasOwnProperty('loaded_total_count')) ? parseInt(res.loaded_total_count) : res.items.length
+				window.smart_manager.loadedTotalRecords += loadedRecordCount
+			}
 			
 			if( window.smart_manager.page > 1 ) {
 			
@@ -1013,6 +1085,9 @@ Smart_Manager.prototype.set_data = function(response) {
 				}
 			} else {
 				window.smart_manager.currentDashboardData = ( window.smart_manager.totalRecords > 0 ) ? res.items : [];
+				document.getElementById('sm_export_entire_store').innerHTML = (window.smart_manager.isFilteredData()) ? _x('All Items In Search Results', 'export button', 'smart-manager-for-wp-e-commerce') : _x('Entire Store', 'export button', 'smart-manager-for-wp-e-commerce')
+				document.getElementById('sm_beta_dup_entire_store').innerHTML = (window.smart_manager.isFilteredData()) ? _x('All Items In Search Results', 'duplicate button', 'smart-manager-for-wp-e-commerce') : _x('Entire Store', 'duplicate button', 'smart-manager-for-wp-e-commerce')
+				
 			}
 		} else {
 			window.smart_manager.currentDashboardData = [];
@@ -1105,7 +1180,6 @@ Smart_Manager.prototype.refreshBottomBar = function() {
 
 
 Smart_Manager.prototype.getDataDefaultParams = function(params) {
-
 	let defaultParams = {};
 		defaultParams.data = {
 						  cmd: 'get_data_model',
@@ -1131,6 +1205,8 @@ Smart_Manager.prototype.getDataDefaultParams = function(params) {
 			defaultParams.data['active_view'] = viewSlug;
 			defaultParams.data['active_module'] = (window.smart_manager.viewPostTypes.hasOwnProperty(viewSlug)) ? window.smart_manager.viewPostTypes[viewSlug] : window.smart_manager.dashboard_key;
 		}
+		// Code for passing extra param for handling tasks
+		defaultParams.data = ("undefined" !== typeof(window.smart_manager.addTasksParams) && "function" === typeof(window.smart_manager.addTasksParams) && 1 == window.smart_manager.sm_beta_pro) ? window.smart_manager.addTasksParams(defaultParams.data) : defaultParams.data;	
 	}
 
 	if( typeof params != 'undefined' ) {
@@ -1149,6 +1225,7 @@ Smart_Manager.prototype.getDataDefaultParams = function(params) {
 Smart_Manager.prototype.getData = function(params = {}) {
 
 	window.smart_manager.gettingData = 1;
+	window.smart_manager.isRefreshingLoadedPage = false;
 
 	if( window.smart_manager.page == 1 ) {
 		if ( typeof (window.smart_manager.getDataDefaultParams) !== "undefined" && typeof (window.smart_manager.getDataDefaultParams) === "function" ) {
@@ -1159,6 +1236,7 @@ Smart_Manager.prototype.getData = function(params = {}) {
 		if( typeof(window.smart_manager.currentGetDataParams.data) != 'undefined' && typeof(window.smart_manager.currentGetDataParams.data.sm_page) != 'undefined' ) {
 			
 			if(params.hasOwnProperty('refreshPage')){
+				window.smart_manager.isRefreshingLoadedPage = true;
 				window.smart_manager.currentGetDataParams.data.sm_page = params.refreshPage;
 				window.smart_manager.currentGetDataParams.async = false;
 			} else {
@@ -1437,23 +1515,33 @@ Smart_Manager.prototype.handleMediaUpdate = function( params ) {
 
 }
 
-Smart_Manager.prototype.inlineUpdateMultipleImages = function( galleryImages ) {
+Smart_Manager.prototype.inlineUpdateMultipleImages = function(galleryImages){
+	if(!galleryImages || !((Object.keys(galleryImages)).every(galleryImage => galleryImages.hasOwnProperty(galleryImage)))){
+		return;
+	}
 	let params = {};
 	params.data = {
 					cmd: 'inline_update',
 					active_module: window.smart_manager.dashboard_key,
-					edited_data: JSON.stringify(galleryImages),
+					edited_data: JSON.stringify({[galleryImages.id]:{[galleryImages.src]:galleryImages.values}}),
 					security: window.smart_manager.sm_nonce,
-					pro: ( ( typeof(window.smart_manager.sm_beta_pro) != 'undefined' ) ? window.smart_manager.sm_beta_pro : 0 ),
+					pro: ('undefined' !== typeof(window.smart_manager.sm_beta_pro)) ? window.smart_manager.sm_beta_pro : 0,
 					table_model: (window.smart_manager.currentDashboardModel.hasOwnProperty('tables') ) ? window.smart_manager.currentDashboardModel.tables : ''
 				};
-
-	window.smart_manager.send_request(params, function(response) {
-		window.smart_manager.refresh();
+	params.data = ("undefined" !== typeof(window.smart_manager.addTasksParams) && "function" === typeof(window.smart_manager.addTasksParams) && 1 == window.smart_manager.sm_beta_pro) ? window.smart_manager.addTasksParams(params.data) : params.data;	
+	window.smart_manager.send_request(params,function(response){
+		if(galleryImages.hasOwnProperty('rowNo')){
+			window.smart_manager.getData({refreshPage: (Math.ceil((parseInt(galleryImages.rowNo)/window.smart_manager.limit)))});
+			window.smart_manager.hot.render();
+		} else{
+			window.smart_manager.refresh();
+		}
+		
+		if(1 == window.smart_manager.sm_beta_pro && 'undefined' !== typeof(window.smart_manager.displayGalleryImagesModal) && 'function' === typeof(window.smart_manager.displayGalleryImagesModal)){
+			window.smart_manager.displayGalleryImagesModal({id:galleryImages.id,src:galleryImages.src,imageGalleryHtml:galleryImages.imageGalleryHtml,rowNo:galleryImages.rowNo || 0})
+		}
 	});
 };
-
-
 
 Smart_Manager.prototype.showImagePreview = function(params) {
 	let xOffset = 150,
@@ -1510,17 +1598,12 @@ Smart_Manager.prototype.loadGrid = function() {
 
 	window.smart_manager.hotPlugin.columnSortPlugin = window.smart_manager.hot.getPlugin('columnSorting');
 	window.smart_manager.hotPlugin.manualColumnResizePlugin = window.smart_manager.hot.getPlugin('manualColumnResize')
-
-	//Code to have title for each of the column headers
-	jQuery('table.htCore').find('.colHeader').each(function() {
-		jQuery(this).attr('title',jQuery(this).text()+' '+_x('(Click to sort)', 'tooltip', 'smart-manager-for-wp-e-commerce'));
-	});
 	
 	window.smart_manager.hot.updateSettings({
 
 		cells: function(row, col, prop) {
 			
-			let customRenderer = window.smart_manager.getCustomRenderer( col );
+			let customRenderer = window.smart_manager.getCustomRenderer(col);
 
 			if( customRenderer != '' ) {
 				let cellProperties = {};
@@ -1644,7 +1727,7 @@ Smart_Manager.prototype.loadGrid = function() {
 
 		afterChange: function(changes, source) {
 
-			if( window.smart_manager.selectAll === true || changes === null ) {
+			if( window.smart_manager.selectAll === true || window.smart_manager.isRefreshingLoadedPage || changes === null ) {
 				return;
 			}
 
@@ -1667,7 +1750,6 @@ Smart_Manager.prototype.loadGrid = function() {
 				if( typeof(colIndex) == 'number' ) {
 					col = window.smart_manager.hot.getCellMeta(row, colIndex);
 				}
-
 				let id = window.smart_manager.hot.getDataAtRowProp(row, idKey);
 
 				if( (oldValue != newValue || String(oldValue).length != String(newValue).length) && prop != idKey && colTypesDisabledHiglight.indexOf(col.type) == -1 ) { //for inline edit
@@ -1778,7 +1860,7 @@ Smart_Manager.prototype.loadGrid = function() {
 
 			if( typeof (col.type) != 'undefined' && col.type == 'sm.multipleImage' ) { // code to handle the functionality to handle editing of 'image' data types
 			let galleryImages = current_cell_value,
-				imageGalleryHtml = `<div class="sm_gallery_image_parent" data-id="${row_data_id}" data-col="${col.src || ''}">`;
+				imageGalleryHtml = `<div class="sm_gallery_image_parent" data-id="${row_data_id}" data-col="${col.src || ''}" data-row= "${coords.row || 0}">`;
 
 			if( Object.keys( galleryImages ).length > 0 ) {
 				if ( typeof (window.smart_manager.generateImageGalleryDlgHtml) !== "undefined" && typeof (window.smart_manager.generateImageGalleryDlgHtml) === "function" ) {
@@ -1797,74 +1879,9 @@ Smart_Manager.prototype.loadGrid = function() {
 						});
 					}
 				}
-
-				window.smart_manager.modal = {
-					title: _x('Gallery Images', 'gallery modal title', 'smart-manager-for-wp-e-commerce'),
-					content: imageGalleryHtml,
-					autoHide: false,
-					cta: {
-						title: _x('Add', 'button', 'smart-manager-for-wp-e-commerce'),
-						closeModalOnClick: false,
-						callback: function() {
-							if ( typeof (window.smart_manager.handleMediaUpdate) !== "undefined" && typeof (window.smart_manager.handleMediaUpdate) === "function" ) {
-
-								jQuery('.sm_ui_dialog_class, .ui-widget-overlay').hide();
-
-								let params = {	
-												UploaderText: _x('Add images to product gallery', 'button', 'smart-manager-for-wp-e-commerce'),
-												UploaderButtonText: _x('Add to gallery', 'button', 'smart-manager-for-wp-e-commerce'),
-												allowMultiple: true,
-												row_data_id: row_data_id
-											};
-
-								
-									params.callback = function( attachments ) {
-
-										jQuery('.sm_ui_dialog_class , .ui-widget-overlay').show();
-
-										if( typeof( attachments ) == 'undefined' ) {
-											return;
-										}
-
-										let imageGalleryHtml = `<div class="sm_gallery_image_parent" data-id="${row_data_id}" data-col="${col.src || ''}">`,
-											modifiedGalleryImages = [],
-											imageIds = new Set();
-
-										jQuery('.sm_gallery_image').find('img').each( function(){
-											modifiedGalleryImages.push({
-												id:jQuery(this).data('id'), 
-												val:jQuery(this).attr('src')
-											  });
-											imageIds.add(jQuery(this).data('id'));
-										});	
-										
-										attachments.forEach( function( attachmentObj ) {
-											modifiedGalleryImages.push({
-												id:attachmentObj.id, 
-												val:attachmentObj.sizes.full.url
-											  });
-											imageIds.add(attachmentObj.id);
-										});
-
-										if ( typeof (window.smart_manager.generateImageGalleryDlgHtml) !== "undefined" && typeof (window.smart_manager.generateImageGalleryDlgHtml) === "function" ) {
-											imageGalleryHtml += window.smart_manager.generateImageGalleryDlgHtml( modifiedGalleryImages );
-										}
-
-										imageGalleryHtml += '</div>';
-
-										jQuery('div.modal-body').html(imageGalleryHtml);
-
-										if ( typeof (window.smart_manager.inlineUpdateMultipleImages) !== "undefined" && typeof (window.smart_manager.inlineUpdateMultipleImages) === "function" ) {
-											window.smart_manager.inlineUpdateMultipleImages({[row_data_id]: {[col.src]: [...imageIds].join(',')}});
-										}
-									}
-
-								window.smart_manager.handleMediaUpdate( params );
-							}
-						}
-					},
-				}
-				window.smart_manager.showModal()
+				if('undefined' !== typeof(window.smart_manager.displayGalleryImagesModal) && 'function' === typeof(window.smart_manager.displayGalleryImagesModal) && row_data_id && col.src && imageGalleryHtml){
+					window.smart_manager.displayGalleryImagesModal({id:row_data_id,src:col.src,imageGalleryHtml:imageGalleryHtml,rowNo:coords.row});
+				}	
 			}
 
 			if( typeof (col.type) != 'undefined' && col.type == 'sm.image' && coords.row >= 0 ) { // code to handle the functionality to handle editing of 'image' data types
@@ -1875,44 +1892,39 @@ Smart_Manager.prototype.loadGrid = function() {
 
 					// When an image is selected, run a callback.
 					params.callback = function( attachment ) {
-
 						if( typeof( attachment ) == 'undefined' ) {
 					  		return;
 					  	}
-						
-						let src = col.src;
-
-						let params = {};
-							params.data = {
-											cmd: 'inline_update',
-											active_module: window.smart_manager.dashboard_key,
-											edited_data: JSON.stringify({[row_data_id] : {[src]: attachment['id']}}),
-											security: window.smart_manager.sm_nonce,
-											pro: ( ( typeof(window.smart_manager.sm_beta_pro) != 'undefined' ) ? window.smart_manager.sm_beta_pro : 0 ),
-											table_model: (window.smart_manager.currentDashboardModel.hasOwnProperty('tables') ) ? window.smart_manager.currentDashboardModel.tables : ''
-										};
-
-						window.smart_manager.send_request(params, function(response) {
-							if ( 'failed' !== response ) {
-								window.smart_manager.hot.setDataAtCell(coords.row, coords.col, attachment['url'], 'image_inline_update');
-
-								if( window.smart_manager.isJSON( response ) && ( typeof(window.smart_manager.sm_beta_pro) == 'undefined' || ( typeof(window.smart_manager.sm_beta_pro) != 'undefined' && window.smart_manager.sm_beta_pro != 1 ) ) ) {
-									response = JSON.parse( response );
-									msg = response.msg;
-
-									if( typeof( response.sm_inline_update_count ) != 'undefined' ) {
-										if ( typeof (window.smart_manager.updateLitePromoMessage) !== "undefined" && typeof (window.smart_manager.updateLitePromoMessage) === "function" ) {
-											window.smart_manager.updateLitePromoMessage( response.sm_inline_update_count );
-										}
-									}
-								} else {
-									msg = response;
-								}
+					  	let params = {};
+					  	params = {
+					  				editedImage: JSON.stringify({[row_data_id] : {[col.src]: attachment['id']}}),
+					  				row: coords.row,
+					  				col: coords.col,
+					  				value: attachment['url'],
+					  				source: 'image_inline_update'
+					  	}
+					  	let editedColumnName = '';
+					  	if("undefined" !== typeof(window.smart_manager.getColDisplayName) && "function" === typeof(window.smart_manager.getColDisplayName)){
+					  		editedColumnName = window.smart_manager.getColDisplayName(col.src);
+					  	}
+					  	
+					  	if(1 == window.smart_manager.sm_beta_pro){
+							window.smart_manager.processName = _x('Inline Edit','process name','smart-manager-for-wp-e-commerce');
+							window.smart_manager.processContent = (editedColumnName) ? editedColumnName : col.src;	
+							if("undefined" !== typeof(window.smart_manager.inlineUpdateImage) && "function" === typeof(window.smart_manager.inlineUpdateImage)){
+								window.smart_manager.processCallback = window.smart_manager.inlineUpdateImage;
 							}
-						});
+							window.smart_manager.processCallbackParams = params;		
+							if("undefined" !== typeof(window.smart_manager.showTitleModal) && "function" === typeof (window.smart_manager.showTitleModal)){
+								window.smart_manager.showTitleModal()   
+							}
+						} else{
+							if("undefined" !== typeof(window.smart_manager.inlineUpdateImage) && "function" === typeof(window.smart_manager.inlineUpdateImage) && params){
+								window.smart_manager.inlineUpdateImage(params);
+							}
+						}
 
 					};
-
 					window.smart_manager.handleMediaUpdate( params );
 				}
 			}
@@ -2122,7 +2134,6 @@ Smart_Manager.prototype.reset = function( fullReset = false ){
 		window.smart_manager.colModelSearch = {}
 		window.smart_manager.savedBulkEditConditions = []
 	}
-
 	window.smart_manager.currentDashboardData = [];
 	
 	window.smart_manager.selectedRows = [];
@@ -2131,6 +2142,10 @@ Smart_Manager.prototype.reset = function( fullReset = false ){
 	window.smart_manager.page = 1;
 	window.smart_manager.dirtyRowColIds = {};
 	window.smart_manager.editedData = {};
+	window.smart_manager.updatedEditedData = {};
+	window.smart_manager.processContent = '';
+	window.smart_manager.updatedTitle = '';
+	window.smart_manager.editedColumnTitles = {};
 
 	if(window.smart_manager.hot){
 		if(window.smart_manager.hot.selection){
@@ -2161,26 +2176,14 @@ Smart_Manager.prototype.showPannelDialog = function(route = '', currentRoute = '
 	if(!route && !currentRoute){
 		return
 	}
-
-	let url = ''
-	let currentURL = window.location.href
-
-	if(!route){
-		url = currentURL.replace(new RegExp(currentRoute, "g"), "/")
-	} else {
-		route = ("#!/" === route) ? route : "#!/"+route
-		if(currentURL.includes(route)){
-			url = currentURL.replace(new RegExp(route, "g"), route)
-		} else if(currentURL.includes("#!/")){
-			url = currentURL.replace(new RegExp("#!/", "g"), route)
-		} else {
-			url = currentURL + route
-		}
+	let routeIdentifier = "#!/"
+	let currentURL = (window.location.href.indexOf(routeIdentifier) >= 0) ? window.location.href.substring(0, window.location.href.indexOf(routeIdentifier)) : window.location.href
+	if(!currentURL){
+		return
 	}
-
-	if(url){
-		window.location.href = url
-	}
+	let defaultRoute = routeIdentifier+window.smart_manager.defaultRoute
+	route = (!route) ? ((routeIdentifier === currentRoute) ? defaultRoute : routeIdentifier) : ((routeIdentifier === route) ? route : routeIdentifier+route)
+	window.location.href = currentURL + route
 }
 
 Smart_Manager.prototype.event_handler = function() {
@@ -2228,24 +2231,17 @@ Smart_Manager.prototype.event_handler = function() {
 			window.smart_manager.state_apply = true;
 			// window.smart_manager.refreshDashboardStates(); //function to save the state
 			
-			if ( typeof (window.smart_manager.updateState) !== "undefined" && typeof (window.smart_manager.updateState) === "function" ) {
-				window.smart_manager.updateState(); //refreshing the dashboard states
+			if ("undefined" !== typeof(window.smart_manager.updateState) && "function" === typeof(window.smart_manager.updateState)){
+				("undefined" !== typeof(window.smart_manager.isTasksEnabled) && "function" === typeof(window.smart_manager.isTasksEnabled) && window.smart_manager.isTasksEnabled()) ? window.smart_manager.updateState({isTasksEnabled:1}) : window.smart_manager.updateState();	
 			}
-			
 			window.smart_manager.reset(true);
-
 			window.smart_manager.dashboard_key = sm_selected_dashboard_key;
 			window.smart_manager.dashboardName = sm_selected_dashboard_title;
 			window.smart_manager.current_selected_dashboard = sm_selected_dashboard_key;
-		
-			window.smart_manager.setDashboardDisplayName();
 
-			if( window.smart_manager.searchType === 'advanced' ){
-				jQuery('#search_switch').prop('checked', false).trigger('change'); //Code to re-draw the search content based on search type
-			} else {
-				jQuery('#sm_simple_search_box').val('');
+			if("undefined" !== typeof(window.smart_manager.resetSearch) && "function" === typeof(window.smart_manager.resetSearch)){
+				window.smart_manager.resetSearch();
 			}
-
 			if ( typeof (window.smart_manager.initialize_advanced_search) !== "undefined" && typeof (window.smart_manager.initialize_advanced_search) === "function" && window.smart_manager.searchType != 'simple' ) {
 				window.smart_manager.initialize_advanced_search();
 			}
@@ -2258,10 +2254,14 @@ Smart_Manager.prototype.event_handler = function() {
 
 			(window.smart_manager.isTaxonomyDashboard()) ? jQuery('#sm_beta_move_to_trash').hide() : jQuery('#sm_beta_move_to_trash').show();
 
+			jQuery('#sm_show_tasks_container').parents('div.sm_top_bar_action_btns').removeAttr('style');
+
 			window.smart_manager.displayShowHideColumnSettings(true);
-
 			jQuery('#sm_editor_grid').trigger( 'sm_dashboard_change' ); //custom trigger
-
+			if('undefined' !== typeof(window.smart_manager.displayTasks) && 'function' === typeof(window.smart_manager.displayTasks)){
+				window.smart_manager.displayTasks({dashboardChange: true});
+			}
+		    	window.smart_manager.setDashboardDisplayName();
 			window.smart_manager.load_dashboard(); 
 		} else {
 			jQuery(this).val(window.smart_manager.current_selected_dashboard);
@@ -2273,7 +2273,6 @@ Smart_Manager.prototype.event_handler = function() {
 	
 	.off( 'click', '#sm_advanced_search' ).on( 'click', '#sm_advanced_search' ,function(e){
 		e.preventDefault();
-
 		if ( typeof (window.smart_manager.showPannelDialog) !== "undefined" && typeof (window.smart_manager.showPannelDialog) === "function" ) {
 			window.smart_manager.showPannelDialog(window.smart_manager.advancedSearchRoute)
 		}
@@ -2365,13 +2364,11 @@ Smart_Manager.prototype.event_handler = function() {
 
 	//Code to handle the inline save functionality
 	.off( 'click', '.sm_top_bar_action_btns #save_sm_editor_grid_btn').on( 'click', '.sm_top_bar_action_btns #save_sm_editor_grid_btn' ,function(){
-		
 		if(Object.keys(window.smart_manager.editedData).length == 0){
 			window.smart_manager.notification = {message: _x('Please edit a record', 'notification', 'smart-manager-for-wp-e-commerce')}
 			window.smart_manager.showNotification()
 			return;
 		}
-
 		if(window.smart_manager.dashboard_key == 'user' && Object.keys(window.smart_manager.dirtyRowColIds).length > 0){
 			for(let row in window.smart_manager.dirtyRowColIds){
 				let userEmail = window.smart_manager.hot.getDataAtRowProp(row, 'users_user_email');
@@ -2382,9 +2379,39 @@ Smart_Manager.prototype.event_handler = function() {
 				}			
 			}		
 		}
-
-		if( typeof (window.smart_manager.saveData) !== "undefined" && typeof (window.smart_manager.saveData) === "function" ) {
-			window.smart_manager.saveData();    
+		if("undefined" === typeof(window.smart_manager.saveData) && "function" !== typeof (window.smart_manager.saveData)){
+			return;
+		}
+		if(1 == window.smart_manager.sm_beta_pro){
+			window.smart_manager.updatedEditedData = {};
+			Object.entries(window.smart_manager.editedData).forEach(([key, value]) => {
+				if(key && (false === key.includes('sm_temp_')) && (false === key.includes('null'))){
+					window.smart_manager.updatedEditedData[key] = value;
+				}
+			});
+			let inlineUpdatedFields = new Set();
+			if(Object.values(window.smart_manager.updatedEditedData).length > 0 && ("undefined" !== typeof(window.smart_manager.getColDisplayName) && "function" === typeof(window.smart_manager.getColDisplayName))){
+				Object.values(window.smart_manager.updatedEditedData).forEach((values) => {
+					if(Object.keys(values).length > 0){
+						Object.keys(values).forEach((key) => {
+							let editedColumnName = window.smart_manager.getColDisplayName(key);
+							if(editedColumnName){
+								inlineUpdatedFields.add(editedColumnName)
+							}
+						});
+					}
+				});
+			}
+			window.smart_manager.processName = _x('Inline Edit', 'process name', 'smart-manager-for-wp-e-commerce');
+			window.smart_manager.processContent = [...inlineUpdatedFields].join(', ');
+			window.smart_manager.processCallback = window.smart_manager.saveData; 
+			if("undefined" !== typeof(window.smart_manager.showTitleModal) && "function" === typeof(window.smart_manager.showTitleModal) && (inlineUpdatedFields.size > 0)){
+				window.smart_manager.showTitleModal()   
+			}else if(0 === inlineUpdatedFields.size){
+				window.smart_manager.saveData()
+			}	
+		}else{
+			window.smart_manager.saveData();
 		}
 	})
 
@@ -2392,10 +2419,8 @@ Smart_Manager.prototype.event_handler = function() {
 	.off( 'click', '.sm_top_bar_action_btns #sm_beta_move_to_trash, .sm_top_bar_action_btns #sm_beta_delete_permanently').on( 'click', '.sm_top_bar_action_btns #sm_beta_move_to_trash, .sm_top_bar_action_btns #sm_beta_delete_permanently' ,function(){
 
 		let id = jQuery(this).attr('id');
-
 		let deletePermanently = ( 'sm_beta_delete_permanently' == id ) ? 1 : 0;
 		let moveToTrash = ( 'sm_beta_move_to_trash' == id ) ? 1 : 0;
-
 		let isBackgroundProcessRunning = window.smart_manager.backgroundProcessRunningNotification(false);
 
 		if( 0 == window.smart_manager.sm_beta_pro && deletePermanently ) {
@@ -2423,7 +2448,7 @@ Smart_Manager.prototype.event_handler = function() {
 
 			let params = {};
 
-			params.title       = '<span class="sm-error-icon"><span class="dashicons dashicons-warning" style="vertical-align: text-bottom;"></span>&nbsp;'+_x('Attention!!!', 'modal title', 'smart-manager-for-wp-e-commerce')+'</span>';
+			params.title       = '<span class="sm-error-icon"><span class="dashicons dashicons-warning" style="vertical-align: text-bottom;"></span>&nbsp;'+_x('Attention!', 'modal title', 'smart-manager-for-wp-e-commerce')+'</span>';
 			params.titleIsHtml = true;
 			params.btnParams   = {};
 
@@ -2435,6 +2460,10 @@ Smart_Manager.prototype.event_handler = function() {
 
 			let selected_text = '<span style="font-size: 1.2em;">'+sprintf(_x('Are you sure you want to %s', 'modal content', 'smart-manager-for-wp-e-commerce'), '<strong>'+ actionText +' '+_x('the selected','modal content', 'smart-manager-for-wp-e-commerce')+'</strong>'+' ') + ( ( window.smart_manager.selectedRows.length > 1 ) ? _x('records', 'modal content', 'smart-manager-for-wp-e-commerce') : _x('record', 'modal content', 'smart-manager-for-wp-e-commerce') ) + '?</span>';
 			let all_text      = '<span style="font-size: 1.2em;">'+sprintf(_x('Are you sure you want to %s the %s?', 'modal content', 'smart-manager-for-wp-e-commerce'),'<strong>'+ actionText +' '+_x('all', 'modal content', 'smart-manager-for-wp-e-commerce')+'</strong>', window.smart_manager.dashboardDisplayName)+ '</span>';
+
+			if (window.smart_manager.isFilteredData()){
+				all_text = '<span style="font-size: 1.2em;">'+sprintf(_x('Are you sure you want to %s?', 'modal content', 'smart-manager-for-wp-e-commerce'),'<strong>'+ actionText +' '+_x('all items in search results', 'modal content', 'smart-manager-for-wp-e-commerce')+'</strong>')+ '</span>';
+			}
 
 			params.btnParams.yesCallbackParams = {};
 
@@ -2461,6 +2490,7 @@ Smart_Manager.prototype.event_handler = function() {
 				}
 			}
 			if( !isBackgroundProcessRunning ) {
+				params.btnParams.hideOnYes = false;
 				window.smart_manager.showConfirmDialog(params);
 			}
 		}
@@ -2468,28 +2498,25 @@ Smart_Manager.prototype.event_handler = function() {
 	})
 
 	//Code for handling refresh event
-	.off( 'click', ".sm_gallery_image .sm_gallery_image_delete").on( 'click', ".sm_gallery_image .sm_gallery_image_delete", function(){
+	.off('click', ".sm_gallery_image .sm_gallery_image_delete").on('click', ".sm_gallery_image .sm_gallery_image_delete",function(){
 		let colSrc = jQuery(this).parents('div.sm_gallery_image_parent').data('col') || '',
-		updateId = jQuery(this).parents('div.sm_gallery_image_parent').data('id') || 0;
-
+		updateId = jQuery(this).parents('div.sm_gallery_image_parent').data('id') || 0,
+		rowNo = parseInt(jQuery(this).parents('div.sm_gallery_image_parent').data('row') || 0);
 		jQuery(this).parents('.sm_gallery_image').remove();
-
 		let imageIds = new Array();
-
-		jQuery('.sm_gallery_image').find('img').each( function(){
-			imageIds.push( jQuery(this).data('id') );
+		jQuery('.sm_gallery_image').find('img').each(function(){
+			imageIds.push(jQuery(this).data('id'));
 		});
-
 		let updatedGalleryImages = {};
-
 		updatedGalleryImages[updateId] = {};
 		updatedGalleryImages[updateId][colSrc] = imageIds.join(',');
-
-	  	if ( typeof (window.smart_manager.inlineUpdateMultipleImages) !== "undefined" && typeof (window.smart_manager.inlineUpdateMultipleImages) === "function" ) {
-			window.smart_manager.inlineUpdateMultipleImages( updatedGalleryImages );
-		}
+		let params = {id:updateId,src:colSrc,values:updatedGalleryImages[updateId][colSrc],imageGalleryHtml:jQuery('div.modal-body').html(),rowNo:rowNo};
+		if(1 == window.smart_manager.sm_beta_pro && "undefined" !== typeof(window.smart_manager.displayTitleModal) && "function" === typeof(window.smart_manager.displayTitleModal)){
+			window.smart_manager.displayTitleModal(params);
+		}else if("undefined" !== typeof(window.smart_manager.inlineUpdateMultipleImages) && "function" === typeof(window.smart_manager.inlineUpdateMultipleImages)){
+			window.smart_manager.inlineUpdateMultipleImages(params);
+		}							  	
 	})
-	
 
 	//Code for handling refresh event
 	.off( 'click', "#refresh_sm_editor_grid").on( 'click', "#refresh_sm_editor_grid", function(){
@@ -2578,7 +2605,7 @@ Smart_Manager.prototype.event_handler = function() {
 			let params = {};
 
 			params.btnParams = {}
-			params.title = '<span class="sm-error-icon"><span class="dashicons dashicons-warning" style="vertical-align: text-bottom;"></span>&nbsp;'+_x('Attention!!!', 'modal title', 'smart-manager-for-wp-e-commerce')+'</span>';
+			params.title = '<span class="sm-error-icon"><span class="dashicons dashicons-warning" style="vertical-align: text-bottom;"></span>&nbsp;'+_x('Attention!', 'modal title', 'smart-manager-for-wp-e-commerce')+'</span>';
 			params.content = '<span style="font-size: 1.2em;">'+_x('This will', 'modal content', 'smart-manager-for-wp-e-commerce')+' <span class="sm-error-icon"><strong>'+_x('delete', 'modal content', 'smart-manager-for-wp-e-commerce')+'</strong></span> '+_x('the current view. Are you sure you want to continue?', 'modal content', 'smart-manager-for-wp-e-commerce')+'</span>';
 			params.titleIsHtml = true;
 			params.height = 200;
@@ -2595,27 +2622,21 @@ Smart_Manager.prototype.event_handler = function() {
 	})
 
 	// Code for handling the batch update & duplicate records functionality
-	.off( 'click', "#batch_update_sm_editor_grid, .sm_top_bar_action_btns .sm_beta_dropdown_content a, #export_csv_sm_editor_grid, #print_invoice_sm_editor_grid_btn").on( 'click', "#batch_update_sm_editor_grid, .sm_top_bar_action_btns .sm_beta_dropdown_content a, #export_csv_sm_editor_grid, #print_invoice_sm_editor_grid_btn", function(){
-
+	.off( 'click', "#batch_update_sm_editor_grid, .sm_top_bar_action_btns .sm_beta_dropdown_content a, #print_invoice_sm_editor_grid_btn").on( 'click', "#batch_update_sm_editor_grid, .sm_top_bar_action_btns .sm_beta_dropdown_content a, #print_invoice_sm_editor_grid_btn", function(e){
+		e.preventDefault();
 		let id = jQuery(this).attr('id'),
-			btnText = jQuery(this).text();
-
+			btnText = jQuery(this).text(),
+			className = jQuery(this).attr('class');
 		if( jQuery(this).parents('div#del_sm_editor_grid').length > 0 || jQuery(this).parents('div#sm_custom_views').length > 0 ) {
 			return;
 		}
-
-		if( window.smart_manager.sm_beta_pro == 1 ) {
-
-			if( typeof( id ) != 'undefined' ) {
-				if( id == 'export_csv_sm_editor_grid' ) { //code for handling export CSV functionality
-					if ( typeof (window.smart_manager.generateCsvExport) !== "undefined" && typeof (window.smart_manager.generateCsvExport) === "function" ) {
-						window.smart_manager.generateCsvExport();    
-					}
-				} else {
-					if( window.smart_manager.selectedRows.length > 0 || window.smart_manager.selectAll ) {
-
-						let isBackgroundProcessRunning = window.smart_manager.backgroundProcessRunningNotification(false);
-
+		if(1 == window.smart_manager.sm_beta_pro){
+			if('undefined' !== typeof(id) && id){
+					if(window.smart_manager.selectedRows.length > 0 || window.smart_manager.selectAll || 'sm_entire_store' === className){
+						let params = {},
+							isBackgroundProcessRunning = window.smart_manager.backgroundProcessRunningNotification(false);
+						    params.btnParams = {};
+						    params.title = _x('Attention!', 'modal title', 'smart-manager-for-wp-e-commerce');
 						if( id == 'batch_update_sm_editor_grid' && !isBackgroundProcessRunning ) { //code for handling batch update functionality
 							// window.smart_manager.createBatchUpdateDialog();
 							if ( typeof (window.smart_manager.showPannelDialog) !== "undefined" && typeof (window.smart_manager.showPannelDialog) === "function" ) {
@@ -2625,11 +2646,7 @@ Smart_Manager.prototype.event_handler = function() {
 							if(window.smart_manager.isTaxonomyDashboard()){
 								window.smart_manager.notification = {message: _x('Comming soon', 'notification', 'smart-manager-for-wp-e-commerce')}
 								window.smart_manager.showNotification()
-							} else {
-								let params = {};
-
-								params.btnParams = {}
-								params.title = _x('Attention!!!', 'modal title', 'smart-manager-for-wp-e-commerce');
+							}else {
 								params.content = (window.smart_manager.dashboard_key != 'product') ? '<p>'+_x('This will duplicate only the records in posts, postmeta and related taxonomies.', 'modal content', 'smart-manager-for-wp-e-commerce')+'</p>' : '';
 								params.content += _x('Are you sure you want to duplicate the ', 'modal content', 'smart-manager-for-wp-e-commerce') + btnText + '?';
 
@@ -2639,32 +2656,35 @@ Smart_Manager.prototype.event_handler = function() {
 								
 								window.smart_manager.duplicateStore = ( id == 'sm_beta_dup_entire_store' ) ? true : false;
 
+								params.btnParams.hideOnYes = false;
 								window.smart_manager.showConfirmDialog(params);
 							}
 						} else if( id == 'print_invoice_sm_editor_grid_btn' ) { //code for handling Print Invoice functionality
 							if ( typeof (window.smart_manager.printInvoice) !== "undefined" && typeof (window.smart_manager.printInvoice) === "function" ) {
 								window.smart_manager.printInvoice();
 							}
+						}else if(('sm_export_entire_store' === id || 'sm_export_selected'=== id) && !isBackgroundProcessRunning){ //code for handling export CSV functionality.
+							if("undefined" !== typeof(window.smart_manager.getExportCsv) && "function" === typeof(window.smart_manager.getExportCsv) && params && btnText){
+								window.smart_manager.getExportCsv({'params':params,'id':id,'btnText':btnText});
+							}
 						}
 
-					} else {
+					} else if(0 === window.smart_manager.selectedRows.length && !window.smart_manager.selectAll && 'sm_entire_store' !== className) {
 						window.smart_manager.notification = {message: _x('Please select a record', 'notification', 'smart-manager-for-wp-e-commerce')}
 						window.smart_manager.showNotification()
 					}
-				}
 			}
 			
 		} else {
 
 			if( typeof(id) != 'undefined' ) {
 
-
 				if( id != 'sm_beta_dup_entire_store' && id != 'sm_beta_dup_selected' ) {
 					
 					let description = sprintf(_x('You can change/update multiple fields of the entire store OR for selected items using the Bulk Edit feature. Refer to this doc on %s or watch the video below.', 'modal description', 'smart-manager-for-wp-e-commerce'), '<a href="https://www.storeapps.org/docs/sm-how-to-use-batch-update/?utm_source=sm&utm_medium=in_app&utm_campaign=view_docs" target="_blank">'+_x('how to do bulk edit', 'modal description', 'smart-manager-for-wp-e-commerce')+'</a>');
 
-					if( id == 'export_csv_sm_editor_grid' ) {
-						description = _x('You can export all the records OR filtered records (using Simple Search or Advanced Search) by simply clicking on the Export CSV button at the bottom right of the grid.', 'modal description', 'smart-manager-for-wp-e-commerce');
+					if( 'sm_export_selected' === id || 'sm_export_entire_store' === id ) {
+						description = _x('You can export selected/all records OR filtered records (using Simple Search or Advanced Search) by simply clicking on the Export CSV button at the bottom right of the grid.', 'modal description', 'smart-manager-for-wp-e-commerce');
 					}
 
 					content = '<div>'+
@@ -2700,7 +2720,6 @@ Smart_Manager.prototype.event_handler = function() {
 			}
 		}
 	})
-
 	.off('mouseover', '.sm_gallery_image > img').on('mouseover','.sm_gallery_image > img', function(e){
 		
 		let params = {
@@ -2739,12 +2758,33 @@ Smart_Manager.prototype.event_handler = function() {
 		  temp.val(jQuery(this).html()).select();
 		  document.execCommand("copy");
 		  temp.remove();
-	});
-
+	})
+	.off("change","#sm_show_tasks_lbl").on("change","#sm_show_tasks_lbl", function(){
+		jQuery('#sm_editor_grid').trigger('sm_show_tasks_change');
+		if(0 == window.smart_manager.sm_beta_pro){
+			jQuery("#sm_show_tasks").prop('checked', false);
+			window.smart_manager.notification = {message: sprintf(_x('This feature is available only in the %s version','modal content', 'smart-manager-for-wp-e-commerce'),'<a href="' + window.smart_manager.pricingPageURL + '" target="_blank">'+_x('Pro','modal content','smart-manager-for-wp-e-commerce')+'</a>'),hideDelay: window.smart_manager.notificationHideDelayInMs}
+			window.smart_manager.showNotification()
+		}
+	})
+	.off('click','.sm-column-title-editor-icon').on('click','.sm-column-title-editor-icon', function(e){
+		if (window.smart_manager.sm_beta_pro == 1 && 'undefined' !== typeof(window.smart_manager.displayColumnTitleEditor) && 'function' === typeof(window.smart_manager.displayColumnTitleEditor)) {
+			window.smart_manager.displayColumnTitleEditor(e);
+		} else {
+			window.smart_manager.notification = {message: sprintf(_x('This feature is available only in the %s version', 'modal content', 'smart-manager-for-wp-e-commerce'), '<a href="' + window.smart_manager.pricingPageURL + '" target="_blank">'+_x('Pro', 'modal content', 'smart-manager-for-wp-e-commerce')+'</a>'),hideDelay: window.smart_manager.notificationHideDelayInMs}
+			window.smart_manager.showNotification()
+		}
+	})
+	//Code to handle the general settings
+	.off('click','#sm_general_settings').on('click','#sm_general_settings', function(e){
+		e.preventDefault();
+		if ( typeof (window.smart_manager.showPannelDialog) !== "undefined" && typeof (window.smart_manager.showPannelDialog) === "function" ) {
+			window.smart_manager.showPannelDialog(window.smart_manager.settingsRoute)
+		}
+	})
+	
 	jQuery(document).trigger('sm_event_handler');
-
 }
-
 //Function to equalize the enabled and disabled section height in column visibility dialog
 Smart_Manager.prototype.columnVisibilityEqualizeHeight = function() {
 	let enabledHeight = jQuery('#sm-columns-enabled').height(),
@@ -2764,7 +2804,7 @@ Smart_Manager.prototype.processColumnVisibilitySearch = function(eventObj) {
 	
 	if( ulId != '' ) {
 		jQuery("#"+ulId).find('li').each( function() {
-			let txtValue = jQuery(this).text();
+			let txtValue = jQuery(this).find('.sm-column-title-input').val();
 			if (txtValue.toUpperCase().indexOf(searchString.toUpperCase()) > -1) {
 		      jQuery(this).show();
 		    } else {
@@ -2801,10 +2841,17 @@ Smart_Manager.prototype.createColumnVisibilityDialog = function() {
 			colPosition = ( colObj.hasOwnProperty('position') ) ? ( ( colObj.position != '' ) ? colObj.position - 1 : '' ) : '';
 
 
-			temp = '<li><span class="handle">::</span> '+ colText + ' ' +
-						'<input type="hidden" name="columns[]" class="js-column-key" value="'+ colVal +'"> '+
-						'<input type="hidden" name="columns_names[]" class="js-column-title" value="'+ colText +'"> '+
-					'</li>';
+			temp = `<li>
+						<span class="handle">::</span> 
+						<input type="text" class="sm-column-title-input" title="${colText}" value="${colText}" readonly />
+						<span class="handle sm-column-title-editor-icon">
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"></path>
+							</svg>
+						</span>
+						<input type="hidden" name="columns[]" class="js-column-key" value="${colVal}">
+						<input type="hidden" name="columns_names[]" class="js-column-title" value="${colText}">
+					</li>`;
 
 			if( colObj.hasOwnProperty('hidden') && false === colObj.hidden ) {
 				enabledColumnsArray.push(temp);
@@ -2893,7 +2940,7 @@ Smart_Manager.prototype.columnsMoved = function() {
 
 //Function to load the updated list of enabled columns in the grid
 Smart_Manager.prototype.processColumnVisibility = function() {
-	if( false === window.smart_manager.columnsVisibilityUsed ) {
+	if( false === window.smart_manager.columnsVisibilityUsed && Object.keys(window.smart_manager.editedColumnTitles).length == 0 ) {
 		return false;
 	}
 
@@ -2910,8 +2957,7 @@ Smart_Manager.prototype.processColumnVisibility = function() {
 
 		let enabledColumnsArray = enabledColumns.split(','),
 			colVal = '',
-			position = 0,
-			index = 0;
+			position = 0;
 
 		window.smart_manager.column_names = [];
 		window.smart_manager.currentVisibleColumns = [];
@@ -2939,10 +2985,21 @@ Smart_Manager.prototype.processColumnVisibility = function() {
 		if ( "undefined" !== typeof (window.smart_manager.sortColumns) && "function" === typeof (window.smart_manager.sortColumns) ) {
 			window.smart_manager.sortColumns();
 		}
+	}
+
+	if( enabledColumns.length > 0 || Object.keys(window.smart_manager.editedColumnTitles).length > 0 ){
+		
+		let index = 0;
 
 		window.smart_manager.currentColModel.forEach(function(colObj){
 
-			let hidden = ( 'undefined' !== typeof(colObj.hidden) ) ? colObj.hidden : true;
+			let hidden = ( 'undefined' !== typeof(colObj.hidden) ) ? colObj.hidden : true,
+				data = (colObj.hasOwnProperty('data')) ? colObj.data : '';
+
+			// COde for updating the column titles
+			if( Object.keys(window.smart_manager.editedColumnTitles).length > 0 && data && window.smart_manager.editedColumnTitles.hasOwnProperty(data) ){
+				colObj.name = colObj.key = colObj.name_display = window.smart_manager.editedColumnTitles[data]
+			}
 
 			if( false === hidden ) {
 				if( false === colObj.hasOwnProperty('name_display') ) {// added for state management
@@ -2957,10 +3014,20 @@ Smart_Manager.prototype.processColumnVisibility = function() {
 			}
 		});
 
+		//code to trigger update state ajax call
 		if ( "undefined" !== typeof (window.smart_manager.updateState) && "function" === typeof (window.smart_manager.updateState) ) {
 			let params = { refreshDataModel : true, async: false };
+			if(window.smart_manager.isViewAuthor){
+				params.updateView = true
+			}
 			window.smart_manager.isColumnModelUpdated = true
 			window.smart_manager.updateState(params); //refreshing the dashboard states
+
+			if ( "undefined" !== typeof (window.smart_manager.refreshColumnsTitleAttribute) && "function" === typeof (window.smart_manager.refreshColumnsTitleAttribute) ) {
+				setTimeout(() => {
+					window.smart_manager.refreshColumnsTitleAttribute();
+				}, 1000);
+			}
 		}
 	}
 }
@@ -3003,7 +3070,6 @@ Smart_Manager.prototype.sortColumns = function() {
 
 	window.smart_manager.currentColModel = enabledColumnsFinal.concat(disabledColumns);
 }
-
 //Function to get the seleted IDs
 Smart_Manager.prototype.getSelectedKeyIds = function() {
 	let idKey = window.smart_manager.getKeyID(),
@@ -3011,25 +3077,24 @@ Smart_Manager.prototype.getSelectedKeyIds = function() {
 	window.smart_manager.selectedRows.forEach((rowId) => {
 		selectedIds.push(window.smart_manager.currentDashboardData[rowId][idKey]);
 	})
-
 	return selectedIds;
 }
-
 //Function to show columns menu
 
-Smart_Manager.prototype.isViewAuthor = function(viewSlug) {
-				let params = {};
-				params.data_type = 'json';
-				params.data = {
-								cmd: 'is_view_author',
-								module: 'custom_views',
-								active_module: viewSlug,
-								security: window.smart_manager.sm_nonce,
-								slug: viewSlug,
-							};
-				window.smart_manager.send_request(params, function(response){
-					window.smart_manager.displayShowHideColumnSettings(response);
-				});
+Smart_Manager.prototype.refreshIsViewAuthor = function(viewSlug) {
+	let params = {};
+	params.data_type = 'json';
+	params.data = {
+					cmd: 'is_view_author',
+					module: 'custom_views',
+					active_module: viewSlug,
+					security: window.smart_manager.sm_nonce,
+					slug: viewSlug,
+				};
+	window.smart_manager.send_request(params, function(response){
+		window.smart_manager.isViewAuthor = (response) ? true : false
+		window.smart_manager.displayShowHideColumnSettings(response);
+	});
 }
 
 //Function to delete records
@@ -3069,12 +3134,10 @@ Smart_Manager.prototype.updateLitePromoMessage = function( countRows ) {
 }
 
 //Function to save inline edited data
-Smart_Manager.prototype.saveData = function() {
-
-	if( Object.getOwnPropertyNames(window.smart_manager.editedData).length <= 0 ) {
+Smart_Manager.prototype.saveData = function(){
+	if(Object.getOwnPropertyNames(window.smart_manager.editedData).length <= 0){
 		return;
 	}
-
 	let params = {};
 		params.data = {
 						cmd: 'inline_update',
@@ -3084,57 +3147,44 @@ Smart_Manager.prototype.saveData = function() {
 						pro: ( ( typeof(window.smart_manager.sm_beta_pro) != 'undefined' ) ? window.smart_manager.sm_beta_pro : 0 ),
 						table_model: (window.smart_manager.currentDashboardModel.hasOwnProperty('tables') ) ? window.smart_manager.currentDashboardModel.tables : ''
 					};
-
+		params.data = ("undefined" !== typeof(window.smart_manager.addTasksParams) && "function" === typeof(window.smart_manager.addTasksParams) && 1 == window.smart_manager.sm_beta_pro) ? window.smart_manager.addTasksParams(params.data) : params.data;
 	let hasInvalidClass = jQuery('.sm-grid-dirty-cell').hasClass('htInvalid');
-	if ( hasInvalidClass == false ) {
-
-		window.smart_manager.send_request(params, function(response) {
-
+	if(hasInvalidClass == false){
+		window.smart_manager.send_request(params, function(response){
 			if('failed' !== response){
-
 				let title = 'success'
-				if (window.smart_manager.isJSON( response )){
+				if (window.smart_manager.isJSON(response)){
 					// title = 'note'
-					response = JSON.parse( response );
+					response = JSON.parse(response);
 					msg = response.msg;
-				} else{
+				}else{
 					msg = response;
 				}
-
-				if( ( typeof(window.smart_manager.sm_beta_pro) == 'undefined' || ( typeof(window.smart_manager.sm_beta_pro) != 'undefined' && window.smart_manager.sm_beta_pro != 1 ) ) ) {
-					
-					if( typeof( response.sm_inline_update_count ) != 'undefined' ) {
-						if ( typeof (window.smart_manager.updateLitePromoMessage) !== "undefined" && typeof (window.smart_manager.updateLitePromoMessage) === "function" ) {
-							window.smart_manager.updateLitePromoMessage( response.sm_inline_update_count );
+				if(('undefined' === typeof(window.smart_manager.sm_beta_pro) || ('undefined' !== typeof(window.smart_manager.sm_beta_pro) && 1 != window.smart_manager.sm_beta_pro))){
+					if(typeof( response.sm_inline_update_count) != 'undefined'){
+						if("undefined" !== typeof(window.smart_manager.updateLitePromoMessage) && "function" === typeof(window.smart_manager.updateLitePromoMessage)){
+							window.smart_manager.updateLitePromoMessage(response.sm_inline_update_count);
 						}
 					}
 				}
-
-				if( window.smart_manager.editedCellIds.length > 0 ) {
-					for( let i=0; i<window.smart_manager.editedCellIds.length; i++ ) {
-						
+				if(window.smart_manager.editedCellIds.length > 0){
+					for(let i=0; i<window.smart_manager.editedCellIds.length; i++){
 						colProp = window.smart_manager.hot.getCellMeta(window.smart_manager.editedCellIds[i].row, window.smart_manager.editedCellIds[i].col);
-						currentClassName = ( colProp.hasOwnProperty('className') ) ? colProp.className : '';
-
-						if( currentClassName.indexOf('sm-grid-dirty-cell') != -1 ) {
+						currentClassName = (colProp.hasOwnProperty('className')) ? colProp.className : '';
+						if(currentClassName.indexOf('sm-grid-dirty-cell') != -1){
 							currentClassName = currentClassName.substr(0, currentClassName.indexOf('sm-grid-dirty-cell'));
 						}
-
 						window.smart_manager.hot.setCellMeta(window.smart_manager.editedCellIds[i].row, window.smart_manager.editedCellIds[i].col, 'className', currentClassName);
 						jQuery('.smCheckboxColumnModel input[data-row='+window.smart_manager.editedCellIds[i].row+']').parents('tr').removeClass('sm_edited');
 					}
-
-
 					// Code to get modified page nos.
 					let modifiedPageNumbers = new Set()
 					window.smart_manager.modifiedRows.map((rowNo) => {
 						modifiedPageNumbers.add(Math.ceil((rowNo/window.smart_manager.limit)))
 					})
-
 					window.smart_manager.dirtyRowColIds = {};
 					window.smart_manager.editedData = {};
 					window.smart_manager.modifiedRows = new Array();
-
 					modifiedPageNumbers.forEach(r => window.smart_manager.getData({refreshPage: r}));
 				}
 				window.smart_manager.hot.render();
@@ -3144,27 +3194,34 @@ Smart_Manager.prototype.saveData = function() {
 				}
 				window.smart_manager.showNotification()
 			}
-
-		});
-		
-	} else {
+		});	
+	}else{
 		window.smart_manager.notification = {status:'error', message: _x('You have entered incorrect data in the highlighted cells.', 'notification', 'smart-manager-for-wp-e-commerce')}
 		window.smart_manager.showNotification()
 	}
+}
 
+// Function to get default route
+Smart_Manager.prototype.getDefaultRoute = function(isReplaceRoute = false){
+	return (isReplaceRoute) ?
+	((window.location.href.includes(window.smart_manager.defaultRoute) ) ? '/'+window.smart_manager.defaultRoute : '#!/')
+	: ((window.location.href.includes(window.smart_manager.defaultRoute) ) ? '#!/' : window.smart_manager.defaultRoute)
 }
 
 // Function to handle all modal dialog
 Smart_Manager.prototype.showModal = function(){
-	if(window.smart_manager.modal.hasOwnProperty('title') && '' !== window.smart_manager.modal.title && window.smart_manager.modal.hasOwnProperty('content') && '' !== window.smart_manager.modal.content){
-		window.smart_manager.showPannelDialog('#!/')
+	if(window.smart_manager.modal.hasOwnProperty('title') && '' !== window.smart_manager.modal.title && window.smart_manager.modal.hasOwnProperty('content') && '' !== window.smart_manager.modal.content && (typeof (window.smart_manager.showPannelDialog) !== "undefined" && typeof (window.smart_manager.showPannelDialog) === "function" && typeof (window.smart_manager.getDefaultRoute) !== "undefined" && typeof (window.smart_manager.getDefaultRoute) === "function")){
+		window.smart_manager.showPannelDialog(window.smart_manager.getDefaultRoute())
 	}
 }
 
 // Function to handle all notification alerts
 Smart_Manager.prototype.showNotification = function(){
-	if(window.smart_manager.notification.hasOwnProperty('message') && '' !== window.smart_manager.notification.message){
-		window.smart_manager.showPannelDialog('#!/')
+	if((!window.location.href.includes(window.smart_manager.advancedSearchRoute)  && !window.location.href.includes(window.smart_manager.bulkEditRoute)) && window.smart_manager.notification.hasOwnProperty('message') && '' !== window.smart_manager.notification.message && (typeof (window.smart_manager.showPannelDialog) !== "undefined" && typeof (window.smart_manager.showPannelDialog) === "function" && typeof (window.smart_manager.getDefaultRoute) !== "undefined" && typeof (window.smart_manager.getDefaultRoute) === "function")){
+		if(window.location.href.includes(window.smart_manager.columnManagerRoute)){ // Added as Col manager HTML & click events are not coming from raw js -- flickers for chrome. Can fix later
+			setTimeout(() => {window.smart_manager.showPannelDialog(window.smart_manager.columnManagerRoute)}, 1)
+		}
+		window.smart_manager.showPannelDialog(window.smart_manager.getDefaultRoute())
 	}
 }
 
@@ -3258,19 +3315,15 @@ Smart_Manager.prototype.refreshDashboardStates = function() {
 }
 
 //Function to handle the state apply at regular intervals
-Smart_Manager.prototype.updateState = function(refreshParams) {
-
+Smart_Manager.prototype.updateState = function(refreshParams = {}){
 	let viewSlug = window.smart_manager.getViewSlug(window.smart_manager.dashboardName);
-
 	// do not refresh the states if view
-	if ( typeof (window.smart_manager.refreshDashboardStates) !== "undefined" && typeof (window.smart_manager.refreshDashboardStates) === "function" ) {
+	if("undefined" !== typeof(window.smart_manager.refreshDashboardStates) && "function" === typeof(window.smart_manager.refreshDashboardStates)){
 		window.smart_manager.refreshDashboardStates(); //refreshing the dashboard states
 	}
-
-	if( Object.getOwnPropertyNames(window.smart_manager.dashboardStates).length <= 0 ) {
+	if(Object.getOwnPropertyNames(window.smart_manager.dashboardStates).length <= 0){
 		return;
 	}
-
 	//Ajax request to update the dashboard states
 	let params = {};
 		params.data_type = 'json';
@@ -3281,30 +3334,31 @@ Smart_Manager.prototype.updateState = function(refreshParams) {
 						dashboard_states: window.smart_manager.dashboardStates
 					};
 		// Code for passing extra param for view handling
-		if( window.smart_manager.sm_beta_pro == 1 ) {
+		if(1 == window.smart_manager.sm_beta_pro){
 			params.data['is_view'] = 0;
-
-			if(viewSlug){
+			if(viewSlug && (refreshParams.updateView || false)){
 				params.data['is_view'] = 1;
 				params.data['active_module'] = viewSlug;
 			}
-
 			// Flag for handling taxonomy dashboards
 			params.data['is_taxonomy'] = window.smart_manager.isTaxonomyDashboard();
-		}
-	
-		params.showLoader = false;
-
-		if( refreshParams ) {
-			if( typeof refreshParams.async != 'undefined' ) {
-				params.async = refreshParams.async;
+			// code for handling tasks of the current dashboard
+			if(refreshParams && 'undefined' !== typeof(refreshParams.isTasksEnabled)){
+				params.data['isTasks'] = refreshParams.isTasksEnabled;
+			}
+			// Code for handling renaming of columns
+			if(Object.keys(window.smart_manager.editedColumnTitles).length > 0){
+				params.data['edited_column_titles'] = window.smart_manager.editedColumnTitles;
 			}
 		}
-
-	window.smart_manager.send_request(params, function(refreshParams, response) {
+		params.showLoader = false;
+		if(refreshParams && 'undefined' !== typeof(refreshParams.async)){
+			params.async = refreshParams.async;
+		}
+	window.smart_manager.send_request(params,function(refreshParams,response){
 			window.smart_manager.dashboardStates = {};
-			if( refreshParams ) {
-				if( typeof refreshParams.refreshDataModel != 'undefined' ) {
+			if(refreshParams){
+				if('undefined' !== typeof(refreshParams.refreshDataModel)){
 					window.smart_manager.refresh();
 				}
 			}
@@ -3320,6 +3374,8 @@ Smart_Manager.prototype.isTaxonomyDashboard = function() {
 // Function to get keyId for the dashboard
 Smart_Manager.prototype.getKeyID = function() {
 	switch (true){
+		case ("undefined" !== typeof(window.smart_manager.isTasksEnabled) && "function" === typeof(window.smart_manager.isTasksEnabled) && (1 === window.smart_manager.isTasksEnabled())):
+			return 'sm_tasks_id'
         case ('undefined' !== typeof window.smart_manager.taxonomyDashboards[window.smart_manager.dashboard_key]):
 			return 'terms_term_id'
 		case ('user' === window.smart_manager.dashboard_key):
@@ -3329,13 +3385,31 @@ Smart_Manager.prototype.getKeyID = function() {
 	}
 }
 
+// Function to save settings
+Smart_Manager.prototype.saveSettings = function(settings = {}){
+	if(0 == Object.keys(settings).length || (0 < Object.keys(settings).length && !settings.hasOwnProperty('general'))){
+		return;
+	}
+	let params = {};
+	params.data = {
+					cmd: 'save_settings',
+					active_module: 'smart_manager_settings',
+					settings: JSON.stringify(settings),
+					security: window.smart_manager.sm_nonce,
+					pro: ('undefined' !== typeof(window.smart_manager.sm_beta_pro)) ? window.smart_manager.sm_beta_pro : 0
+				};
+	window.smart_manager.send_request(params,function(response){
+		location.reload();
+	});
+};
+
 if(typeof window.smart_manager === 'undefined'){
 	window.smart_manager = new Smart_Manager();
 }
 
 //Events to be handled on document ready
 jQuery(document).ready(function() {
-		window.smart_manager.init();
+	window.smart_manager.init();
 });
 
 jQuery.widget('ui.dialog', jQuery.extend({}, jQuery.ui.dialog.prototype, { 
@@ -3388,14 +3462,14 @@ jQuery.widget('ui.dialog', jQuery.extend({}, jQuery.ui.dialog.prototype, {
 			});
 	};
 
-	Smart_Manager.prototype.dateEditor = function( currObj, arguments, format = 'Y-m-d H:i:s', placeholder = 'YYYY-MM-DD HH:MM:SS' ) {
+	Smart_Manager.prototype.dateEditor = function(currObj, arguments, format = 'Y-m-d H:i:s', placeholder = 'YYYY-MM-DD HH:MM:SS', cssClass = 'htDateTimeEditor') {
       // Call the original createElements method
       Handsontable.editors.TextEditor.prototype.createElements.apply(currObj, arguments);
 
       // Create datepicker input and update relevant properties
       currObj.TEXTAREA = document.createElement('input');
       currObj.TEXTAREA.setAttribute('type', 'text');
-      currObj.TEXTAREA.className = 'htDateTimeEditor';
+      currObj.TEXTAREA.className = cssClass;
       currObj.textareaStyle = currObj.TEXTAREA.style;
       currObj.textareaStyle.width = 0;
       currObj.textareaStyle.height = 0;
@@ -3403,15 +3477,15 @@ jQuery.widget('ui.dialog', jQuery.extend({}, jQuery.ui.dialog.prototype, {
       // Replace textarea with datepicker
       Handsontable.dom.empty(currObj.TEXTAREA_PARENT);
       currObj.TEXTAREA_PARENT.appendChild(currObj.TEXTAREA);
-
-        jQuery('.htDateTimeEditor')
-			.Zebra_DatePicker({ format: format,
-                                    show_icon: false,
-                                    show_select_today: false,
-                                    default_position: 'below',
-									readonly_element: false,
-                                })
-			.attr('placeholder',placeholder);
+		if(0 !== window.smart_manager.useDatePickerForDateTimeOrDateCols){
+			jQuery('.'+cssClass).Zebra_DatePicker({ format: format,
+				show_icon: false,
+				show_select_today: false,
+				default_position: 'below',
+				readonly_element: false,
+			})
+		}
+		jQuery('.'+cssClass).attr('placeholder',placeholder);
     };
 
 	function customNumericTextEditor(query, callback) {
@@ -3446,13 +3520,28 @@ jQuery.widget('ui.dialog', jQuery.extend({}, jQuery.ui.dialog.prototype, {
 
 	  let dateTimeEditor = Handsontable.editors.TextEditor.prototype.extend(),
 	  		dateEditor = Handsontable.editors.TextEditor.prototype.extend(),
-	  		timeEditor = Handsontable.editors.TextEditor.prototype.extend();
+	  		timeEditor = Handsontable.editors.TextEditor.prototype.extend(),
+			customNumericEditor = Handsontable.editors.NumericEditor.prototype.extend();
 
+			customNumericEditor.prototype.createElements = function() {
+				// Call the original createElements method
+				Handsontable.editors.NumericEditor.prototype.createElements.apply(this, arguments);
+
+				// Create number input and update relevant properties
+				this.TEXTAREA = document.createElement('input');
+				this.TEXTAREA.setAttribute('type', ((0 === window.smart_manager.useNumberFieldForNumericCols) ? 'text' : 'number'));
+
+				 // Replace textarea with number
+				 Handsontable.dom.empty(this.TEXTAREA_PARENT);
+				 this.TEXTAREA_PARENT.appendChild(this.TEXTAREA);
+			}
+
+			Handsontable.editors.registerEditor('customNumericEditor', customNumericEditor);
 
 
         dateTimeEditor.prototype.createElements = function() { window.smart_manager.dateEditor( this, arguments ) };
-        dateEditor.prototype.createElements = function() { window.smart_manager.dateEditor( this, arguments, 'Y-m-d', 'YYYY-MM-DD' ) };
-        timeEditor.prototype.createElements = function() { window.smart_manager.dateEditor( this, arguments, 'H:i', 'HH:MM' ) };
+        dateEditor.prototype.createElements = function() { window.smart_manager.dateEditor( this, arguments, 'Y-m-d', 'YYYY-MM-DD', 'htDateEditor' ) };
+        timeEditor.prototype.createElements = function() { window.smart_manager.dateEditor( this, arguments, 'H:i', 'HH:MM', 'htTimeEditor' ) };
 
         function numericRenderer(hotInstance, td, row, col, prop, value, cellProperties) {
 		    Handsontable.renderers.NumericRenderer.apply(this, arguments);
@@ -3598,7 +3687,7 @@ jQuery.widget('ui.dialog', jQuery.extend({}, jQuery.ui.dialog.prototype, {
 				td.setAttribute('class',cellProperties.className);
 			}
 			
-			td.innerHTML = '<div class="wrapper" style="line-height:30px;">' + td.innerHTML + '</div>';
+			td.innerHTML = '<div class="wrapper">' + td.innerHTML + '</div>';
 
 			return td;
 		}
@@ -3687,7 +3776,7 @@ jQuery.widget('ui.dialog', jQuery.extend({}, jQuery.ui.dialog.prototype, {
 			return params.td
 		}
 
-	  function imageRenderer(hotInstance, td, row, column, prop, value, cellProperties) {
+	  	function imageRenderer(hotInstance, td, row, column, prop, value, cellProperties) {
 			try{
 				value = (!value || value == 0) ? window.smart_manager.defaultImagePlaceholder : value
 				Handsontable.dom.empty(td);
@@ -3702,81 +3791,272 @@ jQuery.widget('ui.dialog', jQuery.extend({}, jQuery.ui.dialog.prototype, {
 				console.log('imageRenderer:: ', e)
 			}
 		  	return td;
-	  }
-
-	  function multipleImageRenderer(hotInstance, td, row, column, prop, value, cellProperties) {
-		try{
-			value = (!Array.isArray(value)) ? [] : value;
-			value = (value.length === 0) ? [{id:0, val:window.smart_manager.defaultImagePlaceholder}] : value
-			Handsontable.dom.empty(td);
-			value.map((obj) => {
-				td = generateImageHtml({
-					td: td,
-					value: obj.val || '',
-					cellProperties: cellProperties,
-					currentInstance: this
+	  	}
+	 	function multipleImageRenderer(hotInstance, td, row, column, prop, value, cellProperties) {
+			try{
+				value = (!Array.isArray(value)) ? [] : value;
+				value = (value.length === 0) ? [{id:0, val:window.smart_manager.defaultImagePlaceholder}] : value
+				Handsontable.dom.empty(td);
+				value.map((obj) => {
+					td = generateImageHtml({
+						td: td,
+						value: obj.val || '',
+						cellProperties: cellProperties,
+						currentInstance: this
+					})
 				})
-			})
-			td.innerHTML = '<div class="wrapper">' + td.innerHTML + '</div>';
-		}catch(e){
-			console.log('multipleImageRenderer:: ', e)
+				td.innerHTML = '<div class="wrapper">' + td.innerHTML + '</div>';
+			}catch(e){
+				console.log('multipleImageRenderer:: ', e)
+			}
+			return td;
+  		}
+	// For passing tasks params when updating using inline edit
+	Smart_Manager.prototype.addTasksParams = function(params = {}){
+		if(!params || !params.hasOwnProperty('cmd') || ("undefined" === typeof(window.smart_manager.isTasksEnabled) && "function" !== typeof(window.smart_manager.isTasksEnabled))) {
+			return params;
 		}
-		return td;
-  }
+		let cmdNames = ['get_dashboard_model','get_data_model'];
+		if(cmdNames.includes(params['cmd'])){
+			return Object.assign(params,{isTasks: (window.smart_manager.isTasksEnabled()) ? 1 : 0});
+		}else if('batch_update' !== params['cmd'] && params.hasOwnProperty('edited_data')){
+			params.updatedEditedData = ((window.smart_manager.updatedEditedData) && (Object.values(window.smart_manager.updatedEditedData).length > 0)) ? JSON.stringify(window.smart_manager.updatedEditedData) : params['edited_data'];
+		} 
+		return Object.assign(params,{isTasks: (window.smart_manager.isTasksEnabled()) ? 1 : 0,
+			title: (window.smart_manager.updatedTitle) ? window.smart_manager.updatedTitle : window.smart_manager.processContent,
+		});
+	}
+	// For getting edited column name
+	Smart_Manager.prototype.getColDisplayName = function(colSrc = ''){
+		if(!colSrc || ('undefined' === typeof(window.smart_manager.excludedEditedFieldKeys)) || ('undefined' === typeof(window.smart_manager.currentColModel))){
+			return colSrc;
+		}
+		for(i = 0; i < window.smart_manager.currentColModel.length; i++){
+			if(('undefined' !== typeof(window.smart_manager.currentColModel[i])) && window.smart_manager.currentColModel[i] && window.smart_manager.currentColModel[i].hasOwnProperty('src') && window.smart_manager.currentColModel[i].hasOwnProperty('name_display') && (window.smart_manager.currentColModel[i].src === colSrc) && false === window.smart_manager.excludedEditedFieldKeys.includes(colSrc)){
+				return window.smart_manager.currentColModel[i].name_display;
+			}
+		}
+	}
+	// For updating image
+	Smart_Manager.prototype.inlineUpdateImage = function(imageParams){
+		if(!imageParams || !((Object.keys(imageParams)).every(imageParam => imageParams.hasOwnProperty(imageParam)))){
+			return;
+		}
+		let params = {};
+		params.data = {
+			cmd: 'inline_update',
+			active_module: window.smart_manager.dashboard_key,
+			edited_data: imageParams.editedImage,
+			security: window.smart_manager.sm_nonce,
+			pro: ('undefined' !== typeof(window.smart_manager.sm_beta_pro)) ? window.smart_manager.sm_beta_pro : 0,
+			table_model: (window.smart_manager.currentDashboardModel.hasOwnProperty('tables')) ? window.smart_manager.currentDashboardModel.tables : ''
+		};
+		params.data = ("undefined" !== typeof(window.smart_manager.addTasksParams) && "function" === typeof(window.smart_manager.addTasksParams) && 1 == window.smart_manager.sm_beta_pro) ? window.smart_manager.addTasksParams(params.data) : params.data;
+		window.smart_manager.send_request(params, function(response){
+			if('failed' !== response){
+				window.smart_manager.hot.setDataAtCell(imageParams.row, imageParams.col, imageParams.value, imageParams.source);
+				if(window.smart_manager.isJSON(response) && ('undefined' === typeof(window.smart_manager.sm_beta_pro) || ('undefined' !== typeof(window.smart_manager.sm_beta_pro) && 1 != window.smart_manager.sm_beta_pro))){
+					response = JSON.parse(response);
+					msg = response.msg;
+					if('undefined' !== typeof(response.sm_inline_update_count)){
+						if("undefined" !== typeof(window.smart_manager.updateLitePromoMessage) && "function" === typeof(window.smart_manager.updateLitePromoMessage)){
+							window.smart_manager.updateLitePromoMessage(response.sm_inline_update_count);
+						}
+					}
+				}else{
+					msg = response;
+				}
+			}
+		});
+	};
+	// For changing dashboard display name in bottom bar for tasks
+	Smart_Manager.prototype.changeDashboardDisplayName = function(dashboardDisplayName = ''){
+		if(!dashboardDisplayName){
+			return;
+		}
+		window.smart_manager.dashboardDisplayName = ("undefined" !== typeof(window.smart_manager.isTasksEnabled) && "function" === typeof(window.smart_manager.isTasksEnabled) && window.smart_manager.isTasksEnabled()) ? _x('Tasks','bottom bar display name for tasks','smart-manager-for-wp-e-commerce') : dashboardDisplayName;
+	}
+	// Code for handling gallery image modal.
+	Smart_Manager.prototype.displayGalleryImagesModal = function(galleryImageParams){
+		if(!galleryImageParams || !((Object.keys(galleryImageParams)).every(galleryImageParam => galleryImageParams.hasOwnProperty(galleryImageParam)))){
+			return;
+		}
+		let rowNo = (galleryImageParams.hasOwnProperty('rowNo')) ? galleryImageParams.rowNo : 0;
+		window.smart_manager.modal = {
+			title: _x('Gallery Images','gallery modal title','smart-manager-for-wp-e-commerce'),
+			content: galleryImageParams.imageGalleryHtml,
+			autoHide: false,
+			cta: {
+					title: _x('Add','button','smart-manager-for-wp-e-commerce'),
+					closeModalOnClick: false,
+					callback: function(){
+						if("undefined" !== typeof(window.smart_manager.handleMediaUpdate) && "function" === typeof(window.smart_manager.handleMediaUpdate)){
+							jQuery('.sm_ui_dialog_class, .ui-widget-overlay').hide();
+							let params = {
+								UploaderText: _x('Add images to product gallery','button','smart-manager-for-wp-e-commerce'),
+								UploaderButtonText: _x('Add to gallery','button','smart-manager-for-wp-e-commerce'),
+								allowMultiple: true,
+								row_data_id: galleryImageParams.id
+							};
+							params.callback = function(attachments){
+								jQuery('.sm_ui_dialog_class , .ui-widget-overlay').show();
+								if('undefined' === typeof(attachments)){
+									return;
+								}
+								let imageGalleryHtml = `<div class="sm_gallery_image_parent" data-id="${galleryImageParams.id}" data-col="${galleryImageParams.src || ''}" data-row="${rowNo || 0}">`,
+									modifiedGalleryImages = [],
+									imageIds = new Set();
+								jQuery('.sm_gallery_image').find('img').each(function(){
+									modifiedGalleryImages.push({
+										id:jQuery(this).data('id'), 
+										val:jQuery(this).attr('src')
+									});
+									imageIds.add(jQuery(this).data('id'));
+								});	
+								attachments.forEach(function(attachmentObj){
+									modifiedGalleryImages.push({
+										id:attachmentObj.id, 
+										val:attachmentObj.sizes.full.url
+									});
+									imageIds.add(attachmentObj.id);
+								});
+								if("undefined" !== typeof(window.smart_manager.generateImageGalleryDlgHtml) && "function" === typeof(window.smart_manager.generateImageGalleryDlgHtml)){
+									imageGalleryHtml += window.smart_manager.generateImageGalleryDlgHtml(modifiedGalleryImages);
+								}
+								imageGalleryHtml += '</div>';
+								let args = {id:galleryImageParams.id,src:galleryImageParams.src,values:[...imageIds].join(','),imageGalleryHtml:imageGalleryHtml,rowNo:rowNo};
+								if(1 == window.smart_manager.sm_beta_pro && "undefined" !== typeof(window.smart_manager.displayTitleModal) && "function" === typeof(window.smart_manager.displayTitleModal)){
+									window.smart_manager.displayTitleModal(args);
+								}else if("undefined" !== typeof(window.smart_manager.inlineUpdateMultipleImages) && "function" === typeof(window.smart_manager.inlineUpdateMultipleImages)){
+									jQuery('div.modal-body').html(imageGalleryHtml);
+									window.smart_manager.inlineUpdateMultipleImages(args);
+								}	
+							}
+							window.smart_manager.handleMediaUpdate( params );
+						}
+					}
+			},
+		}
+		window.smart_manager.showModal()
+	}
+	// Code for displaying title modal in case of gallery images.
+	Smart_Manager.prototype.displayTitleModal = function(params){
+		if(!params || !((Object.keys(params)).every(param => params.hasOwnProperty(param)))){
+			return;
+		}
+		let editedColumnName = '';
+		if("undefined" !== typeof(window.smart_manager.getColDisplayName) && "function" === typeof(window.smart_manager.getColDisplayName)){
+			editedColumnName = window.smart_manager.getColDisplayName(params.src);
+		}
+		window.smart_manager.processName = _x('Inline Edit','process name','smart-manager-for-wp-e-commerce');
+		window.smart_manager.processContent = (editedColumnName) ? editedColumnName : params.src;	
+		if("undefined" !== typeof(window.smart_manager.inlineUpdateMultipleImages) && "function" === typeof(window.smart_manager.inlineUpdateMultipleImages)){
+			window.smart_manager.processCallback = window.smart_manager.inlineUpdateMultipleImages;
+		}	
+		window.smart_manager.processCallbackParams = params;	
+		if("undefined" !== typeof(window.smart_manager.showTitleModal) && "function" === typeof (window.smart_manager.showTitleModal)){
+			window.smart_manager.showTitleModal()   
+		}
+	}
+	// Code for show/hide tasks
+	Smart_Manager.prototype.displayTasks = function (params = {}){
+		let actionBtns = jQuery(".sm_top_bar_action_btns:nth-last-child(2), .sm_top_bar_action_btns:nth-last-child(3), .sm_top_bar_action_btns:nth-last-child(4), .sm_top_bar_action_btns #batch_update_sm_editor_grid, .sm_top_bar_action_btns #show_hide_cols_sm_editor_grid"); 
+		let revDelBtns = jQuery(".sm_top_bar_action_btns:nth-last-child(5) #undo_sm_editor_grid, .sm_top_bar_action_btns:nth-last-child(5) #delete_tasks_sm_editor_grid");
+    	switch(true){
+    		case (params.hasOwnProperty('hideTasks')):
+		    case params.hasOwnProperty('dashboardChange'):
+		    	jQuery("#sm_show_tasks").prop('checked', false);
+		    	actionBtns.show();
+				revDelBtns.hide();
+		    	(window.smart_manager.getViewSlug(window.smart_manager.dashboardName)) ? jQuery('#sm_show_tasks_container').hide() : jQuery('#sm_show_tasks_container').show();
+		    	break;
+		    case params.hasOwnProperty('showHideTasks'):
+		    	actionBtns.toggle();
+		    	if(1 === params.showHideTasks){
+		    		revDelBtns.show();
+					jQuery('#sm_show_tasks_container').parents('div.sm_top_bar_action_btns').attr('style','width: 100% !important;');
+		        	window.smart_manager.updateState();
+		    	}else{
+			    	revDelBtns.hide();
+					jQuery('#sm_show_tasks_container').parents('div.sm_top_bar_action_btns').removeAttr('style');
+			       	window.smart_manager.updateState({isTasksEnabled:0});
+		    	}
+		    	break;
+		}
+	}
 
-	  // Register an alias for datetime
-	  Handsontable.cellTypes.registerCellType('sm.datetime', {
-        editor: dateTimeEditor,
-        renderer: datetimeRenderer,
-        allowInvalid: true,
-      });
+	//Function to add title for each of the column headers
+	Smart_Manager.prototype.refreshColumnsTitleAttribute = function(){
+		setTimeout(() => {
+			jQuery('table.htCore').find('.colHeader').each(function() {
+				jQuery(this).attr('title',jQuery(this).text()+' '+_x('(Click to sort)', 'tooltip', 'smart-manager-for-wp-e-commerce'));
+			});
+		}, 1000);
+	}
 
-	  // Register an alias for date
-      Handsontable.cellTypes.registerCellType('sm.date', {
-        editor: dateEditor,
-        renderer: datetimeRenderer,
-        allowInvalid: true,
-      });
+	// Code for resetting search functionalities.
+	Smart_Manager.prototype.resetSearch = function(){
+		('advanced' === window.smart_manager.searchType) ? jQuery('#search_switch').prop('checked', false).trigger('change') : jQuery('#sm_simple_search_box').val('');
+	}
 
-      // Register an alias for time
-      Handsontable.cellTypes.registerCellType('sm.time', {
-        editor: timeEditor,
-        renderer: datetimeRenderer,
-        allowInvalid: true,
-      });
+	// Function to detect if filtered data or not
+	Smart_Manager.prototype.isFilteredData = function(){
+		return (('simple' === window.smart_manager.searchType && window.smart_manager.simpleSearchText !== '') || ('simple' !== window.smart_manager.searchType && window.smart_manager.advancedSearchQuery.length > 0))
+	}
 
-	  // Register an alias for image
-	  Handsontable.cellTypes.registerCellType('sm.image', {
+	// Register an alias for datetime
+	Handsontable.cellTypes.registerCellType('sm.datetime', {
+		editor: dateTimeEditor,
+		renderer: datetimeRenderer,
+		allowInvalid: true,
+	});
+
+	// Register an alias for date
+	Handsontable.cellTypes.registerCellType('sm.date', {
+		editor: dateEditor,
+		renderer: datetimeRenderer,
+		allowInvalid: true,
+	});
+
+	// Register an alias for time
+	Handsontable.cellTypes.registerCellType('sm.time', {
+		editor: timeEditor,
+		renderer: datetimeRenderer,
+		allowInvalid: true,
+	});
+
+	// Register an alias for image
+	Handsontable.cellTypes.registerCellType('sm.image', {
 		renderer: imageRenderer,
 		allowInvalid: true,
-	  });
+	});
 
-	  // Register an alias for multiple gallery images
-	  Handsontable.cellTypes.registerCellType('sm.multipleImage', {
+	// Register an alias for multiple gallery images
+	Handsontable.cellTypes.registerCellType('sm.multipleImage', {
 		// renderer: Handsontable.renderers.HtmlRenderer,
 		renderer: multipleImageRenderer,
 		allowInvalid: true,
-	  });
+	});
 
-	  // Register an alias for longstrings
-	  Handsontable.cellTypes.registerCellType('sm.longstring', {
+	// Register an alias for longstrings
+	Handsontable.cellTypes.registerCellType('sm.longstring', {
 		editor: defaultTextEditor,
 		renderer: multilistRenderer,
 		allowInvalid: true,
-	  });
+	});
 
-	  // Register an alias for serialized
-	  Handsontable.cellTypes.registerCellType('sm.serialized', {
+	// Register an alias for serialized
+	Handsontable.cellTypes.registerCellType('sm.serialized', {
 		editor: defaultTextEditor,
 		renderer: multilistRenderer,
 		allowInvalid: true,
-	  });
+	});
 
 	// Register an alias for multilist
-	  Handsontable.cellTypes.registerCellType('sm.multilist', {
+	Handsontable.cellTypes.registerCellType('sm.multilist', {
 		editor: defaultTextEditor,
 		renderer: multilistRenderer,
 		allowInvalid: true,
-	  });
+	});
 
 })(Handsontable);

@@ -20,7 +20,7 @@ function sm_variable_parent_sync_price( $ids ) {
 
 }
 
-function sm_update_stock_status( $id, $stock ) {
+function sm_update_stock_status( $id = 0, $stock = 0 ) {
   if ( ( ( !empty( Smart_Manager::$sm_is_woo21 ) && Smart_Manager::$sm_is_woo21 == 'true' ) || ( !empty( Smart_Manager::$sm_is_woo22 ) && Smart_Manager::$sm_is_woo22 == 'true' ) || ( !empty( Smart_Manager::$sm_is_woo30 ) && Smart_Manager::$sm_is_woo30 == 'true' ) ) && !empty( $id ) ) {
 
 	  $parent_id = wp_get_post_parent_id( $id );
@@ -38,20 +38,22 @@ function sm_update_stock_status( $id, $stock ) {
 		  if( !empty( Smart_Manager::$sm_is_woo30 ) && Smart_Manager::$sm_is_woo30 == 'true' && function_exists('wc_update_product_stock') ) {
 		  		$prod = wc_get_product($id);
 		  		$prod->set_stock_quantity( $stock );
-				wc_update_product_stock( $prod, $stock );
-		  } else if ( 'yes' === get_post_meta( $id, '_manage_stock', true ) ) { //check if manage stock is enabled or not  
-			  if( version_compare( $woo_version, '2.4', ">=" ) ) {
-				  if( $parent_id > 0 ) {
-					  $stock_status_option = get_post_meta($id,'stock_status',true);
-					  $stock_status = (!empty($stock_status_option)) ? $stock_status_option : '';
-					  if( is_callable( array($woo_prod_obj_stock_status, 'set_stock_status') ) ) {
-						$woo_prod_obj_stock_status->set_stock_status($stock_status);
+		  		$result = wc_update_product_stock( $prod, $stock );
+		  		return ( ( empty( $result ) && 0 == $result ) || ( ( ! empty( $result ) ) && ( ! is_wp_error( $result ) ) ) ) ? true : false;
+		  } elseif ( 'yes' === get_post_meta( $id, '_manage_stock', true ) ) { //check if manage stock is enabled or not  
+			  if ( version_compare( $woo_version, '2.4', ">=" ) ) {
+				  if ( $parent_id > 0 ) {
+					  $stock_status_option = get_post_meta( $id, 'stock_status', true );
+					  $stock_status = ( ! empty( $stock_status_option ) ) ? $stock_status_option : '';
+					  if ( is_callable( array( $woo_prod_obj_stock_status, 'set_stock_status' ) ) ) {
+						$woo_prod_obj_stock_status->set_stock_status( $stock_status );
 					  }
-				  } else if( is_callable( array($woo_prod_obj_stock_status, 'check_stock_status') ) ) {
+				  } elseif ( is_callable( array( $woo_prod_obj_stock_status, 'check_stock_status' ) ) ) {
 					  $woo_prod_obj_stock_status->check_stock_status();
 				  }
-			  } else if( is_callable( array($woo_prod_obj_stock_status, 'set_stock') ) ) {
-				  $woo_prod_obj_stock_status->set_stock($stock);
+			  } elseif ( is_callable( array( $woo_prod_obj_stock_status, 'set_stock' ) ) ) {
+                    $result = $woo_prod_obj_stock_status->set_stock( $stock );
+        			return ( ( empty( $result ) && 0 == $result ) || ( ( ! empty( $result ) ) && ( ! is_wp_error( $result ) ) ) ) ? true : false;
 			  }
 		  } 
 		}
@@ -498,4 +500,64 @@ function sm_update_post( $id = 0 ) {
 	}
 	$parent_id = wp_get_post_parent_id( $id );
 	return ( empty( $parent_id ) ) ? wp_update_post( array( 'ID' => $id ) ) : wp_update_post( array( 'ID' => $parent_id ) );
+}
+
+/**
+ * Function to edit previous value format for particular column for storing it in task details table
+ *
+ * @param array $args array has update_column, data_type & prev_val.
+ * @return returns the formatted previous value
+ */
+function sa_sm_format_prev_val( $args = array() ) {
+	if ( empty( $args ) || empty( $args['update_column'] ) || empty( $args['col_data_type'] ) ) {
+		return $args['prev_val'];
+	}
+	switch ( $args['col_data_type'] ) {
+		case ( ( ( ! empty( $args['col_data_type']['data_cols_serialized'] ) ) && ( in_array( $args['update_column'], $args['col_data_type']['data_cols_serialized'], true ) ) ) ):
+		case ( ! empty( $args['col_data_type'] ) && ( 'sm.serialized' === $args['col_data_type'] ) ):
+			return maybe_serialize( $args['prev_val'] );
+		case ( ( ! empty( $args['col_data_type']['data_cols_multiselect'] ) ) && ( in_array( $args['update_column'], $args['col_data_type']['data_cols_multiselect'], true ) ) && ( is_array( $args['prev_val'] ) ) ):
+		case ( ( ! empty( $args['col_data_type']['data_cols_list'] ) ) && ( in_array( $args['update_column'], $args['col_data_type']['data_cols_list'], true ) ) && ( is_array( $args['prev_val'] ) ) ):
+		case ( ( 'sm.multilist' === $args['col_data_type'] || 'dropdown' === $args['col_data_type'] ) && ( is_array( $args['prev_val'] ) ) ):
+			return implode( ',', $args['prev_val'] );
+		case ( ( ! empty( $args['col_data_type']['data_cols_checkbox'] ) && ( ! empty( $args['updated_val'] ) ) && in_array( $args['update_column'], $args['col_data_type']['data_cols_checkbox'], true ) ) || ( 'checkbox' === $args['col_data_type'] ) ):
+			if ( in_array( $args['updated_val'], array( 'yes', 'no' ) ) ) {
+				return ( 'yes' === $args['updated_val'] ) ? 'no' : 'yes';
+			} else if ( in_array( $args['updated_val'], array( 'true', 'false' ) ) ) {
+				return ( 'true' === $args['updated_val'] ) ? 'false' : 'true';
+			}
+			
+		default:
+			return $args['prev_val'];
+	}
+}
+
+/**
+ * Function to get site timestamp from date passed in UTC timezone
+ *
+ * @param array $date Date string in UTC timezone.
+ * @return int $timestamp Timestamp in site timezone 
+ */
+function sa_sm_get_site_timestamp_from_utc_date( $date = '' ) {
+	if( empty( $date ) ){
+		return $date;
+	}
+	$offset = get_option( 'gmt_offset' ) * HOUR_IN_SECONDS;
+	$date = ( ! is_numeric( $date ) ) ? strtotime( $date ) : $date;
+	return $date + $offset;
+}
+
+/**
+ * Function to get UTC timestamp from date passed in site timezone
+ *
+ * @param array $date Date string in site timezone.
+ * @return int $timestamp Timestamp in UTC 
+ */
+function sa_sm_get_utc_timestamp_from_site_date( $date = '' ) {
+	if( empty( $date ) ){
+		return $date;
+	}
+	$offset = get_option( 'gmt_offset' ) * HOUR_IN_SECONDS;
+	$date = ( ! is_numeric( $date ) ) ? strtotime( $date ) : $date;
+	return $date - $offset;
 }

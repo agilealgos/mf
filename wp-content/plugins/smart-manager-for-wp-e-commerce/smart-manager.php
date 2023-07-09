@@ -2,27 +2,23 @@
 /*
 * Plugin Name: Smart Manager - WooCommerce Advanced Bulk Edit, Inventory Management & more...
 * Plugin URI: https://www.storeapps.org/product/smart-manager/
-* Description: <strong>Pro Version Installed</strong>. The #1 tool for WooCommerce inventory management, stock management, bulk edit, export, delete, duplicate...from one place using an Excel-like sheet editor.
-* Version: 7.4.0
+* Description: <strong>Lite Version Installed</strong>. The #1 tool for WooCommerce inventory management, stock management, bulk edit, export, delete, duplicate...from one place using an Excel-like sheet editor.
+* Version: 8.11.0
 * Author: StoreApps
 * Author URI: https://www.storeapps.org/
 * Text Domain: smart-manager-for-wp-e-commerce
 * Domain Path: /languages/
 * Requires at least: 4.8
-* Tested up to: 6.1.1
+* Tested up to: 6.2.2
 * Requires PHP: 5.6+
 * WC requires at least: 2.0.0
 * WC tested up to: 7.0.1
-* Copyright (c) 2010 - 2022 StoreApps. All rights reserved.
-* License: GNU General Public License v3.0
-* License URI: http://www.gnu.org/licenses/gpl-3.0.html
+* Copyright (c) 2010 - 2023 StoreApps. All rights reserved.
+* License: GNU General Public License v2.0
+* License URI: http://www.gnu.org/licenses/gpl-2.0.html
 */
 
 defined( 'ABSPATH' ) || exit;
-
-update_option( '_storeapps_connector_access_token', 'yes', 'yes' );
-update_option( '_storeapps_connected', 'yes', 'yes' );
-update_option( '_storeapps_connector_status', 1 );
 
 if ( ! defined( 'SM_PLUGIN_FILE' ) ) {
 	define( 'SM_PLUGIN_FILE', __FILE__ );
