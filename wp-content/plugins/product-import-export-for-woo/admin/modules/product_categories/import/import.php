@@ -149,8 +149,14 @@ class Wt_Import_Export_For_Woo_Basic_Categories_Import {
         if ($pid) {
             $related_data['parent'] = $pid;
         }
-        $chk = $wpdb->get_row($wpdb->prepare("SELECT t.term_id, t.slug FROM $wpdb->terms AS t INNER JOIN $wpdb->term_taxonomy as tt ON tt.term_id = t.term_id WHERE  t.slug = %s and tt.taxonomy = %s ORDER BY t.term_id", rawurlencode($slug), $tax_type), ARRAY_A);
-
+		
+		if( '' !== $slug ){
+			$chk = $wpdb->get_row($wpdb->prepare("SELECT t.term_id, t.slug FROM $wpdb->terms AS t INNER JOIN $wpdb->term_taxonomy as tt ON tt.term_id = t.term_id WHERE t.slug = %s and tt.taxonomy = %s ORDER BY t.term_id", rawurlencode($slug), $tax_type), ARRAY_A);
+		}
+		if( '' !== $term_id ){
+			$chk = $wpdb->get_row($wpdb->prepare("SELECT t.term_id, t.slug FROM $wpdb->terms AS t INNER JOIN $wpdb->term_taxonomy as tt ON tt.term_id = t.term_id WHERE t.term_id = %d and tt.taxonomy = %s ORDER BY t.term_id", $term_id, $tax_type), ARRAY_A);
+		}
+		
         $tid = '';
         $status = array();
         if (isset($chk['term_id']))

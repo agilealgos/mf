@@ -113,7 +113,8 @@ class Wt_Import_Export_For_Woo_Admin_Basic {
 		}
 		
 		$is_variable_product_exist = false;
-		$variable_products_count = wp_count_posts( 'product_variation' )->publish;
+                
+		$variable_products_count = isset( wp_count_posts( 'product_variation' )->publish ) ? wp_count_posts( 'product_variation' )->publish : 0;
 		if ( $variable_products_count > 0 ) {
 			// At least one variable product exists in the database with published status and ad banner is not dissmissed earlier.
 			$is_banner_dismissed = get_option('wt_ier_pro_banner_dismissed');
@@ -142,6 +143,8 @@ class Wt_Import_Export_For_Woo_Admin_Basic {
 				'sure'=>__('Are you sure?'),
 				'use_expression'=>__('Apply'),
 				'cancel'=>__('Cancel'),
+				'hide_features'=>__('Hide features'),
+				'show_features'=>__('Show features'),				
 			),
 			'is_variable_product_exist' => $is_variable_product_exist,
                     'pro_plugins' => array(
@@ -193,7 +196,14 @@ class Wt_Import_Export_For_Woo_Admin_Basic {
                                 'icon_url' => WT_P_IEW_PLUGIN_URL.'assets/images/gopro/user-ie.svg',
 								'sample_csv_url' => "https://www.webtoffee.com/wp-content/uploads/2020/10/Sample_Users.csv",
 								'is_active' => $user_addon_active_status
-                            )
+                            ),
+                            'subscription' => array(
+                                'url' => "https://www.webtoffee.com/product/order-import-export-plugin-for-woocommerce/?utm_source=free_plugin_revamp&utm_medium=basic_revamp&utm_campaign=Order_Import_Export&utm_content=" . WT_P_IEW_VERSION,
+                                'name' => __('Order, Coupon, Subscription Export Import for WooCommerce'),
+                                'icon_url' => WT_P_IEW_PLUGIN_URL.'assets/images/gopro/order-ie.svg',
+								'sample_csv_url' => "https://www.webtoffee.com/wp-content/uploads/2021/04/Subscription_Sample_CSV.csv",
+								'is_active' => false
+                            ),						
                     )
                 );
 		wp_localize_script($this->plugin_name, 'wt_iew_basic_params', $params);

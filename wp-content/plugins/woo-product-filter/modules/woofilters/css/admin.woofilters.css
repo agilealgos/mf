@@ -90,12 +90,17 @@
     border-bottom: 1px solid #d8dfe3;
     width: 100%;
 }
+#wpfFiltersEditForm .row {
+	flex-wrap: nowrap;
+	display: block;
+}
 #row-tab-settings .tabs-wrapper{
 	padding-top: 20px;
 }
 .wpfMainTabsContainer {
 	padding: 0 15px;
 }
+
 .wpfFiltersTabContents {
 	background-color: #f8fafb;
 	padding: 15px 15px 15px 0 !important;

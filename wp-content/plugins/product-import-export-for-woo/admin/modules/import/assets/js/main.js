@@ -208,6 +208,11 @@ var wt_iew_basic_import=(function( $ ) {
 		{
 			$('.wt_iew_loader_info_box').hide();
 		},
+		refresh_import_page:function()
+		{
+                    wt_iew_basic_import.import_finished = true;
+                    location.reload();
+		},                 
 		set_import_progress_info:function(msg)
 		{
 			$('.wt_iew_loader_info_box').show().html(msg);
@@ -446,7 +451,9 @@ var wt_iew_basic_import=(function( $ ) {
 				{
 					wt_iew_basic_import.temp_import_file='';
 					wt_iew_basic_import.remove_ajax_page_loader();
-					wt_iew_notify_msg.error(wt_iew_basic_params.msgs.error);
+                                        if(!wt_iew_basic_import.import_finished){
+                                            jQuery('.wt-something-went-wrong').show();
+                                        }					
 				}
 			});
 		},
@@ -506,13 +513,7 @@ var wt_iew_basic_import=(function( $ ) {
 				if(!wt_iew_basic_import.validate_file(action, action_type))
 				{
 					return false;	
-				}
-                                
-                                if(action!='post_type'){
-                                    $('.ier_pro_plugins_section_small').hide();
-                                }else{
-                                    $('.ier_pro_plugins_section_small').show();
-                                }
+				}                              
                                 
 				if(action_type=='step')
 				{
@@ -526,6 +527,7 @@ var wt_iew_basic_import=(function( $ ) {
                             if ( confirm( "Are you sure to stop the import?" ) == true ) {
                                     var temp_err_message = wt_iew_basic_params.msgs.error;
                                     wt_iew_basic_params.msgs.error = 'Import cancelled';
+                                    wt_iew_basic_import.import_finished = true;
                                     wt_iew_basic_import.import_ajax_xhr.abort();
                                     wt_iew_basic_params.msgs.error = temp_err_message;
                                     var progressval = 1;
@@ -903,17 +905,19 @@ var wt_iew_basic_import=(function( $ ) {
 			}
 			$('.wt_iew_step_head_post_type_name').html(this.to_import_title);
                         
-                        /*
-                        $('.wt-ierpro-blue-btn').attr("href", wt_iew_basic_params.pro_plugins[this.to_import]['url']);
-                        $('.wt-ier-product-name').html(wt_iew_basic_params.pro_plugins[this.to_import]['name']);
-                        $('.wt-ierpro-name>img').attr("src", wt_iew_basic_params.pro_plugins[this.to_import]['icon_url']);                  
-                        $('.wt-ier-gopro-cta').hide();
-                        $('.wt-ier-'+this.to_import).show();
-                        */
                         
                         $('#sample-csv-file').attr("href", wt_iew_basic_params.pro_plugins[this.to_import]['sample_csv_url']);
 			if(this.to_import_title.includes('User'))
-			$('#user-required-field-message').show();  
+			$('#user-required-field-message').show();
+                    
+                        $('.wt-import-export-upsell-small-wrapper').hide();
+                        $('.wt-ier-advt-'+this.to_import).show();
+                        $('.wt-ier-product-features').hide();
+                        $('.wt-hide-features').html(wt_iew_basic_params.msgs.show_features);
+
+                        $('.wt-you-may-like').css('margin-top', '-200px');                        
+                        
+                    
                         $('.wt_iew_free_addon').hide();
                         $('.wt_iew_import_action_btn').prop('disabled', false);
                         if(!wt_iew_basic_params.pro_plugins[this.to_import]['is_active']){
@@ -1198,7 +1202,9 @@ var wt_iew_basic_import=(function( $ ) {
                 warn_on_refresh: function () {
                     window.onbeforeunload = function (event)
                     {
-                        return confirm("Changes that you made may not be saved.");
+                        if(!wt_iew_basic_import.import_finished){
+                            return confirm("Changes that you made may not be saved.");
+                        }
                     };
                 }                
 	}
@@ -1628,6 +1634,35 @@ var wt_iew_dropzone=
 wt_iew_dropzone.Set();
 
 
+var wt_plugin_advt = {
+    Set: function ()
+    {
+
+        jQuery('.wt-hide-features-post-types').click(function (e) {
+            e.preventDefault();
+            var invisible_mtop = '20px';
+            var visible_mtop = '-200px';
+            if ('user' === wt_iew_basic_import.to_import) {
+                invisible_mtop = '60px';
+            }
+            if ('order' === wt_iew_basic_import.to_import || 'coupon' === wt_iew_basic_import.to_import || 'subscription' === wt_iew_basic_import.to_import) {
+                invisible_mtop = '40px';
+            }  
+            var div_visible = jQuery('.wt-ier-gopro-cta-small-' + wt_iew_basic_import.to_import).is(':visible');
+            if (!div_visible) {
+                jQuery('.wt-you-may-like').css('margin-top', invisible_mtop);
+                jQuery('.wt-ier-gopro-cta-small-' + wt_iew_basic_import.to_import).show();
+                jQuery('.wt-hide-features').html(wt_iew_basic_params.msgs.hide_features);
+            } else {
+                jQuery('.wt-you-may-like').css('margin-top', visible_mtop);
+                jQuery('.wt-ier-gopro-cta-small-' + wt_iew_basic_import.to_import).hide();
+                jQuery('.wt-hide-features').html(wt_iew_basic_params.msgs.show_features);
+            }
+        });
+    }
+};
+
+
 jQuery(function() {		
 	
 	if(wt_iew_import_basic_params.rerun_id>0)
@@ -1639,5 +1674,6 @@ jQuery(function() {
 		wt_iew_basic_import.is_valid_file=true;
 		wt_iew_basic_import.temp_import_file=wt_iew_import_basic_params.temp_import_file;
 	}
-	wt_iew_basic_import.Set();	
+	wt_iew_basic_import.Set();
+        wt_plugin_advt.Set();
 });

@@ -635,12 +635,14 @@ class Wt_Import_Export_For_Woo_Basic_Product_Export {
         if (!is_array($data))            
             $data = (string) urldecode($data);
 //        $enc = mb_detect_encoding($data, 'UTF-8, ISO-8859-1', true);        
-        $use_mb = function_exists('mb_detect_encoding');
-        $enc = '';
-        if ($use_mb) {
-            $enc = mb_detect_encoding($data, 'UTF-8, ISO-8859-1', true);
-        }
-        $data = ( $enc == 'UTF-8' ) ? $data : utf8_encode($data);
+          $keep_encoding = apply_filters('wt_iew_exporter_keep_encoding', true);
+          $use_mb = function_exists('mb_detect_encoding');
+          if ($use_mb && $keep_encoding) {
+              $enc = mb_detect_encoding($data, 'UTF-8, ISO-8859-1', true);
+              if('UTF-8' !== $enc){                            
+              $data = utf8_encode( $data );
+              }
+          }
 
         return $data;
     }

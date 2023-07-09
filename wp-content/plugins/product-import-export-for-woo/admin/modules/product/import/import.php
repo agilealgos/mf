@@ -220,7 +220,7 @@ class Wt_Import_Export_For_Woo_Basic_Product_Import {
                 $this->item_data['type'] = 'simple';
                 
             }
-            
+
             foreach ($mapped_data as $column => $value) {
                 
                 if ($this->merge && !$this->merge_empty_cells && $value == '' && !strstr($column, 'attribute')) {
@@ -269,6 +269,17 @@ class Wt_Import_Export_For_Woo_Basic_Product_Import {
                     continue;
                 }
                 if ('description' == $column || 'post_content' == $column) {
+                    
+                    $enable_chatgpt = Wt_Import_Export_For_Woo_Basic_Common_Helper::get_advanced_settings('enable_chatgpt');
+                    if( 1 == $enable_chatgpt ){
+                        $gpt_key = Wt_Import_Export_For_Woo_Basic_Common_Helper::get_advanced_settings('chatgpt_api_key');
+                        if('' !== $gpt_key && empty( $value ) && !$this->merge ){ // ChatGPT key is entered, product description column is empty and it's not an update.
+                            $start_description = isset( $mapped_data['post_title'] ) ? $mapped_data['post_title'] : $value;
+                            $this->item_data['description'] = $this->generate_product_description_using_openai($start_description, $gpt_key);
+                            continue;
+                        }
+                    }
+                    
                     $this->item_data['description'] = $this->wt_parse_description_field($value);
                     continue;
                 }
@@ -1785,6 +1796,80 @@ class Wt_Import_Export_For_Woo_Basic_Product_Import {
         }
     }
 
+    public function fetch_remote_file($url, $post) {
+
+        // extract the file name and extension from the url
+        $file_name = basename(current(explode('?', $url)));
+        $wp_filetype = wp_check_filetype($file_name, null);
+        $parsed_url = @parse_url($url);
+
+        // Check parsed URL
+        if (!$parsed_url || !is_array($parsed_url))
+            return new WP_Error('import_file_error', 'Invalid URL');
+
+        // Ensure url is valid
+        $url = str_replace(" ", '%20', $url);
+        // Get the file
+        $response = wp_remote_get($url, array(
+                'timeout' => 60,
+                "user-agent" => "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:56.0) Gecko/20100101 Firefox/56.0",
+                'sslverify' => FALSE
+        ));
+        
+        if (is_wp_error($response) || wp_remote_retrieve_response_code($response) !== 200)
+            return new WP_Error('import_file_error', 'Error getting remote image');
+
+        // Ensure we have a file name and type
+        if (!$wp_filetype['type']) {
+
+            $headers = wp_remote_retrieve_headers($response);
+
+            if (isset($headers['content-disposition']) && strstr($headers['content-disposition'], 'filename=')) {
+
+                $disposition = end(explode('filename=', $headers['content-disposition']));
+                $disposition = sanitize_file_name($disposition);
+                $file_name = $disposition;
+                if (isset($headers['content-type']) && strstr($headers['content-type'], 'image/')) {
+                    $supported_image = array(
+                        'gif',
+                        'jpg',
+                        'jpeg',
+                        'png'
+                    );
+                    $ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION)); // Using strtolower to overcome case sensitive
+                    if (!in_array($ext, $supported_image)) {
+                        $file_name = $file_name . '.' . str_replace('image/', '', $headers['content-type']);
+                    }
+                }
+            } elseif (isset($headers['content-type']) && strstr($headers['content-type'], 'image/')) {
+
+                $file_name = 'image.' . str_replace('image/', '', $headers['content-type']);
+                $file_name = preg_replace('/^([^;]*).*$/', '$1', $file_name);
+            }
+
+            unset($headers);
+        }
+
+        // Upload the file
+        $upload = wp_upload_bits($file_name, '', wp_remote_retrieve_body($response));
+
+        if ($upload['error'])
+            return new WP_Error('upload_dir_error', $upload['error']);
+
+        // Get filesize
+        $filesize = filesize($upload['file']);
+
+        if (0 == $filesize) {
+            @unlink($upload['file']);
+            unset($upload);
+            return new WP_Error('import_file_error', __('Zero size file downloaded', 'wf_csv_import_export'));
+        }
+
+        unset($response);
+
+        return $upload;
+    }
+
     function get_attachment_id_from_url($url, $product_id) {
         if (empty($url)) {
             return 0;
@@ -1793,11 +1878,12 @@ class Wt_Import_Export_For_Woo_Basic_Product_Import {
         $id = 0;
         $upload_dir = wp_upload_dir(null, false);
         $base_url = $upload_dir['baseurl'] . '/';
+        $remove_protocol = array("http://","https://");
 
         // Check first if attachment is inside the WordPress uploads directory, or we're given a filename only.
-        if (false !== strpos($url, $base_url) || false === strpos($url, '://')) {
+        if (false !== strpos(str_replace($remove_protocol,"",$url), str_replace($remove_protocol,"",$base_url)) || false === strpos($url, '://')) {
             // Search for yyyy/mm/slug.extension or slug.extension - remove the base URL.
-            $file = str_replace($base_url, '', $url);
+            $file = str_replace(str_replace($remove_protocol,"",$base_url), '', str_replace($remove_protocol,"",$url));
             $args = array(
                 'post_type' => 'attachment',
                 'post_status' => 'any',
@@ -1845,20 +1931,41 @@ class Wt_Import_Export_For_Woo_Basic_Product_Import {
         // Upload if attachment does not exists.
         if (!$id && stristr($url, '://')) {
             add_filter( 'https_ssl_verify', '__return_false' );
+            // Bypass image thumbnail generation - it will be in background after the last batch.
+			add_filter( 'intermediate_image_sizes', '__return_empty_array' );
+            
             $upload = wc_rest_upload_image_from_url($url);
+            if (is_wp_error($upload)) {
+                $allow_custom_rendered_image = apply_filters('wt_allow_custom_rendered_image', true);
+                if($allow_custom_rendered_image){
+                    $upload = $this->fetch_remote_file($url, array());
             if (is_wp_error($upload)) {
                 Wt_Import_Export_For_Woo_Basic_Logwriter::write_log($this->parent_module->module_base, 'import', 'URL:'.$url.' Reason:'.$upload->get_error_message());
                 return;
-                //throw new Exception($upload->get_error_message(), 400);
+                }
+              }else{
+                    Wt_Import_Export_For_Woo_Logwriter::write_log($this->parent_module->module_base, 'import', 'URL:'.$url.' Reason:'.$upload->get_error_message());
+                        return;
+                }
+                
             }
 
-            $id = wc_rest_set_uploaded_image_as_attachment($upload, $product_id);
-
+            if (apply_filters('wt_use_wc_rest_upload', true)) {
+				$id = wc_rest_set_uploaded_image_as_attachment($upload, $product_id);
+			} else {
+				$info = wp_check_filetype($upload['file']);
+				$post = array();
+				$post['post_mime_type'] = $info['type'];
+				$post['guid'] = $upload['url'];
+				$post['post_title'] = $upload['name'];
+				$id = wp_insert_attachment($post, $upload['file'], $product_id);
+			}
+ 
             if (!wp_attachment_is_image($id)) {
                 /* translators: %s: image URL */
                 Wt_Import_Export_For_Woo_Basic_Logwriter::write_log($this->parent_module->module_base, 'import', sprintf(__('Not able to attach "%s".'), $url));
                 return;
-//                throw new Exception(sprintf(__('Not able to attach "%s".', 'woocommerce'), $url), 400);
+                
             }
 
             // Save attachment source for future reference.
@@ -1869,7 +1976,7 @@ class Wt_Import_Export_For_Woo_Basic_Product_Import {
             /* translators: %s: image URL */
             Wt_Import_Export_For_Woo_Basic_Logwriter::write_log($this->parent_module->module_base, 'import', sprintf(__('Unable to use image "%s".'), $url));
             return;
-//            throw new Exception(sprintf(__('Unable to use image "%s".', 'woocommerce'), $url), 400);
+            
         }
 
         return $id;
@@ -1973,6 +2080,79 @@ class Wt_Import_Export_For_Woo_Basic_Product_Import {
             $get_language_args = array('element_id' => $element_id, 'element_type' => 'post_product');
             $original_post_language_info = apply_filters('wpml_element_language_details', null, $get_language_args);
             return $original_post_language_info;
+        }
+        
+        /**
+         * Generate product description using ChatGPT.
+         * 
+         * @since 2.3.1
+         * 
+         * @param string $product_description
+         * @param string $api_key
+         * @return string 
+         */
+        
+        public function generate_product_description_using_openai($product_description, $api_key) {
+            
+            $api_url = 'https://api.openai.com/v1/chat/completions';   
+
+            $tone = apply_filters( 'wt_openai_product_description_tone', 'formal' );
+
+            // casual - Relaxed, informal, conversational tone. Like chatting with a friend.
+            // formal - A polished, well-structured product description, adhering to professional standards.
+            // flowery - Ornate, elaborate, poetic tone. Rich in descriptive language.
+            // convincing - A persuasive, compelling product description, designed to influence decisions and drive action.
+
+            $messages = array(
+                array(
+                    'role' => 'user',
+                    'content' => "Write a product description with $tone tone, from the following features: '$product_description'.",
+                ),
+            );
+
+            // Configure curl request
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $api_url);
+            curl_setopt($ch, CURLOPT_POST, 1);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            curl_setopt(
+                    $ch,
+                    CURLOPT_HTTPHEADER,
+                    array(
+                        'Content-Type: application/json',
+                        'Authorization: Bearer ' . $api_key,
+                    )
+            );
+
+            $post_data = array(
+                'messages' => $messages,
+                'model' => 'gpt-3.5-turbo',
+                'temperature' => 1,
+            );
+
+            $post_data_json = json_encode($post_data);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $post_data_json);
+
+            $response = curl_exec($ch);
+
+            $generated_text = $product_description;
+
+            if (curl_error($ch)) {
+               // Log the error     
+            } else {
+
+                $response_data = json_decode($response, true);
+
+                $generated_text = $response_data['choices'][0]['message']['content'];
+                // If cannot find proper description, return the input
+                if( strpos( $generated_text, 'We apologize' ) !== false ){
+                    $generated_text = $product_description;
+                }
+            }
+
+            curl_close($ch);
+
+            return $generated_text;
         }
 
     }

@@ -3,19 +3,20 @@ Contributors: webtoffee
 Donate link: https://www.webtoffee.com/plugins/
 Tags: product export, product import, CSV import export, woocommerce, CSV, product, export, import, woocommerce product import, woocommerce import products, export woocommerce products, import products into woocommerce
 Requires at least: 3.0.1
-Tested up to: 6.1
+Tested up to: 6.2
 Requires PHP: 5.6
-Stable tag: 2.2.7
+Stable tag: 2.3.1
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
-
-Import products to WooCommerce or export products (simple, grouped, external/affiliate). Import WooCommerce products from any CSV to WooCommerce.
+Seamlessly import or export WooCommerce products (simple, grouped, external/affiliate) using CSV. Now with ChatGPT API integration, the plugin will auto-generate product descriptions during the import process for items without descriptions.
 
 == Description ==
 
-Export and import all your WooCommerce products in CSV format. The free plugin, Product Import Export for WooCommerce exports and imports WooCommerce simple, grouped, and external/affiliate products in a super simple way! 
-Inventory update, syncing products, data filtration, automatic column mapping are some of the main peculiarities of this product importer plugin.
+Export and import all your WooCommerce products in CSV format. The free plugin, Product Import Export for WooCommerce, exports and imports WooCommerce simple, grouped, and external/affiliate products in a super simple way! 
+Inventory updates, syncing products, data filtration, and automatic column mapping are some of the main peculiarities of this product importer plugin.
+
+With the latest update, we have integrated ChatGPT API with our plugin. Now the plugin will automatically generate product descriptions for items without existing descriptions. Thanks to Generative AI!
 
 <strong>To import and export variable products, upgrade to the premium version of <a href="https://www.webtoffee.com/product/product-import-export-woocommerce/">WooCommerce Product Import Export</a></strong>.
 
@@ -27,7 +28,7 @@ The free version of the Product Import Export for WooCommerce plugin imports and
 * grouped
 * external/affiliate products
 
-With this plugin, you can export and import WooCommerce products to and from a CSV and you can do all the basic import export operations in this 100% free WooCommerce import export plugin.
+With this plugin, you can export and import WooCommerce products to and from a CSV, and you can do all the basic import-export operations in this 100% free WooCommerce import-export plugin.
 
 
 ##MAJOR FEATURES##
@@ -36,6 +37,7 @@ With this plugin, you can export and import WooCommerce products to and from a C
 * <strong>Import products from CSV</strong> to WooCommerce.
 * Bulk add products
 * Supported product types - <strong>simple, grouped, external/affiliate</strong>.
+* <strong>Auto-generate product descriptions </strong> during import using ChatGPT API.
 * Export and import WooCommerce <strong>products with images (featured product image and gallery images)</strong>.
 * Export and import WooCommerce <strong>product reviews</strong> along with ratings.
 * Export and import WooCommerce <strong>products based on category/tags/selected products/status/stock</strong>.
@@ -57,7 +59,7 @@ With this plugin, you can export and import WooCommerce products to and from a C
 * <strong>Save frequently used import/export configurations</strong> as templates and use the template for future imports and exports.
 * The plugin <strong>stores all the past imports and exports</strong> and <strong>lets you re-run</strong> them when needed.
 * <strong>Easy debugging:</strong> View and download import log for debugging purpose.
-* Tested OK with WooCommerce 7.2
+* Tested OK with WooCommerce 7.7.2
 
 ###COMPATIBLE PLUGINS###
 
@@ -129,7 +131,7 @@ The <a href="https://www.webtoffee.com/product/product-import-export-woocommerce
 
 <blockquote>
 
-= PREMIUM VERSION FEATURES =
+= PREMIUM/PAID VERSION FEATURES =
 
 &#9989; Export/Import simple, variable, grouped, external, subscription, and custom product types.</li>
 &#9989; Export/Import WooCommerce bookings.</li>
@@ -210,38 +212,40 @@ Yes, you can import grouped, affiliate/external products in addition to simple p
 == SCREENSHOTS ==
 
 1. General settings for WooCommerce product import export plugin
-
 2. Export method for WooCommerce product export plugin
-
 3. Export mapping for WooCommerce product export plugin
-
 4. Filter products for WooCommerce product export plugin
-
 5. Export batch limit for WooCommerce product export plugin
-
 6. Save export template for WooCommerce product export plugin
-
 7. Export complete for WooCommerce product export plugin
-
 8. Import method for WooCommerce product import plugin
-
 9. Import mapping for WooCommerce product import plugin
-
 10. Import taxonomies and attribute mapping for WooCommerce product import plugin
-
 11. Evaluation options for WooCommerce product import plugin
-
 12. Advanced options for WooCommerce product import plugin
-
 13. Save import template for WooCommerce product import plugin
-
 14. Import logs for WooCommerce product import plugin
-
 15. Import Export history for Product Import Export for WooCommerce
 
 
 == CHANGELOG ==
 
+= 2.3.1 2023-06-12 =
+* [Fix] - Importing custom CSV with a colon in the column heading.
+* [Fix] - Auto delete history option does not delete import logs
+* [Add] - Generate product descriptions for products without description in the importing CSV from product title using ChatGPT API 
+* [Add] - Support for importing images from URL without extension.
+* [Update] - Tested OK with WooCommerce 7.7.2
+= 2.3.0 2023-05-15 =
+* Add: Support for product image import from Google Drive public image URL
+* Add: HPOS compatibility
+* Update: Tested OK with WooCommerce 7.7
+* Fix: Disable import log generation function not working
+= 2.2.9 2023-04-11 =
+* Update: Tested OK with WooCommerce 7.5, WordPress 6.2 & PHP 8.2
+= 2.2.8 2023-03-21 =
+* Update: Tested OK with WooCommerce 7.5
+* Fix: Unable to update product categories using just the term_ID without category slug
 = 2.2.7 2023-01-01 =
 * WooCommerce 7.2 Tested OK.
 * Enhancement: Removed the default attribute column from the export CSV for simple products.
@@ -629,6 +633,9 @@ Yes, you can import grouped, affiliate/external products in addition to simple p
 
 == Upgrade Notice ==
 
-= 2.2.7 =
-* WooCommerce 7.2 Tested OK.
-* Enhancement: Removed the default attribute column from the export CSV for simple products.
+= 2.3.1 =
+* [Fix] - Importing custom CSV with a colon in the column heading.
+* [Fix] - Auto delete history option does not delete import logs
+* [Add] - Generate product descriptions for products without description in the importing CSV from product title using ChatGPT API 
+* [Add] - Support for importing images from URL without extension.
+* [Update] - Tested OK with WooCommerce 7.7.2

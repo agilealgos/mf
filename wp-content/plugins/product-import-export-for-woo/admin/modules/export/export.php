@@ -32,6 +32,8 @@ class Wt_Import_Export_For_Woo_Basic_Export
 	public $default_export_method='';  /* configure this value in `advanced_setting_fields` method */
 	public $use_bom = true;
 	public $form_data=array();
+        public $validation_rule = array();
+        public $step_need_validation_filter = array();        
 
 	public function __construct()
 	{
@@ -154,13 +156,43 @@ class Wt_Import_Export_For_Woo_Basic_Export
 		$fields['default_export_batch']=array(
 			'label'=>__("Default Export batch count"),
 			'type'=>'number',
-            'value' =>30,
+                        'value' =>30,
 			'field_name'=>'default_export_batch',
 			'help_text'=>__('Provide the default count for the records to be exported in a batch.'),
 			'validation_rule'=>array('type'=>'absint'),
 			'attr' => array('min' => 1, 'max' => 200),
 		);
-		return $fields;
+                
+		$fields['enable_chatgpt'] = array(
+			'label'=>__( "Enable ChatGPT" ),
+			'value'=>0,
+			'checkbox_fields' => array( 1 => __( 'Enable' ) ),
+			'type'=>'checkbox',
+			'field_name'=>'enable_chatgpt',
+			'field_group'=>'advanced_field',
+			'help_text'=>__( 'Automatically generate product descriptions from product titles using ChatGPT API for products without descriptions in the importing CSV.' ),
+                    	'form_toggler'=>array(
+				'type'=>'parent',
+				'target'=>'wt_iew_enable_chatgpt',
+			),
+		);                
+		$fields['chatgpt_api_key'] = array(
+                        'label' => __("Chat GPT API key"),
+                        'type' => 'text',
+                        'value' => '',
+                        'field_name' => 'chatgpt_api_key',
+                        'field_group' => 'advanced_field',
+                        'help_text' => sprintf(__('Input the ChatGPT API key to enable the automatic generation of product descriptions. %s Where do I get my API Keys? %s '), '<a href="https://help.openai.com/en/articles/4936850-where-do-i-find-my-secret-api-key" target="_blank">', '</a>'),                        
+                        'validation_rule' => array('type' => 'text'),
+                    	'form_toggler'=>array(
+				'type'=>'child',
+				'id'=>'wt_iew_enable_chatgpt',
+				'val'=>1,
+				'chk'=>'true'
+			),
+                );
+
+            return $fields;
 	}
 
 	/**

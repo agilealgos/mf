@@ -178,6 +178,7 @@ class Wt_Import_Export_For_Woo_Basic_Product_Review {
 		$arr['product_categories'] = __('Product Categories', 'product-import-export-for-woo');
 		$arr['product_tags'] = __('Product Tags', 'product-import-export-for-woo');
 		$arr['user'] = __('User/Customer', 'product-import-export-for-woo');
+		$arr['subscription'] = __('Subscription', 'product-import-export-for-woo');
         return $arr;
     }
     

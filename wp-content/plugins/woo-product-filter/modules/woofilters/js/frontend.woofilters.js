@@ -3,9 +3,10 @@
 	function WpfFrontendPage() {
 		this.$obj = this;
 		this.noWoo = this.$obj.checkNoWooPage();
-		this.readyFuncs = ['.berocket_load_more_preload', 'woocommerce-product-bundle-hide', 'show_variation', '.variations_form', 'yith_infs_start', 'flatsome_infinite_scroll'];
+		this.readyFuncs = ['.berocket_load_more_preload', 'woocommerce-product-bundle-hide', 'show_variation', '.variations_form', 'yith_infs_start', 'flatsome_infinite_scroll','.dipl_woo_products_pagination_wrapper'];
 		this.isSafari = navigator.vendor && navigator.vendor.indexOf('Apple') > -1 && navigator.userAgent && navigator.userAgent.indexOf('CriOS') == -1 && navigator.userAgent.indexOf('FxiOS') == -1;
 		this.disableScrollJs = true;
+		this.lastFids = [];
 		return this.$obj;
 	}
 
@@ -436,6 +437,23 @@
 				}
 			});
 		}
+		//for woocommerce-blocks (All products and others)
+		if (typeof window.wpfFetchHookCreated == 'undefined' || window.wpfFetchHookCreated != 1) {
+			window.fetch = new Proxy(window.fetch, {
+				apply(fetch, that, args) {
+					var url = args.length ? args[0] : '';
+					if (typeof url === 'string' && url.length) {
+						if (url.indexOf('wp-json/wc/store/') != -1 && url.indexOf('/products?') != -1 && url.indexOf('per_page=') != -1) {
+							var s = window.location.search;
+							if (s.length) args[0] += s.replace('?','&');
+						}
+					}
+					const result = fetch.apply(that, args);
+					return result;
+				}
+			});
+			window.wpfFetchHookCreated = 1;
+		}
 
 		//for themes with ajax-paginations, ajax-ordering
 		jQuery(document).ajaxComplete(function(event, xhr, options) {
@@ -479,12 +497,24 @@
 		if(jQuery('.wpfFilterWrapper[data-filter-type="wpfSortBy"]').length == 0) {
 			jQuery('.woocommerce-ordering').css('display', 'block');
 		}
+		
+		jQuery('.wpfFilterWrapper[data-hide-single="1"]').each(function(){
+			var filter = jQuery(this),
+				selector = filter.find('.wpfColorsFilter').length ? 'li[data-term-slug]' : '[data-term-id]',
+				visible = 0;
+			filter.find(selector).each(function(){
+				if (jQuery(this).css('display') != 'none') visible++;
+			});
+			if (visible <= 1) {
+				filter.hide();
+			}
+		});
 
 		//if no enabled filters hide all html
 		if(jQuery('.wpfFilterWrapper').length < 1){
 			jQuery('.wpfMainWrapper').addClass('wpfHidden');
 		}
-
+		
 		//Start filtering
 		jQuery('body').on('mousedown', '.wpfFilterButton, .js-wpfFilterButtonSearch', function (e) {
 			e.preventDefault();
@@ -750,7 +780,7 @@
 				return;
 			}
 
-			if (typeof window.wpfAdminPage === 'undefined') {
+			if (typeof window.wpfAdminPage === 'undefined' && !_thisObj.isSafari) {
 				location.reload();
 			}
 		});
@@ -981,8 +1011,10 @@
 		var _thisObj = this.$obj;
 		_thisObj.chageRangeFieldWidth();
 		if(_thisObj.isAdminPreview) return;
-
-		_thisObj.createOverlay();
+		
+		if (_thisObj.filterClick) {
+			_thisObj.createOverlay();
+		}
 
 		if(typeof $filterWrapper == 'undefined' || $filterWrapper.length == 0) {
 			$filterWrapper = jQuery('.wpfMainWrapper').first();
@@ -1024,6 +1056,7 @@
 				if(_thisObj.isStatistics && typeof (_thisObj.prepareStatisticsData) == 'function') {
 					_thisObj.prepareStatisticsData($filter, allSettings);
 				}
+				_thisObj.lastFids[wrapper.data('viewid')] = _thisObj.filteringId;
 
 				try {
 					var order = JSON.parse(_thisObj.getFilterMainSettings(wrapper).settings.filters.order);
@@ -1091,8 +1124,10 @@
 			var filterId = $filterWrapper.data('filter');
 			if (typeof filterId !== 'undefined') {
 				jQuery('span.wpfHidden').each(function () {
-					var attribute = jQuery(this).data('shortcode-attribute')
-					if (attribute.class !== '' && 'wpf-filter-' + filterId === attribute.class) {
+					var $span = jQuery(this),
+						attribute = $span.data('shortcode-attribute'),
+						fclass = 'wpf-filter-' + filterId;
+					if ((attribute.class !== '' && fclass === attribute.class) || $span.closest('.'+fclass).length) {
 						_thisObj.QStringWork('wpf_id', filterId, noWooPage, $filterWrapper, 'change');
 					}
 				});
@@ -1115,9 +1150,11 @@
 				'f_multi_logic': $generalSettings['settings']['f_multi_logic'] ? $generalSettings['settings']['f_multi_logic'] : 'and',
 				'remove_actions': $generalSettings['settings']['remove_actions'] && ($generalSettings['settings']['remove_actions'] == '1') ? true : false,
 				'filtering_by_variations': $generalSettings['settings']['filtering_by_variations'] && ($generalSettings['settings']['filtering_by_variations'] == '1') ? true : false,
+				'form_filter_by_variations': $generalSettings['settings']['form_filter_by_variations'] && ($generalSettings['settings']['form_filter_by_variations'] == '1') ? true : false,
 				'exclude_backorder_variations': $generalSettings['settings']['exclude_backorder_variations'] && ($generalSettings['settings']['exclude_backorder_variations'] == '1') ? true : false,
 				'display_product_variations': $generalSettings['settings']['display_product_variations'] && ($generalSettings['settings']['display_product_variations'] == '1') ? true : false,
 				'all_products_filtering': $generalSettings['settings']['all_products_filtering'] && ($generalSettings['settings']['all_products_filtering'] == '1') ? true : false,
+				'do_not_use_shortcut': $generalSettings['settings']['do_not_use_shortcut'] && ($generalSettings['settings']['do_not_use_shortcut'] == '1') ? true : false,
 				'use_category_filtration': $generalSettings['settings']['use_category_filtration'] ? $generalSettings['settings']['use_category_filtration'] : 1,
 				'product_list_selector': $generalSettings['settings']['product_list_selector'] ? $generalSettings['settings']['product_list_selector'] : '',
 				'product_container_selector': $generalSettings['settings']['product_container_selector'] ? $generalSettings['settings']['product_container_selector'] : '',
@@ -1192,6 +1229,7 @@
 			//if ($queryVarsSettings['paginate_type'] == 'query' || $queryVarsSettings['paginate_type'] == 'shortcode') {
 			_thisObj.QStringWork($queryVarsSettings['paginate_base'], '', noWooPage, $filterWrapper, 'remove');
 			_thisObj.QStringWork('product-page', '', noWooPage, $filterWrapper, 'remove');
+			_thisObj.QStringWork('shopPage', '', noWooPage, $filterWrapper, 'remove');
 
 			var $woocommerceSettings = {};
 			if (jQuery('.wpfFilterWrapper[data-filter-type="wpfSortBy"]').length == 0) {
@@ -1219,7 +1257,8 @@
 						var requestData =_thisObj.getAjaxRequestData($filtersDataBackend, $queryVars, $filterSettings, $generalSettings, $shortcodeAttr, $woocommerceSettings);
 						wpfDoActionsAfterLoad(_thisObj.filteringId, -1, requestData);
 					}
-					location.reload();
+					if (_thisObj.isSafari || navigator.userAgent.match(/firefox|fxios/i)) location.reload(true);
+					else location.reload();
 					return;
 				}
 
@@ -1849,7 +1888,16 @@
 			dataType: 'html',
 			success: function(data){
 				var block = '',
-					foundContainer = false;
+					foundContainer = false,
+					noProducts = false,
+					$loadedData = jQuery(data),
+					$loadedJS = $loadedData.find('.wpfExistsTermsJS');
+				if ($loadedJS.length) {
+					if (toeInArray($loadedJS.eq(0).attr('data-fid'), _thisObj.lastFids) == -1) {
+						return false;
+					}
+				}
+				
 				if (isContainer) {
 					block = jQuery(data).find(productContainerSelector);
 				}
@@ -1858,15 +1906,20 @@
 				} else {
 					block = jQuery(data).find(productListSelector);
 				}
-				var pageBlock = jQuery(foundContainer ? productContainerSelector : productListSelector);
+				var pageBlock = jQuery(isContainer && (foundContainer || block.length == 0) ? productContainerSelector : productListSelector);
 				if (block.length == 0 || pageBlock.length == 0) {
-					_thisObj.filterLoadTypes[_thisObj.currentLoadId] = 'reload';
 					if ($wrapperSettings.recalculate_filters === '1') {
 						var existsTermsJS = jQuery(data).find('.wpfExistsTermsJS').html();
 						_thisObj.setAjaxJScript(existsTermsJS);
 					}
-					location.reload();
-					return;
+					if ($wrapperSettings.no_redirect_by_no_products === '1' && pageBlock.length > 0) {
+						block = jQuery('<div><div class="wpfNoProducts">' + $wrapperSettings.text_no_products + '</div></div>');
+						noProducts = true;
+					} else {
+						_thisObj.filterLoadTypes[_thisObj.currentLoadId] = 'reload';
+						location.reload();
+						return;
+					}
 				}
 				_thisObj.currentProductBlock = (typeof pageBlock.selector !== 'undefined') ? pageBlock.selector : productListSelector ;
 
@@ -1874,7 +1927,7 @@
 					var blockWhere = pageBlock.eq(index),
 						blockWhat = jQuery(value);
 
-					if (!foundContainer) {
+					if (!foundContainer && !noProducts) {
 						blockWhere = blockWhere.parent();
 						blockWhat = blockWhat.parent();
 					}
@@ -1948,6 +2001,7 @@
 						}
 
 					}
+					_thisObj.removeOverlay();
 				}
 			});
 		}
@@ -2008,6 +2062,13 @@
 		if (jQuery(_thisObj.defaultProductSelector).closest('.et_pb_shop').length && jQuery(_thisObj.defaultProductSelector).find('[loading="lazy"]').length == 0) {
 			heightIdenticalInRow('.et_pb_shop li.product');
 		}
+		
+		// Improve compatibility with 'Woocommerce Products Per Page'
+		jQuery('.form-wppp-select').each( function () {
+			var $form = jQuery(this);
+			$form.attr('action', jQuery('#'+_thisObj.currentLoadId).attr('data-hide-url'));
+			$form.find('input[type="hidden"]').remove();
+		});
 
 
 		// event for custom javascript hook, example: document.addEventListener('wpfAjaxSuccess', function(event) {console.log('Custom js');});
@@ -2022,6 +2083,9 @@
 			var _thisObj = this.$obj;
 			if (_thisObj.disableScrollJs) {
 				jQuery(window).off("yith_infs_start").off("scroll touchstart");
+				if (typeof(jQuery.fn) == 'object' && typeof(jQuery.fn.init_infinitescroll) == 'function') {
+					jQuery.fn.init_infinitescroll();
+				}
 			}
 			jQuery(window.readyList).each(function(i, el) {
 				var strFunc = el['a'][0].toString();
@@ -3463,7 +3527,13 @@ function wpfShowHideFiltersAtts(wpfExistTerms, wpfExistUsers, synchroFilterId) {
 							}
 						} else {
 							// all terms display block already has css display none
-							if (filter.find('[data-term-id][style*="none"]').length == filter.find('[data-term-id]').length) {
+							var hideSingle = filter.attr('data-hide-single') == '1',
+								preSelector = hideSingle && filter.find('select[multiple]').length ? 'option' : '',
+								selector = hideSingle && filter.find('.wpfColorsFilter').length ? 'li[data-term-slug]' : '[data-term-id]',
+								cntAll = filter.find(preSelector+selector).length,
+								cntHidden = filter.find(preSelector+selector+'[style*="none"]').length,
+								limit = hideSingle ? 1 : 0;
+							if (cntAll-cntHidden <= limit) {
 								filter.hide();
 							} else {
 								filter.show();

@@ -366,7 +366,7 @@ class MetaModelWpf extends ModelWpf {
 								$lastData     = count($data) - 1;
 								$insertValues = '';
 								foreach ($data as $k => $values) {
-									$valuesArr = ( 7 == $keyType ? $values['meta_value'] : unserialize($values['meta_value']) );
+									$valuesArr = ( 7 == $keyType ? $values['meta_value'] : @unserialize($values['meta_value']) );
 									if (is_array($valuesArr)) {
 										$j++;
 										

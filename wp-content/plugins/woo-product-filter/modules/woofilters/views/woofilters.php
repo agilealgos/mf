@@ -194,6 +194,11 @@ class WoofiltersViewWpf extends ViewWpf {
 
 		$recalculateFilters = $this->getFilterSetting( $settings['settings'], 'recalculate_filters', false );
 		if ( '1' === ReqWpf::getVar( 'wpf_skip' ) && ! $recalculateFilters ) {
+			$fid = ReqWpf::getVar( 'wpf_fid' );
+			if ($fid) {
+				$this->assign('html', '<div class="wpfExistsTermsJS" data-fid="' . $fid . '"></div>');
+				return parent::getContent('woofiltersHtml');
+			}
 			return false;
 		}
 
@@ -321,7 +326,8 @@ class WoofiltersViewWpf extends ViewWpf {
 			FrameWpf::_()->addJSVar( 'frontend.multiselect', 'wpfMultySelectedTraslate', ' ' . esc_attr__( $selectedTitle, 'woo-product-filter' ) );
 		}
 
-		FrameWpf::_()->getModule('templates')->loadJqueryUi();
+		$slider = ( is_admin() || !$forFilter || ( strpos($order, '"wpfPrice"') || strpos($order, '"slider"') ) );
+		FrameWpf::_()->getModule('templates')->loadJqueryUi($slider);
 	}
 
 	/**
@@ -342,12 +348,19 @@ class WoofiltersViewWpf extends ViewWpf {
 		FrameWpf::_()->addScript('jquery-touch-punch');
 
 		$this->addCommonAssets($modPath, $settings);
-
-		FrameWpf::_()->addStyle('loaders', $modPath . 'css/loaders.css');
-		FrameWpf::_()->addJSVar('frontend.filters', 'url', admin_url('admin-ajax.php'));
-		FrameWpf::_()->getModule('templates')->loadFontAwesome();
-
+		
 		$options = FrameWpf::_()->getModule('options')->getModel('options')->getAll();
+		$loader = ( ( isset($options['loader_enable']) && isset($options['loader_enable']['value']) && !empty($options['loader_enable']['value']) )
+			|| ( $this->getFilterSetting($settings, 'filter_loader_icon_onload_enable') == 1 )
+			|| ( ( $this->getFilterSetting($settings, 'enable_overlay') == 1 ) && ( $this->getFilterSetting($settings, 'enable_overlay_icon') == 1 ) ) );
+		if ($loader) {
+			FrameWpf::_()->addStyle('loaders', $modPath . 'css/loaders.css');
+		}
+		FrameWpf::_()->addJSVar('frontend.filters', 'url', admin_url('admin-ajax.php'));
+		if ($this->getFilterSetting($settings, 'disable_fontawesome_loading', false, 1) != 1) {
+			FrameWpf::_()->getModule('templates')->loadFontAwesome();
+		}
+
 		if ( isset($options['move_sidebar']) && isset($options['move_sidebar']['value']) && !empty($options['move_sidebar']['value']) ) {
 			FrameWpf::_()->addStyle('move.sidebar.css', $modPath . 'css/move.sidebar.css');
 		}
@@ -976,8 +989,8 @@ class WoofiltersViewWpf extends ViewWpf {
 					' class="wpfPriceRangeField ' . $priceTooltip['class'] .
 					'" value="' . number_format($settings['maxValue'], $dec, '.', '') .
 				'" /> ' .
-				$currencySymbolAfter .
 				'<input ' . $priceTooltip['readonly'] . ' type="hidden" id="wpfDataStep" value="' . $dataStep . '" />' .
+				$currencySymbolAfter .
 			'</div>';
 	}
 
@@ -1186,6 +1199,7 @@ class WoofiltersViewWpf extends ViewWpf {
 		$hideEmpty 				 = $this->getFilterSetting($settings, 'f_hide_empty', false);
 		$hideEmptyActive 		 = $hideEmpty && $this->getFilterSetting($settings, 'f_hide_empty_active', false);
 		$useSlugs                = $this->getFilterSetting($filterSettings['settings'], 'use_category_slug', false);
+		$allProductsFiltering	 = $this->getFilterSetting($filterSettings['settings'], 'all_products_filtering', false);
 
 		$taxonomy = 'product_cat';
 		if (!empty($includeCategoryId) && $includeCategoryChildren) {
@@ -1220,6 +1234,13 @@ class WoofiltersViewWpf extends ViewWpf {
 		if ($this->getFilterSetting($settings, 'f_show_count', false) && !$this->getFilterSetting($settings, 'f_show_count_parent_with_children', false)) {
 			add_filter('woocommerce_change_term_counts', array($this, 'notChangeCategoryCount'));
 		}
+
+		$onlyNeeded = false;
+		if (empty($includeCategoryId) && !$allProductsFiltering && !empty($allTerms)) {
+			$args['include'] = $allTerms;
+			$onlyNeeded = true;
+		}
+
 		$productCategory = $this->getTaxonomyHierarchy($taxonomy, $args);
 
 		if (!empty($args['only_parent'])) {
@@ -1228,14 +1249,14 @@ class WoofiltersViewWpf extends ViewWpf {
 					$productCategory[$id]->children = array();
 				}
 			}
-		}		
+		}
 
 		remove_filter('woocommerce_change_term_counts', array($this, 'notChangeCategoryCount'));
 
 		if (!$productCategory) {
 			return '';
 		}
-		if ( $includeCategoryId && $isHierarchical ) {
+		if ( ( $includeCategoryId || $onlyNeeded ) && $isHierarchical ) {
 			$productCategory = $this->getCustomHierarchicalCategories($productCategory);
 		}
 
@@ -1291,6 +1312,10 @@ class WoofiltersViewWpf extends ViewWpf {
 			if ($this->getFilterSetting($settings, 'f_set_parent_page_category', false)) {
 				$catSelected = array_merge($catSelected, get_ancestors($prodCatId, 'product_cat'));
 			}
+			/*$childs = get_term_children($prodCatId, 'product_cat');
+			if (is_array($childs)) {
+				$catSelected = array_merge($catSelected, $childs);
+			}*/
 			$setCurCat = true;
 		}
 
@@ -1306,6 +1331,7 @@ class WoofiltersViewWpf extends ViewWpf {
 
 		if ( in_array($type, $frontendTypes) || $isMulti ) {
 			self::$leer = true;
+
 			$htmlOpt    = $this->generateTaxonomyOptionsHtml( $productCategory, $catSelected, $filter, $excludeIds, '', $layout, $includeCategoryId, $showedTerms, $countsTerms, 0, $currentCategoryId );
 			if ( 'list' === $type || 'multi' === $type ) {
 				$maxHeight = $this->getFilterSetting($settings, 'f_max_height', 0, true);
@@ -1451,6 +1477,7 @@ class WoofiltersViewWpf extends ViewWpf {
 		$isIncludeChildren    = $this->findTaxonomyIncludeChildrenStatus($hideChild, false, $type);
 		$hideEmpty            = $this->getFilterSetting($settings, 'f_hide_empty', false);
 		$hideEmptyActive      = $hideEmpty && $this->getFilterSetting($settings, 'f_hide_empty_active', false);
+		$allProductsFiltering = $this->getFilterSetting($filterSettings['settings'], 'all_products_filtering', false);
 
 		$taxonomy = 'pwb-brand';
 		if (!empty($includeBrandId) && $includeBrandChildren) {
@@ -1480,12 +1507,18 @@ class WoofiltersViewWpf extends ViewWpf {
 		$showAllBrands = $this->getFilterSetting($settings, 'f_show_all_brands', false);
 
 		list($showedTerms, $countsTerms, $showFilter, $allTerms) = $this->getShowedTerms($taxonomy, $showAllBrands);
+		
+		$onlyNeeded = false;
+		if (!$allProductsFiltering && !empty($allTerms)) {
+			$args['include'] = empty($includeBrandId) ? $allTerms : array_intersect($allTerms, $includeBrandId);
+			$onlyNeeded = true;
+		}
 
 		$productBrand = $this->getTaxonomyHierarchy($taxonomy, $args);
 		if (!$productBrand) {
 			return '';
 		}
-		if ( $includeBrandId && $isHierarchical ) {
+		if ( ( $includeBrandId  || $onlyNeeded ) && $isHierarchical ) {
 			$productBrand = $this->getCustomHierarchicalCategories($productBrand);
 		}
 
@@ -2195,6 +2228,7 @@ class WoofiltersViewWpf extends ViewWpf {
 		$excludeIds      = $this->getFilterSetting($settings, 'f_exclude_terms', false);
 		$hideEmpty       = $this->getFilterSetting($settings, 'f_hide_empty', false);
 		$hideEmptyActive = $hideEmpty && $this->getFilterSetting($settings, 'f_hide_empty_active', false);
+		$hideBySingle    = $hideEmpty && $this->getFilterSetting($settings, 'f_hide_by_single', false);
 
 		$args = [
 			'parent' => 0,
@@ -2377,6 +2411,7 @@ class WoofiltersViewWpf extends ViewWpf {
 				'" data-label="' . ( '' !== $attrLabel ? $attrLabel : $filterNameSlug ) .
 				'" data-hide-active="' . ( $hideEmptyActive ? '1' : '0' ) .
 				'" data-show-all="' . ( (int) $show_all_atts ) . '"' .
+				'" data-hide-single="' . ( (int) $hideBySingle ) . '"' .
 				$filter['blockAttributes'] .
 			'>';
 		$html .= $this->generateFilterHeaderHtml($filter, $filterSettings, $noActive);
@@ -2429,6 +2464,7 @@ class WoofiltersViewWpf extends ViewWpf {
 		$allTerms         = false;
 		$terms            = self::$filterExistsTerms;
 		$withoutFiltering = self::$filterExistsTermsWithotFiltering;
+		
 
 		if (is_array($terms)) {
 			$countsTerms = array();
@@ -2452,7 +2488,7 @@ class WoofiltersViewWpf extends ViewWpf {
 		if (!$showAll) {
 			$allTerms = empty($withoutFiltering[$taxonomy]) ? array() : array_keys($withoutFiltering[$taxonomy]);
 		}
-
+		
 		return array($showedTerms, $countsTerms, $showFilter, $allTerms);
 	}
 

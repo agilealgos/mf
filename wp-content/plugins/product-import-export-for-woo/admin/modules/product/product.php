@@ -74,7 +74,7 @@ class Wt_Import_Export_For_Woo_Basic_Product {
                 
         add_filter('wt_iew_importer_steps_basic', array($this, 'importer_steps'), 10, 2);
 		
-		add_action('admin_footer-edit.php', array($this, 'wt_add_products_bulk_actions'));
+        add_action('admin_footer-edit.php', array($this, 'wt_add_products_bulk_actions'));
         add_action('load-edit.php', array($this, 'wt_process_products_bulk_actions'));  
         
     }
@@ -221,6 +221,7 @@ class Wt_Import_Export_For_Woo_Basic_Product {
 		$arr['product_categories'] = __('Product Categories', 'product-import-export-for-woo');
 		$arr['product_tags'] = __('Product Tags', 'product-import-export-for-woo');
 		$arr['user'] = __('User/Customer', 'product-import-export-for-woo');
+		$arr['subscription'] = __('Subscription', 'product-import-export-for-woo');
         return $arr;
     }
 

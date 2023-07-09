@@ -85,9 +85,9 @@ if (!class_exists('WT_ProdImpExp_Uninstall_Feedback')) :
                     padding: 12px 20px;
                     text-align: right;
                 }
-                .reviewlink{
+                .reviewlink, .supportlink{
                     padding:10px 0px 0px 35px !important;
-                    font-size: 15px;
+                    font-size: 14px;
                 }
                 .review-and-deactivate{
                     padding:5px;
@@ -121,11 +121,19 @@ if (!class_exists('WT_ProdImpExp_Uninstall_Feedback')) :
                             modal.find('a.dont-bother-me').attr('href', deactivateLink).css('float', 'left');
                         });
 
-                        $('#pipe-pipe-modal').on('click', 'a.review-and-deactivate', function (e) {
+                        modal.on('click', 'a.review-and-deactivate', function (e) {
                             e.preventDefault();
                             window.open("https://wordpress.org/support/plugin/product-import-export-for-woo/reviews/#new-post");
                             window.location.href = deactivateLink;
                         });
+                        modal.on('click', 'a.doc-and-support-doc', function (e) {
+                            e.preventDefault();
+                            window.open("https://www.webtoffee.com/product-import-export-plugin-woocommerce-user-guide/");
+                        });
+                        modal.on('click', 'a.doc-and-support-forum', function (e) {
+                            e.preventDefault();
+                            window.open("https://www.webtoffee.com/contact/");
+                        });							
                         modal.on('click', 'button.pipe-model-cancel', function (e) {
                             e.preventDefault();
                             modal.removeClass('modal-active');
@@ -140,10 +148,17 @@ if (!class_exists('WT_ProdImpExp_Uninstall_Feedback')) :
                                 if($('.reviewlink').length == 0){
                                     reasonInputHtml = '<div class="reviewlink"><a href="#" target="_blank" class="review-and-deactivate"><?php _e('Deactivate and leave a review', 'product-import-export-for-woo'); ?> <span class="xa-pipe-rating-link"> &#9733;&#9733;&#9733;&#9733;&#9733; </span></a></div>';
                                 }
-                            } else {
+                            }else if('supportlink' === inputType){
+							    if($('.supportlink').length == 0){
+                                    reasonInputHtml = '<div class="supportlink"><?php _e('Please go through the', 'product-import-export-for-woo'); ?><a href="#" target="_blank" class="doc-and-support-doc"> <?php _e('documentation', 'product-import-export-for-woo'); ?></a> <?php _e('or contact us via', 'product-import-export-for-woo'); ?><a href="#" target="_blank" class="doc-and-support-forum"> <?php _e('support', 'product-import-export-for-woo'); ?></a></div>';
+                                }
+							}else {
                                 if($('.reviewlink').length){
                                    $('.reviewlink'). remove();
                                 }
+                                if($('.supportlink').length){
+                                   $('.supportlink'). remove();
+                                }								
                                 reasonInputHtml = '<div class="reason-input">' + (('text' === inputType) ? '<input type="text" class="input-text" size="40" />' : '<textarea rows="5" cols="45"></textarea>') + '</div>';
                             }
                             if (inputType !== '') {
@@ -244,7 +259,7 @@ if (!class_exists('WT_ProdImpExp_Uninstall_Feedback')) :
                 array(
                     'id' => 'could-not-understand',
                     'text' => __('I couldn\'t understand how to make it work', 'product-import-export-for-woo'),
-                    'type' => 'textarea',
+                    'type' => 'supportlink',
                     'placeholder' => __('Would you like us to assist you?', 'product-import-export-for-woo')
                 ),
                 array(

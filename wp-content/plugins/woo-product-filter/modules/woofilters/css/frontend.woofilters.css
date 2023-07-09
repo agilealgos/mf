@@ -305,6 +305,7 @@
 	padding: 0px;
 	padding-inline-start: 0;
 	padding-left: 0px;
+	padding-bottom: 1px;
 }
 .wpfFilterLayoutVer, .wpfFilterLayoutHor {
 	display: -ms-flexbox;

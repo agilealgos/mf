@@ -112,13 +112,14 @@ class Wt_Import_Export_For_Woo_Basic_Csvwriter
 			$data = $data ? 1 : 0;
 		}
 
-		$use_mb = function_exists( 'mb_detect_encoding' );
-
-		if ( $use_mb ) {
-			$encoding = mb_detect_encoding( $data, 'UTF-8, ISO-8859-1', true );
-			$data     = 'UTF-8' === $encoding ? $data : utf8_encode( $data );
-		}
-
+		$keep_encoding = apply_filters('wt_iew_exporter_keep_encoding', true);
+         $use_mb = function_exists('mb_detect_encoding');
+         if ($use_mb && $keep_encoding) {
+            $enc = mb_detect_encoding($data, 'UTF-8, ISO-8859-1', true);
+            if('UTF-8' !== $enc){                            
+            $data = utf8_encode( $data );
+            }
+         }
 		return $this->escape_data( $data );
 	}
 	private function set_content($export_data, $delm=',')

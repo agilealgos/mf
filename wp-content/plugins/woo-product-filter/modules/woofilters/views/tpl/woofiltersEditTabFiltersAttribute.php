@@ -249,6 +249,13 @@ ViewWpf::display('woofiltersEditTabCustomTags');
 			</div>
 			<?php HtmlWpf::checkboxToggle('f_hide_empty_active', array()); ?>
 		</div>
+		<div class="settings-value settings-w100" data-parent="f_hide_empty">
+			<div class="settings-value-label">
+				<?php esc_html_e('Hide filter with single item', 'woo-product-filter'); ?>
+				<i class="fa fa-question woobewoo-tooltip no-tooltip" title="<?php echo esc_attr(__('Option allows you to hide the filter section if previously set filters result in only one element in the section.', 'woo-product-filter')); ?>"></i>
+			</div>
+			<?php HtmlWpf::checkboxToggle('f_hide_by_single', array()); ?>
+		</div>
 	</div>
 </div>
 <div class="row-settings-block wpfTypeSwitchable"  data-not-type="slider">
