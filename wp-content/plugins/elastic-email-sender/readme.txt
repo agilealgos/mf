@@ -2,8 +2,8 @@
 Contributors: elasticemail, rafkwa
 Tags:  elastic email, email marketing, transactional email, email sender, email, mailer, send email
 Requires at least: 5.0
-Tested up to: 6.1
-Stable tag: 1.2.5
+Tested up to: 6.2
+Stable tag: 1.2.6
 Requires PHP: 5.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -94,6 +94,9 @@ You can see your reports and sending history in Reports/Email logs. Keep in mind
 You can translate Elastic Email Sender on [__translate.wordpress.org__](https://translate.wordpress.org/projects/wp-plugins/elastic-email-sender).
 
 == Changelog ==
+
+= 1.2.6 =
+* Regular update
 
 = 1.2.5 =
 * Regular update

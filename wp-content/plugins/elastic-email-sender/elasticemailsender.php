@@ -23,7 +23,7 @@ if (is_plugin_active(get_option('elastic-email-subscribe-basename')) === true) {
 
     /*
      * Plugin Name: Elastic Email Sender
-     * Version: 1.2.5
+     * Version: 1.2.6
      * Plugin URI: https://wordpress.org/plugins/elastic-email-sender/
      * Description: This plugin reconfigures the <code>wp_mail()</code> function to send email using API (via Elastic Email) instead of SMTP and creates an options page that allows you to specify various options.
      * Author: Elastic Email Inc.
@@ -34,7 +34,7 @@ if (is_plugin_active(get_option('elastic-email-subscribe-basename')) === true) {
 
     /**
      * @author    Elastic Email Inc.
-     * @copyright Elastic Email, 2022, All Rights Reserved
+     * @copyright Elastic Email, 2023, All Rights Reserved
      * This code is released under the GPL licence version 3 or later, available here
      * https://www.gnu.org/licenses/gpl.txt
      */

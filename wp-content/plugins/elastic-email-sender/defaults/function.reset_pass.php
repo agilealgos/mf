@@ -5,7 +5,7 @@ function ees_custom_password_reset($message, $key, $user_login, $user_data)
     $message = __('Someone has requested a password reset for the following account:', 'elastic-email-sender') . "<br><br>\r\n\r\n";
     /* translators: %s: site name */
     $message .= sprintf(__('Site Name: %s'), get_bloginfo()) . "<br>\r\n\r\n";
-    $message .= sprintf(__('Email Adress: %s'), $user_data->user_email) . "<br>\r\n\r\n";
+    $message .= sprintf(__('Email Address: %s'), $user_data->user_email) . "<br>\r\n\r\n";
 
     /* translators: %s: user login */
     $message .= sprintf(__('Username: %s'), $user_login) . "<br><br>\r\n\r\n";

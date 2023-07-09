@@ -2,6 +2,8 @@
 if ( !defined( 'ABSPATH' ) ) exit;
 
 global $wpdb, $wpsl, $wpsl_admin, $wp_version, $wpsl_settings;
+
+$borlabs_exists = function_exists( 'BorlabsCookieHelper' );
 ?>
 
 <div id="wpsl-wrap" class="wrap wpsl-settings <?php if ( floatval( $wp_version ) < 3.8 ) { echo 'wpsl-pre-38'; } // Fix CSS issue with < 3.8 versions ?>">
@@ -402,6 +404,12 @@ global $wpdb, $wpsl, $wpsl_admin, $wp_version, $wpsl_settings;
                                <label for="wpsl-marker-clusters"><?php _e( 'Enable marker clusters?', 'wpsl' ); ?><span class="wpsl-info"><span class="wpsl-info-text wpsl-hide"><?php _e( 'Recommended for maps with a large amount of markers.', 'wpsl' ); ?></span></span></label> 
                                <input type="checkbox" value="" <?php checked( $wpsl_settings['marker_clusters'], true ); ?> name="wpsl_map[marker_clusters]" id="wpsl-marker-clusters" class="wpsl-has-conditional-option">
                             </p>
+
+
+                            <?php if ( $borlabs_exists && $wpsl_settings['delay_loading'] && ! $wpsl_settings['direction_redirect'] && $wpsl_settings['marker_clusters'] ) { ?>
+                                <div class="wpsl-callout"><?php echo sprintf( __( 'There is a problem with the marker clusters and Borlabs Cookie plugin in combination with the option to show the directions on the map. %s It results in the marker clusters not being removed from the map after the user clicked on "directions". %s To prevent this, you can either disable the marker cluster option or enable the option: "When a user clicks on "Directions", open a new window, and show the route on google.com/maps ?".', 'wpsl' ), '<br><br>', '<br><br>' ); ?></div>
+                            <?php } ?>
+
                             <div class="wpsl-conditional-option" <?php if ( !$wpsl_settings['marker_clusters'] ) { echo 'style="display:none;"'; } ?>>
                                 <p>
                                    <label for="wpsl-marker-zoom"><?php _e( 'Max zoom level', 'wpsl' ); ?>:<span class="wpsl-info"><span class="wpsl-info-text wpsl-hide"><?php _e( 'If this zoom level is reached or exceeded, then all markers are moved out of the marker cluster and shown as individual markers.', 'wpsl' ); ?></span></span></label> 
@@ -632,8 +640,6 @@ global $wpdb, $wpsl, $wpsl_admin, $wp_version, $wpsl_settings;
                                <a class="button" href="<?php echo wp_nonce_url( admin_url( "edit.php?post_type=wpsl_stores&page=wpsl_settings&action=clear_wpsl_transients" ), 'clear_transients' ); ?>"><?php _e( 'Clear store locator transient cache', 'wpsl' ); ?></a>
                             </p>
                             <?php
-                                $borlabs_exists = function_exists( 'BorlabsCookieHelper' );
-
                                 /**
                                  * Make sure the blocked content type for the store locator exists
                                  * in the Borlabs Cookie plugins. If not, then it's created.

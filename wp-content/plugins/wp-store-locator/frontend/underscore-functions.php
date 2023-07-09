@@ -87,7 +87,7 @@ function wpsl_create_underscore_templates( $template ) {
 
         echo apply_filters( 'wpsl_listing_template', $listing_template . "\n" );
     ?>
-</script>            
+</script>
     <?php
     } else {
     ?>
