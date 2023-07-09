@@ -1,5 +1,6 @@
 <?php
 /**
+
  * @copyright 2017  Cloudways  https://www.cloudways.com
  *
  *  This plugin is inspired from WP Speed of Light by JoomUnited.
@@ -871,7 +872,7 @@ class Breeze_Configuration {
 	public static function write_htaccess( $args ) {
 		$htaccess_path = trailingslashit( ABSPATH ) . '.htaccess';
 
-		if ( ! is_super_admin() ) {
+		if ( ! is_super_admin() && 'cli' !== php_sapi_name()) {
 			return false;
 		}
 		// open htaccess file
