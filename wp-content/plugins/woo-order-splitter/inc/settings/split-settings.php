@@ -182,7 +182,6 @@ switch($wc_os_settings['wc_os_ie']){
       
 
 
-
     ?>
 
         <div class="wc_os_io_options" data-method="io" <?php echo ($wc_os_settings['wc_os_ie']=='io'?'':'style="display:none;"'); ?>>
@@ -204,33 +203,73 @@ switch($wc_os_settings['wc_os_ie']){
                 </div>
             </div>
 
-            <div class="vendor-right">
-                <input type="radio" value="yes" <?php echo function_exists('wc_os_get_io_setting')?checked(wc_os_get_io_setting('out_stock_amount', 'yes') == 'yes', true, false):''; ?> name="wc_os_settings[io_options][out_stock_amount]" />
-                <input type="radio" value="no" <?php echo function_exists('wc_os_get_io_setting')?checked(wc_os_get_io_setting('out_stock_amount') == 'no', true, false):''; ?> name="wc_os_settings[io_options][out_stock_amount]" />
-                <div class="vendor-rtop">
-                    <?php _e('Get in stock items payment','woo-order-splitter')?>
-
-                    <i class="fas fa-money-bill-wave"></i>
-
-                </div>
-                <div class="vendor-rmiddle">
-                    <?php _e('and','woo-order-splitter')?>
-                </div>
-                <div class="vendor-rbottom">
-
-                    <div class="out-stock-amount" data-text="no" <?php echo function_exists('wc_os_get_io_setting')?(wc_os_get_io_setting('out_stock_amount', 'yes') == 'yes' ?'style="display:block;"':''):''; ?>>
-                    <?php _e('Get out of stock items payment','woo-order-splitter')?>
-
-                    <i class="fas fa-money-bill-wave"></i>
-                    </div>
-
-                    <div class="out-stock-amount" data-text="yes" <?php echo function_exists('wc_os_get_io_setting')?(wc_os_get_io_setting('out_stock_amount') == 'no' ?'style="display:block;"':''):''; ?>>
-                    <?php _e('Do not get out of stock items payment','woo-order-splitter')?>
+            <div class="switch-right">
+            
+            	<div class="switch-sub">
+                
+                    <input type="radio" value="yes" <?php echo function_exists('wc_os_get_io_setting')?checked(wc_os_get_io_setting('out_stock_amount', 'yes') == 'yes', true, false):''; ?> name="wc_os_settings[io_options][out_stock_amount]" />
+                    <input type="radio" value="no" <?php echo function_exists('wc_os_get_io_setting')?checked(wc_os_get_io_setting('out_stock_amount') == 'no', true, false):''; ?> name="wc_os_settings[io_options][out_stock_amount]" />
+                    <div class="switch-rtop">
+                        <?php _e('Get in stock items payment','woo-order-splitter')?>
+    
                         <i class="fas fa-money-bill-wave"></i>
-                        <div class="wos_cross"></div>
+    
                     </div>
+                    <div class="switch-rmiddle">
+                        <?php _e('and','woo-order-splitter')?>
+                    </div>
+                    <div class="switch-rbottom">
+    
+                        <div class="out-stock-amount" data-text="no" <?php echo function_exists('wc_os_get_io_setting')?(wc_os_get_io_setting('out_stock_amount', 'yes') == 'yes' ?'style="display:block;"':''):''; ?>>
+                        <?php _e('Get out of stock items payment','woo-order-splitter')?>
+    
+                        <i class="fas fa-money-bill-wave"></i>
+                        </div>
+    
+                        <div class="out-stock-amount" data-text="yes" <?php echo function_exists('wc_os_get_io_setting')?(wc_os_get_io_setting('out_stock_amount') == 'no' ?'style="display:block;"':''):''; ?>>
+                        <?php _e('Do not get out of stock items payment','woo-order-splitter')?>
+                            <i class="fas fa-money-bill-wave"></i>
+                            <div class="wos_cross"></div>
+                        </div>
+    
+                    </div>
+               </div>     	
+<?php
+	$io_items_remaining = function_exists('wc_os_get_io_setting')?wc_os_get_io_setting('io_items_remaining', 'group'):'group';
+	
+?>        
+                <div class="switch-sub">
+                    <input type="radio" value="group" <?php echo checked($io_items_remaining == 'group', true, false); ?> name="wc_os_settings[io_options][io_items_remaining]" />
+                    <input type="radio" value="separate" <?php echo checked($io_items_remaining == 'separate', true, false); ?> name="wc_os_settings[io_options][io_items_remaining]" />
+                    <div class="switch-rtop">
+                        <?php _e('Group in-stock items together','woo-order-splitter')?>
+                        
+                        <i class="fas fa-boxes"></i>
+                        
+                    </div>
+                    <div class="switch-rmiddle">
+                        <?php _e('and','woo-order-splitter')?>
+                    </div>
+                    <div class="switch-rbottom">
+                    
+                        <div class="switch-group-remaining io-remaining-items" data-text="separate" <?php echo ($io_items_remaining=='group'?'style="display:block;"':''); ?>>
+                        <?php _e('Group all out-stock items in one order','woo-order-splitter')?>
+                        
+                        <i class="fas fa-boxes"></i>
+                        </div>
+                        
+                        <div class="switch-split-remaining io-remaining-items" data-text="group" <?php echo ($io_items_remaining=='separate'?'style="display:block;"':''); ?>>
+                        <?php _e('Separate all out-stock items into individual orders','woo-order-splitter')?>
+                            <i class="fas fa-square"></i>
+                            <i class="fas fa-square"></i>
+                            <i class="fas fa-square"></i>
+                        
+                        </div>
+                    
+                    </div>
+                    
+                </div>            
 
-                </div>
 
             </div>
             <?php if(!array_key_exists('wc_os_effect_parent', $wc_os_general_settings)): ?>

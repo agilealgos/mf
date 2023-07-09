@@ -1,3 +1,6 @@
+<?php
+	$subscription_split = in_array('subscription_split', $wc_os_settings['wc_os_additional']);
+?>	
 <form class="nav-tab-content tab-general-settings" action="<?php echo esc_url($_SERVER['REQUEST_URI']); ?>" method="post">
 <input type="hidden" name="wos_tn" value="<?php echo isset($_GET['t'])?esc_attr($_GET['t']):'0'; ?>" />
 
@@ -61,7 +64,15 @@
         
                 <input <?php disabled(in_array($wc_os_settings['wc_os_ie'], array('quantity_split'))); ?> class="wc_os_checkout_options" id="wc_os_effect_parent" name="wc_os_general_settings[wc_os_effect_parent]" type="checkbox" value="1" <?php echo (array_key_exists('wc_os_effect_parent', $wc_os_general_settings) && !in_array($wc_os_settings['wc_os_ie'], array('quantity_split'))?'checked="checked"':''); ?> /><label for="wc_os_effect_parent"><?php _e("Remove Items from Parent Order on Split?",'woo-order-splitter'); ?> <strong><?php _e("No",'woo-order-splitter'); ?></strong>/<strong><?php _e("Yes",'woo-order-splitter'); ?></strong></label>
         
-                </li>     
+                </li>    
+                
+                <li class="wc_os_threshold_option <?php echo (array_key_exists('wc_os_threshold', $wc_os_general_settings)?'selected':''); ?>" title="<?php _e("Split threshold value for items in child orders?",'woo-order-splitter'); ?>">
+        
+                <input <?php disabled(!in_array($wc_os_settings['wc_os_ie'], array('group_cats'))); ?> class="wc_os_checkout_options" id="wc_os_threshold" name="wc_os_general_settings[wc_os_threshold]" type="checkbox" value="1" <?php echo (array_key_exists('wc_os_threshold', $wc_os_general_settings) && in_array($wc_os_settings['wc_os_ie'], array('group_cats'))?'checked="checked"':''); ?> /><label for="wc_os_threshold"><?php _e("Maximum number of items per child order?",'woo-order-splitter'); ?> <strong><?php _e("No",'woo-order-splitter'); ?></strong>/<strong><?php _e("Yes",'woo-order-splitter'); ?></strong></label>
+                
+                <input type="number" value="<?php echo (array_key_exists('wc_os_threshold_value', $wc_os_general_settings)?$wc_os_general_settings['wc_os_threshold_value']:0); ?>" name="wc_os_general_settings[wc_os_threshold_value]" />
+        
+                </li>   
                                  
             
             </ul>
@@ -70,7 +81,7 @@
         
         
         <li>
-        	<strong><?php _e("Show / Hide",'woo-order-splitter'); ?></strong>
+        	<strong><?php _e("Show / Hide",'woo-order-splitter'); ?> (<?php _e("Orders",'woocommerce'); ?>)</strong>
 
             <ul> 
                             
@@ -151,12 +162,43 @@
                     <input class="wc_os_input_options" min="1" max="702" id="wc_os_limit_alphabets" name="wc_os_general_settings[wc_os_limit_alphabets]" type="number" value="<?php echo esc_attr($wc_os_limit_alphabets); ?>"  />
 
                 </li>                
-                         
+                
+                
+                
             
             </ul>
 		
         </li>
         
+        <?php if($subscription_split): ?>
+        <li>
+        
+        	<strong><?php _e("Show / Hide",'woo-order-splitter'); ?> (<?php _e("Subscriptions",'woocommerce'); ?>)</strong>
+            
+			<ul>                
+                
+                
+				<li class="<?php echo (array_key_exists('wc_os_subscription_items_count_column', $wc_os_general_settings)?'selected':''); ?>">
+        
+                <input class="wc_os_checkout_options" id="wc_os_subscription_items_count_column" name="wc_os_general_settings[wc_os_subscription_items_count_column]" type="checkbox" value="1" <?php echo (array_key_exists('wc_os_subscription_items_count_column', $wc_os_general_settings)?'checked="checked"':''); ?> /><label for="wc_os_subscription_items_count_column"><?php _e('Admin > Subscription List > "Items Count" Column','woo-order-splitter'); ?> <strong><?php _e("Off",'woo-order-splitter'); ?></strong>/<strong><?php _e("On",'woo-order-splitter'); ?></strong></label>    
+        
+                </li>
+        
+                <li class="<?php echo (array_key_exists('wc_os_subscription_splitf_column', $wc_os_general_settings)?'selected':''); ?>">
+        
+                <input class="wc_os_checkout_options" id="wc_os_subscription_splitf_column" name="wc_os_general_settings[wc_os_subscription_splitf_column]" type="checkbox" value="1" <?php echo (array_key_exists('wc_os_subscription_splitf_column', $wc_os_general_settings)?'checked="checked"':''); ?> /><label for="wc_os_subscription_splitf_column"><?php _e('Admin > Subscription List > "Split From" Column','woo-order-splitter'); ?> <strong><?php _e("Off",'woo-order-splitter'); ?></strong>/<strong><?php _e("On",'woo-order-splitter'); ?></strong></label>    
+        
+                </li>
+        
+                <li class="<?php echo (array_key_exists('wc_os_subscription_clonef_column', $wc_os_general_settings)?'selected':''); ?>">
+        
+                <input class="wc_os_checkout_options" id="wc_os_subscription_clonef_column" name="wc_os_general_settings[wc_os_subscription_clonef_column]" type="checkbox" value="1" <?php echo (array_key_exists('wc_os_subscription_clonef_column', $wc_os_general_settings)?'checked="checked"':''); ?> /><label for="wc_os_subscription_clonef_column"><?php _e('Admin > Subscription List > "Parent Order" Column','woo-order-splitter'); ?> <strong><?php _e("Off",'woo-order-splitter'); ?></strong>/<strong><?php _e("On",'woo-order-splitter'); ?></strong></label>
+        
+                </li>      
+         
+        		</ul>        
+        </li>
+        <?php endif; ?>
          <li>
         	<strong><?php _e("Before Split",'woo-order-splitter'); ?></strong>
 
@@ -395,6 +437,7 @@
 		
 
 		$disable_split = in_array('split', $wc_os_settings['wc_os_additional']);
+		
 
 		$split_lock = (isset($wc_os_settings['wc_os_additional']['split_lock'])?$wc_os_settings['wc_os_additional']['split_lock']:array());
 		$split_lock = is_array($split_lock)?$split_lock:array();
@@ -417,6 +460,12 @@
 &nbsp;&nbsp;&nbsp;<input id="wip-split" <?php checked($disable_split); ?> type="checkbox" name="wc_os_settings[wc_os_additional][]" value="split" />
 
 <label for="wip-split"><?php _e('Disable split order option', 'woo-order-splitter'); ?></label>
+<br />
+
+&nbsp;&nbsp;&nbsp;<input id="wips-split" <?php checked($subscription_split); ?> type="checkbox" name="wc_os_settings[wc_os_additional][]" value="subscription_split" />
+
+<label for="wips-split"><?php _e('Enable subscription split option', 'woo-order-splitter'); ?></label>
+
 
 <?php if(!$disable_split): 
 
@@ -644,7 +693,7 @@ $wc_os_order_statuses_keys = array_keys($wc_os_order_statuses);
 
 <?php } ?>
 
-<option value="trash" <?php selected('trash'==$removal_lock_split); ?>><?php echo __('Trash', 'woocommerce'); ?></option>
+<option value="trash" <?php selected('trash'==$removal_lock_split); ?>><?php echo __('Trash', 'woocommerce'); ?> (<?php echo __('Empty Order', 'woo-order-splitter'); ?>)</option>
 
 
 </select>
@@ -665,7 +714,7 @@ $wc_os_order_statuses_keys = array_keys($wc_os_order_statuses);
 
     <?php } ?>
     
-    <option value="trash" <?php selected('trash'==$empty_order_status); ?>><?php echo __('Trash', 'woocommerce'); ?></option>
+    <option value="trash" <?php selected('trash'==$empty_order_status); ?>><?php echo __('Trash', 'woocommerce'); ?> (<?php echo __('Empty Order', 'woo-order-splitter'); ?>)</option>
 
 </select>
 

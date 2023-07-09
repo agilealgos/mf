@@ -3,7 +3,7 @@
 	Plugin Name: Order Splitter for WooCommerce
 	Plugin URI: https://wordpress.org/plugins/woo-order-splitter
 	Description: Split, merge, clone, your crowd/combined/bulk orders using intelligent rules.
-	Version: 4.8.0
+	Version: 4.9.2
 	Author: Fahad Mahmood
 	Author URI: http://androidbubble.com/blog/
 	Text Domain: woo-order-splitter
@@ -87,7 +87,7 @@
 			   $wc_os_method_options, $wc_os_meta_handling_arr, $is_wc_booking, $is_partial_addon, $wc_os_speed_optimization, $wc_os_minified_js, 
 			   $wc_os_minified_css, $wc_os_delivery_date_activated, $is_booster_plus_for_woocommerce, $is_woocommerce_subscriptions, $wc_os_settings, 
 			   $wc_os_product_cat_shipping_classes, $wc_os_schedule_delivery_for_woocommerce, $wc_os_is_combine, $is_woocommerce_shipping_usps, $wuos_wos,
-			   $wc_os_woo_order_status_manager, $wc_os_cosfw, $wc_os_gf, $wc_os_days, $wc_os_cloud, $wc_os_parcel_shipment, $wc_os_parcel_shipment_adjustment, $wc_os_advanced_partial_payment, $wc_os_advanced_partial_payment_pro, $wc_os_current_theme, $wc_os_products_per_order, $wc_os_woocommerce_shipping_multiple_addresses;
+			   $wc_os_woo_order_status_manager, $wc_os_cosfw, $wc_os_gf, $wc_os_days, $wc_os_cloud, $wc_os_parcel_shipment, $wc_os_parcel_shipment_adjustment, $wc_os_advanced_partial_payment, $wc_os_advanced_partial_payment_pro, $wc_os_current_theme, $wc_os_products_per_order, $wc_os_woocommerce_shipping_multiple_addresses, $wc_os_woo_delivery;
 			   
 			   
 		$wc_os_current_theme = str_replace(array('-', ' '), '_', strtolower(wp_get_theme()));
@@ -124,6 +124,7 @@
 		$wc_os_advanced_partial_payment = wc_os_check_plugin_active_status('advanced-partial-payment-or-deposit-for-woocommerce/advanced_partial_payment.php');
 		$wc_os_advanced_partial_payment_pro = wc_os_check_plugin_active_status('mage-partial-payment-pro/mage_partial_pro.php');
 		$wc_os_woocommerce_shipping_multiple_addresses = wc_os_check_plugin_active_status('woocommerce-shipping-multiple-addresses/woocommerce-shipping-multiple-addresses.php');
+		$wc_os_woo_delivery = wc_os_check_plugin_active_status('coderockz-woocommerce-delivery-date-time-pro/coderockz-woo-delivery.php');
 		
         $wc_os_acf_settings = get_option('wc_os_acf_settings', array());
 		$wc_os_speed_optimization = get_option('wc_os_speed_optimization', array());

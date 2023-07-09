@@ -133,8 +133,8 @@
                     <li>
                     <?php 
 					if(is_array($log) || is_object($log)){
-						pree($method_key);
-						pree($log);
+						wc_os_pree('<span class="wc-os-red">'.$method_key.'</span>');
+						wc_os_pree($log);
 					}else{
 						echo $log;
 					}
@@ -161,7 +161,7 @@
                     <li>
 					<?php 
 					if(is_array($log) || is_object($log)){
-						pree($method_key);
+						pree('<span class="wc-os-red">'.$method_key.'</span>');
 						pree($log);
 					}else{
 						echo $log;

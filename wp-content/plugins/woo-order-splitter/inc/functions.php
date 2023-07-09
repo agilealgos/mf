@@ -209,26 +209,37 @@
 			$split = (isset($_GET['split'])?sanitize_wc_os_data($_GET['split']):$split);
 			$nonce = (isset($_GET['_wpnonce'])?sanitize_wc_os_data($_GET['_wpnonce']):$nonce);
 			$order_id = (isset($_GET['order_id'])?sanitize_wc_os_data($_GET['order_id']):$order_id);
+			$subscription_id = (isset($_GET['subscription_id'])?sanitize_wc_os_data($_GET['subscription_id']):$order_id);
 			
 
 			if ($split == 'init' && $nonce){// && isset($_GET['split-session']) && $_GET['split-session'] == date('Ymhi')) {
 				
 				if ( is_user_logged_in() ) {
 					
-					$wc_os_order_split = wc_os_order_split($order_id);
+					//wc_os_pree($subscription_id);exit;
+					global $wc_os_settings;
 					
-					if( current_user_can('manage_woocommerce') && $wc_os_order_split) {
+					$subscription_split = in_array('subscription_split', $wc_os_settings['wc_os_additional']);
+					
+					
+					
+					$wc_os_split = (($order_id && wc_os_order_split($order_id)) || ($subscription_id && $subscription_split));
+					
+					if( current_user_can('manage_woocommerce') && $wc_os_split) {
 						
 						global $wc_os_settings;
 						
 						switch($wc_os_settings['wc_os_ie']){
 							default:								
-
-								$originalorderid = $order_id;
-			
-								$get_post_meta = get_post_meta($originalorderid);
-								if(!array_key_exists('split_status', $get_post_meta)){
-									wc_os_set_splitter_cron($originalorderid, true, 228);
+								
+								if($order_id){
+									$originalorderid = $order_id;
+				
+									$get_post_meta = get_post_meta($originalorderid);
+									if(!array_key_exists('split_status', $get_post_meta)){
+										wc_os_set_splitter_cron($originalorderid, true, 228);
+									}
+									
 								}
 
 							break;
@@ -236,8 +247,11 @@
 								
 								
 								
-								//
-								add_action('init', array($this, 'split_order'));
+								if($order_id){
+									add_action('init', array($this, 'split_order'));
+								}elseif($subscription_id){
+									add_action('init', array($this, 'split_subscription'));
+								}
 								
 							break;								
 						}
@@ -697,7 +711,7 @@
 				
 				$n_plus_1 = (count($wc_order_items) - count($wc_order_items_matched));
 				
-				
+				//wc_os_pree($originalorderid.' - '.$this->auto_split.' - '.$wc_os_ie_selected);exit;
 				if($this->auto_split){
 					switch($wc_os_ie_selected){ //06/05/2019
 						default:
@@ -1416,12 +1430,15 @@
 									
 								}
 
-								if(isset($items_io['backorder']) && !empty($items_io['backorder']) && !empty($items_io['backorder']['items'])) //create order of backorder items
+								if(isset($items_io['backorder']) && !empty($items_io['backorder']) && is_array($items_io['backorder']['items']) && !empty($items_io['backorder']['items'])) //create order of backorder items
 								{
 									$split_status_value = wc_os_order_split_status_action();
 									
 									
 									if($items_io['backorder_split_required']){
+										
+										$io_items_remaining = function_exists('wc_os_get_io_setting')?wc_os_get_io_setting('io_items_remaining', 'group'):'group';
+										
 										//set items to include in order
 										$this->include_items = $items_io['backorder']['items'];
 										$items_io['backorder']['items'] = array();
@@ -1430,8 +1447,6 @@
 										$this->include_items_qty = $items_io['backorder']['quantity'];
 										$items_io['backorder']['quantity'] = array();
 										
-										
-										//create post order data
 										
 										if($wc_os_cart){
 											
@@ -1447,72 +1462,110 @@
 											$new_order_ids['out_stock'] = $this->include_items;
 										
 										}else{
-										
-											$order_split_status = wc_os_order_split_status_action($original_order, $this->include_items);
-											$order_split_status = ($order_split_status?$order_split_status:$original_order->get_status());
-											$order_split_status = wc_os_method_based_default_order_status($order_split_status, 0, '_wos_out_of_stock');
-											$order_split_status = wc_os_add_prefix($order_split_status, 'wc-');
-
-											$order_data =  array(
-												'post_type'     => 'shop_order',
-												'post_status'   => $order_split_status,
-												'ping_status'   => 'closed',
-												'post_author'   => $user_id,
-												'post_password' => uniqid( 'order_' ),
-											);
 											
-											//save order to database
-											if(!$wc_os_debug){
-												$order_id = wp_insert_post( apply_filters( 'woocommerce_new_order_data', $order_data), true );
+													
+											switch($io_items_remaining){
+												
+												case 'separate':
+												
+													$backorder_items_arr = $this->include_items;
+													$backorder_items_qty_arr = $this->include_items_qty;
+													
+													
+												break;
+												
+												case 'group':
+													
+													$backorder_items_arr = array($this->include_items);
+													$backorder_items_qty_arr = array($this->include_items_qty);
+												
+												break;
+													
 											}
-											//update_post_meta($order_id, 'testing_position', 'io+backorder');
+											//pree($backorder_items_arr);	
+											//pree($backorder_items_qty_arr);	
 											
-											if ( is_wp_error( $order_id ) ) {
+											foreach($backorder_items_arr as $backorder_item){
+												$this->include_items = array();
+												$this->include_items_qty = array();
 											
-												if(!$this->cron_in_progress)
-												add_action( 'admin_notices', array($this, 'clone__error'));
-											} else { //add data to new post
-												if(!$wc_os_debug) //save order
-												$this->cloned_order_data($order_id, $originalorderid, true, false, $wc_os_shipping_cost);//split_order_logic
+												$this->include_items = (is_array($backorder_item)?$backorder_item:array($backorder_item));
+												
+												if(is_array($backorder_item)){
+													$backorder_item_parked = current($backorder_item);
+													$backorder_items_qty_arr_parked = current($backorder_items_qty_arr);
+													
+													if(array_key_exists($backorder_item_parked, $backorder_items_qty_arr_parked)){
+														$backorder_item = $backorder_item_parked;
+														$backorder_items_qty_arr = $backorder_items_qty_arr_parked;
+													}
+													
+												}else{
+													
+												}
 												
 												
+												//wc_os_logger('debug', $backorder_item, true);
+												//wc_os_logger('debug', $backorder_items_qty_arr, true);
 												
 												
-												//wc_os_update_split_status($order_id, 1447);
-												delete_post_meta($order_id, '_wos_in_stock');
-												update_post_meta($order_id, '_wos_out_of_stock', true);
+												$this->include_items_qty = array($backorder_item=>(array_key_exists($backorder_item, $backorder_items_qty_arr)?$backorder_items_qty_arr[$backorder_item]:1));
 												
+												//wc_os_logger('debug', $this->include_items_qty, true);
 												
+												//pree($this->include_items);		
+												//pree($this->include_items_qty);										
+												//continue;
+												$order_split_status = wc_os_order_split_status_action($original_order, $this->include_items);
+												$order_split_status = ($order_split_status?$order_split_status:$original_order->get_status());
+												$order_split_status = wc_os_method_based_default_order_status($order_split_status, 0, '_wos_out_of_stock');
+												$order_split_status = wc_os_add_prefix($order_split_status, 'wc-');
+	
+												$order_data =  array(
+													'post_type'     => 'shop_order',
+													'post_status'   => $order_split_status,
+													'ping_status'   => 'closed',
+													'post_author'   => $user_id,
+													'post_password' => uniqid( 'order_' ),
+												);
 												
+												//save order to database
+												if(!$wc_os_debug){
+													$order_id = wp_insert_post( apply_filters( 'woocommerce_new_order_data', $order_data), true );
+												}
+												//update_post_meta($order_id, 'testing_position', 'io+backorder');
 												
-												$new_order_ids['out_stock'] = $order_id;
+												if ( is_wp_error( $order_id ) ) {
 												
-												//$split_status_value = wc_os_method_based_default_order_status($split_status_value, $order_id);
-												//$outofstock_order = wc_get_order( $order_id );
-												
-
-												
-												//if($split_status_value){
-													//wp_update_post(array('ID'=>$order_id, 'post_status'=>$split_status_value));
-													//wc_os_set_order_status($order_id, '', false, 1467);
-													/*$removal_arr = get_option('wos_update_status', array());
-													$removal_arr[$order_id] = $split_status_value;
-													update_option('wos_update_status', $removal_arr);*/
-													//update_wcfm_order_status($order_id, $split_status_value);
-												//}else{
-
-													//wp_update_post(array('ID'=>$order_id, 'post_status'=>'wc-on-hold'));
-
-													//update_wcfm_order_status($order_id, 'wc-on-hold');
-												//}
-												
-												
-												wc_os_reduce_order_stock($order_id, true);
-												
+													if(!$this->cron_in_progress)
+													add_action( 'admin_notices', array($this, 'clone__error'));
+												} else { //add data to new post
+													if(!$wc_os_debug) //save order
+													$this->cloned_order_data($order_id, $originalorderid, true, false, $wc_os_shipping_cost);//split_order_logic
+													
+													
+													
+													
+													//wc_os_update_split_status($order_id, 1447);
+													delete_post_meta($order_id, '_wos_in_stock');
+													update_post_meta($order_id, '_wos_out_of_stock', true);
+													
+													
+													
+													
+													$new_order_ids['out_stock'] = $order_id;
+													
+											
+													wc_os_reduce_order_stock($order_id, true);
+													
+													
+												}
 												
 											}
-											
+											//exit;
 										}
+										
+										
 									}else{
 										
 										if($originalorderid){
@@ -2000,7 +2053,7 @@
 							if($this->cron_light_in_progress){
 								return array('wc_os_ie_selected'=>$wc_os_ie_selected);
 							}
-
+							//pree($wc_order_items_qty_split);exit;
 							$classObj = new wc_os_bulk_order_splitter;
 							$new_order_ids = $classObj->subscription_split_machine($wc_os_ie_selected,$originalorderid, $wc_os_all_products, $wc_order_items_matched, $wc_order_items_qty_split, $original_order, $consider_action_for_all, $wc_os_cart, $wc_order_items_diff, $wc_order_items_qty);
 							//exit;
@@ -2228,21 +2281,27 @@
 							}
 							
 							
-							if($wc_os_pro && class_exists('wc_os_bulk_order_splitter') && count($wc_order_items)>1){
+							if($wc_os_pro && class_exists('wc_os_bulk_order_splitter')){
 								
 								$classObj = new wc_os_bulk_order_splitter;
 								
 								global $wc_os_woocommerce_shipping_multiple_addresses;
 								
-								if($wc_os_woocommerce_shipping_multiple_addresses){// && (!LIVE || (is_user_logged_in() && current_user_can('administrator')))){
+								//wc_os_pree($wc_os_woocommerce_shipping_multiple_addresses.' * '.count($wc_order_items));exit;
+								
+								if($wc_os_woocommerce_shipping_multiple_addresses && count($wc_order_items)>0){// && (!LIVE || (is_user_logged_in() && current_user_can('administrator')))){
 									
 									$new_order_ids = $classObj->split_order_by_group_cats_shipping_multiple($wc_order_items, $originalorderid, $user_id, $wc_os_cart);
+									//wc_os_pree($new_order_ids);exit;
 									
-								}else{
+									
+								}elseif(count($wc_order_items)>1){
 								
 									$new_order_ids = $classObj->split_order_by_group_cats($wc_order_items, $originalorderid, $user_id, $wc_os_cart);
 									
 								}
+								
+								
 								
 								
 
@@ -2646,12 +2705,12 @@
 			return;
 
 			$product_ids = is_array($product_ids)?$product_ids:array($product_ids);
-
+			//wc_os_pree($product_ids);exit;
 			$original_order = wc_get_order($originalorderid);
 			
 			$to_delete = array();
 			
-			
+			//wc_os_pree($product_ids);
 			
 			foreach($original_order->get_items() as $item_id=>$item_data){
 
@@ -2660,7 +2719,7 @@
 				}else{
 					$product_id = $item_data->get_product_id();
 				}				
-				
+				//wc_os_pree($product_id.' - '.$this->include_item_keys);
 				$product_id_to_check = ($this->include_item_keys?$item_id.'|':'').$product_id;
 				
 				
@@ -2679,10 +2738,11 @@
 				}
 			}	
 			
-			
+			//wc_os_pree($to_delete);
 			if(!empty($to_delete)){
 				if($delete){
 					foreach($to_delete as $item_id){
+						//wc_os_pree($item_id);
 						wc_delete_order_item( $item_id );	
 						update_post_meta($originalorderid, '_wc_os_effected_order', true);				
 					}	
@@ -2735,7 +2795,222 @@
 			$wc_os_order_items = (empty($original_order->get_items())?array('empty'):$wc_os_order_items);
 			
 		}
-	  
+		
+		//
+	  	public function split_subscription($originalorderid = 0, $wc_os_products=array()){
+			
+			global $wc_os_pro, $wc_os_effect_parent, $wc_os_settings, $wc_os_shipping_cost, $yith_pre_order, $wc_os_products_per_order;
+			
+			$subscription_split = in_array('subscription_split', $wc_os_settings['wc_os_additional']);
+		
+			$wc_os_ie = $wc_os_settings['wc_os_ie'];
+			
+			if(!$originalorderid){
+				$originalorderid = sanitize_wc_os_data($_GET['subscription_id']);
+				$this->processing = false;
+			}
+			//wc_os_pree($originalorderid);exit;
+			if($originalorderid>0){
+				$order_data = wcs_get_subscription( $originalorderid );
+				
+				if(is_object($order_data) && empty($order_data))
+				return;
+				
+				if(count($order_data->get_items())>1){
+					foreach( $order_data->get_items() as $item_key => $item_values ){
+						
+						$consider = true;//($wc_os_all_products || (((in_array($item_key, $wc_os_products) || in_array($item_values->get_product_id(), $wc_os_products)))));
+
+						if($consider){
+							$wc_os_products_arr[$item_key] = $item_values->get_product_id();	
+						}
+					}
+				}
+
+		
+				$user_id = get_post_meta($originalorderid, '_customer_user', true);
+				$get_post_meta = get_post_meta($originalorderid);
+				
+		
+				$splitting_items = array();
+				$item_counter = 0;		
+				
+				
+				//wc_os_pree($wc_os_products_per_order);wc_os_pree($wc_os_products_arr);exit;
+				if(!empty($wc_os_products_arr)){
+					
+					$number_of_products = $wc_os_products_per_order;
+					
+					$items_count = 0;					
+					$order_set = 0;
+					$orders_arr = array();
+					
+					
+					foreach( $order_data->get_items() as $item_key => $item_values ){
+						$item_counter++;
+						
+					
+						$qty = $item_values->get_quantity();						
+					
+						
+						$item = $item_values->get_data();
+						$product_id = $item['product_id'];
+						$variation_id = $item['variation_id'];						
+						if ($variation_id != 0) {
+							$product = new WC_Product_Variation($variation_id);			
+						} else {
+							$product = new WC_Product($product_id);	
+						}	
+						
+						if($item_values['total']==$product->get_price()){
+							$unit_price = $product->get_price();
+						}else{
+							$unit_price = ($item_values['total']/$qty); //06 March 2019 - with Sean Owen
+						}									
+						
+						
+						
+						
+						$splitting_items[$item_key] = array(							
+							'qty' => $qty,
+							'product_id' => $product_id,
+							'variation_id' => $variation_id,
+							'unit_price' => $unit_price,
+							'item_key' => $item_key,
+							'product' => $product,
+							'item_id' => ($variation_id?$variation_id:$product_id),
+							
+						);
+						
+						switch($wc_os_ie){
+							case 'default':									
+								
+								if($items_count%$number_of_products==0){ $order_set++; $this->include_items=array(); }	
+								
+								$items_count++;
+								
+								$orders_arr[$order_set][$item_key] = $splitting_items[$item_key]['item_key'].'|'.$splitting_items[$item_key]['item_id'];
+								
+							break;
+							
+						}
+						
+					}
+					
+					//wc_os_pree($orders_arr);exit;
+					if(!empty($orders_arr)){
+						
+						foreach($orders_arr as $orders_items){
+								
+								$this->include_items = $orders_items;
+								
+								$order_data_args =  array(
+									'post_type'     => 'shop_subscription',
+									'post_status'   => wc_os_add_prefix($order_data->get_status(), 'wc-'),
+									'ping_status'   => 'closed',
+									'post_author'   => $user_id,
+									'post_password' => uniqid( 'order_' ),
+								);
+								
+
+								$order_id_new = wp_insert_post( apply_filters( 'woocommerce_new_order_data', $order_data_args), true );
+								
+								
+								if ( is_wp_error( $order_id_new ) ) {									
+									if(!$this->cron_in_progress)
+									add_action( 'admin_notices', array($this, 'split__error'));
+								} else {									
+									
+
+
+									
+									$this->include_item_keys = true;
+									$this->cloned_order_data($order_id_new, $originalorderid, true, false, $wc_os_shipping_cost, '', true);							
+									wc_os_update_split_status($order_id_new, 2909);
+									update_post_meta($order_id_new, 'splitted_from', $originalorderid);
+								}																				
+								
+							
+								$new_order_ids[] = $order_id_new;
+								
+								if(!empty($this->include_items) && $wc_os_effect_parent){
+									$this->include_item_keys = true;
+									$this->wos_delete_order_item($originalorderid, $this->include_items);
+								}
+								
+								
+								
+							}
+							
+					}
+				}
+		
+				
+				if(!empty($splitting_items) && $group_selected_items){
+					
+					$this->include_items = array();
+						
+					foreach($splitting_items as $item_key => $splitting_set){
+												
+						$this->include_items[$item_key] = $splitting_items[$item_key]['item_key'].'|'.$splitting_items[$item_key]['item_id'];						
+						
+					}
+					
+					if(!empty($this->include_items) && $wc_os_effect_parent){
+						$this->include_item_keys = true;
+						$this->include_items = $this->wos_delete_order_item($originalorderid, $this->include_items, false);
+					}
+					
+					if(!empty($this->include_items)){
+						$order_data_args =  array(
+							'post_type'     => 'shop_subscription',
+							'post_status'   => wc_os_add_prefix($order_data->get_status(), 'wc-'),
+							'ping_status'   => 'closed',
+							'post_author'   => $user_id,
+							'post_password' => uniqid( 'order_' ),
+						);
+						
+						$order_id_new = wp_insert_post( apply_filters( 'woocommerce_new_order_data', $order_data_args), true );
+						
+						if ( is_wp_error( $order_id_new ) ) {									
+							if(!$this->cron_in_progress)
+							add_action( 'admin_notices', array($this, 'split__error'));
+						} else {								
+						
+								
+							$this->include_item_keys = true;
+							$this->cloned_order_data($order_id_new, $originalorderid, true, false, $wc_os_shipping_cost, '', true);							
+							wc_os_update_split_status($order_id_new, 2881);
+						}																				
+					
+						$new_order_ids[] = $order_id_new;
+						
+						if(!empty($this->include_items) && $wc_os_effect_parent){
+							$this->include_item_keys = true;
+							$this->wos_remove_order_item($originalorderid, $this->include_items);
+						}
+						
+					}
+						
+					
+				}
+
+				wc_os_update_split_status($originalorderid,3001);//, 'split_status', 'Alpha');
+				$order_data = wc_get_order( $originalorderid );
+				$order_data->calculate_totals();
+
+				if(wc_os_order_removal() && empty($_POST['wc_os_ps'])){
+					wc_os_trash_post($originalorderid);
+				}else{			
+					if(is_admin() && !$this->cron_in_progress){
+						wp_redirect('edit.php?post_type=shop_subscription&parent_order='.$originalorderid.'&orderby=ID&order=desc');exit;
+					}
+				}
+				
+			}
+			
+			//return true;
+		}	
 		public function split_order($originalorderid = null, $wc_os_products=array()){
 			global $wc_os_pro, $wc_os_effect_parent, $wc_os_settings, $wc_os_shipping_cost, $yith_pre_order, $wc_os_products_per_order;
 
@@ -2757,13 +3032,14 @@
 			if(!$wc_os_pro){ wc_maybe_reduce_stock_levels($originalorderid); } //wc_os_reduce_order_stock($originalorderid, true);
 			
 			
-			if(empty($wc_os_products) && !empty($_POST['wc_os_ps'])){
+			if(!empty($_POST['wc_os_ps'])){//empty($wc_os_products) && 
 				$wc_os_products = sanitize_wc_os_data($_POST['wc_os_ps']);
 				
 				$wc_os_products = array_map(function($item){ return (is_numeric($item)?$item:''); }, $wc_os_products);
 				$wc_os_products = array_filter($wc_os_products);
 			}
 			
+			//pree($wc_os_products);exit;
 			
 			if(empty($wc_os_products)){
 				
@@ -2781,7 +3057,7 @@
 			}
 			
 			$proceed = (!empty($wc_os_products) || (array_key_exists('wc_os_ps', $_POST) && !empty($_POST['wc_os_ps'])) || $wc_os_all_products);
-			
+			//pree($proceed);exit;
 			if($proceed){
 			}else{
 				return;
@@ -2797,7 +3073,7 @@
 			$new_order_ids = $wc_os_products_arr = array();	
 			$proceed = true;
 			
-			
+			//pree($split_lock);exit;
 			if($originalorderid==0){
 				$originalorderid = sanitize_wc_os_data($_GET['order_id']);
 				$this->processing = false;
@@ -2848,7 +3124,9 @@
 				$qty_splitted = get_post_meta($originalorderid, 'qty_splitted', true);
 				
 				$qty_split_check = ($split_qty && !$qty_splitted);
-				$multiple_items_check = (count($order_data->get_items())>1 && !array_key_exists('split_status', $get_post_meta));
+				$multiple_items_check = (count($order_data->get_items())>1);// && !array_key_exists('split_status', $get_post_meta));
+				
+				//pree($qty_split_check);pree($multiple_items_check.' - '.count($order_data->get_items()).'  -  '.array_key_exists('split_status', $get_post_meta));pree(debug_backtrace());exit;
 				
 				if($qty_split_check || $multiple_items_check){
 					
@@ -2864,7 +3142,8 @@
 				$wc_pos_order_type = ($wc_pos_order_type?$wc_pos_order_type:'online');
 				
 				$_order_stock_reduced = get_post_meta($originalorderid, '_order_stock_reduced', true);
-
+				
+				
 				if(!empty($wc_os_products_arr)){
 					
 					$number_of_products = $wc_os_products_per_order;
@@ -3074,7 +3353,7 @@
 				delete_post_meta($originalorderid, 'wc_os_order_splitter_cron');//split_order
 
 				
-				wc_os_update_split_status($originalorderid,3001);//, 'split_status', 'Alpha');
+				wc_os_update_split_status($originalorderid, 3313, true);//, 'Alpha');
 				$order_data = wc_get_order( $originalorderid );
 				$order_data->calculate_totals();
 				if(!empty($new_order_ids)){
@@ -3204,7 +3483,7 @@
 						
 						$classObj->include_items = (empty($classObj->include_items)?$this->include_items:$classObj->include_items);
 						$classObj->general_array = (empty($classObj->general_array)?$this->general_array:$classObj->general_array);
-						
+						//pree($classObj->include_items);pree($classObj->general_array);exit;
 						$classObj->add_order_items($order);
 						
 					}
@@ -3305,10 +3584,13 @@
 		
 		
 		public function meta_keys_clone_from_to($order_id_to=0, $order_id_from=0){
+			
 			if(class_exists('vxc_zoho')){
 				$vxc_zoho = new vxc_zoho();
-				if(method_exists($vxc_zoho, 'order_submit')){
-					$vxc_zoho->order_submit($order_id_to);
+				if(method_exists($vxc_zoho, 'order_submit')){					
+					//$vxc_zoho->order_submit($order_id_to);
+					//$vxc_zoho->order_submit($order_id_to);
+					//$vxc_zoho->push($order_id_to);
 				}
 			}else{
 				
@@ -4747,7 +5029,19 @@
 		
 		//(isset($_GET['post_type']) && $_GET['post_type']=='shop_order');
 	}
-	
+
+	function wc_os_is_subscription_list(){
+		//wp-admin/edit.php?post_type=shop_order
+		global $pagenow, $wc_os_settings;
+					
+		$subscription_split = in_array('subscription_split', $wc_os_settings['wc_os_additional']);
+					
+		$post_type = (array_key_exists('post_type', $_GET)?sanitize_wc_os_data($_GET['post_type']):'');
+
+		return (is_admin() && $pagenow=='edit.php' && ($subscription_split && $post_type=='shop_subscription'))?true:false;
+		
+		//(isset($_GET['post_type']) && $_GET['post_type']=='shop_order');
+	}	
 	
 
 	
@@ -5104,6 +5398,7 @@ add_action("woocommerce_checkout_order_processed", "wc_os_checkout_order_process
 							'wc_os_customer_notes',
 							'wc_os_tax_cost',
 							'wc_os_effect_parent',
+							'wc_os_threshold',
 							'wc_os_display_child',
 							'wc_os_display_parent',							
 							'wc_os_backorder_mail_notification',
@@ -5982,8 +6277,8 @@ add_action("woocommerce_checkout_order_processed", "wc_os_checkout_order_process
 	function wc_os_co_label($order_id=0, $order = array()){
 		
 		$ret_str = __('Order number', 'woocommerce').' ';
-		$ret = $ret_str.$order_id;
-		
+		$ret = $order_id;
+
 		$wc_os_child_email = get_option( 'wc_os_child_email', array());
 		
 		if(array_key_exists('co_number', $wc_os_child_email) && $wc_os_child_email['co_number']){
@@ -6212,7 +6507,7 @@ add_action("woocommerce_checkout_order_processed", "wc_os_checkout_order_process
     <?php if(count($posts_array)>0 && !array_key_exists('wc_os_display_child', $wc_os_general_settings)): ?>
 	<section class="woocommerce-order-details child-section">
 	
-	<h2 class="woocommerce-order-details__title"><?php echo isset($wos_cart_notices['co_heading'])?$wos_cart_notices['co_heading']:(count($posts_array)>1?__('Orders', 'woocommerce'):__('Order', 'woocommerce')); ?></h2>
+	<h2 class="woocommerce-order-details__title"><?php echo apply_filters('wc_os_child_order_heading', isset($wos_cart_notices['co_heading'])?$wos_cart_notices['co_heading']:__('Child', 'woo-order-splitter').' '.(count($posts_array)>1?__('Orders', 'woocommerce'):__('Order', 'woocommerce'))); ?></h2>
 	
 	
 	<?php 
@@ -6354,11 +6649,12 @@ add_action("woocommerce_checkout_order_processed", "wc_os_checkout_order_process
 	</tr>
     <?php endif; ?>   
 
+	<?php if($_payment_method): ?>
     <tr>
     <td class="woocommerce-table__product-name product-name"><?php _e('Payment method', 'woo-order-splitter'); ?>:	</td>	
 	<td class="woocommerce-table__product-total product-total"><?php echo esc_html($_payment_method); ?></td>	
 	</tr>
-    
+    <?php endif; ?>
 	
 	</tbody>
 	
@@ -6424,7 +6720,7 @@ add_action("woocommerce_checkout_order_processed", "wc_os_checkout_order_process
 		$str = ob_get_contents();
 		ob_end_clean();	
 		
-		return array('child'=>$child_orders, 'content'=>$str);
+		return array('child'=>$child_orders, 'content'=>$str, 'total'=>($deleted?$child_orders:($child_orders+1)));
 	}
 	
 	add_filter( 'woocommerce_order_number', 'wos_change_woocommerce_order_number' );
@@ -6432,7 +6728,7 @@ add_action("woocommerce_checkout_order_processed", "wc_os_checkout_order_process
 	function wos_change_woocommerce_order_number( $order_id ) {
 		
 		global $wc_os_pro;
-		if($wc_os_pro && get_splitted_order_title_status()){
+		if($wc_os_pro && get_splitted_order_title_status() && function_exists('wc_os_get_order_title_html')){
 			
 			$order_id = wc_os_get_order_title_html($order_id, 'return');
 	
@@ -6494,7 +6790,7 @@ add_action("woocommerce_checkout_order_processed", "wc_os_checkout_order_process
 			if(!empty($order)){	
 				$received_text = __wos_change_order_received_text($order_id, $order, $deleted);	
 				global $wc_os_general_settings;
-				$wc_os_display_child_number = (array_key_exists('wc_os_display_child_number', $wc_os_general_settings) && trim($wc_os_general_settings['wc_os_display_child_number'] && $wc_os_general_settings['wc_os_display_child_number']>0)?str_replace('[NUMBER_OF_CHILD_ORDERS]', $received_text['child'], $wc_os_general_settings['wc_os_display_child_number']).'<br /><br />':'');
+				$wc_os_display_child_number = (array_key_exists('wc_os_display_child_number', $wc_os_general_settings) && trim($wc_os_general_settings['wc_os_display_child_number'] && $wc_os_general_settings['wc_os_display_child_number']>0)?str_replace('[NUMBER_OF_CHILD_ORDERS]', $received_text['total'], $wc_os_general_settings['wc_os_display_child_number']).'<br /><br />':'');
 				
 				$str = $wc_os_display_child_number.$str.$received_text['content'];
 			}				
@@ -6516,7 +6812,8 @@ add_action("woocommerce_checkout_order_processed", "wc_os_checkout_order_process
 
 	
 	function wc_os_checkout_order_processed($order_id){
-	
+		
+		
 		
 		if ( ! $order_id )
         return;
@@ -6526,14 +6823,23 @@ add_action("woocommerce_checkout_order_processed", "wc_os_checkout_order_process
 		
 		$get_post_meta = get_post_meta($order_id);
 		
-		$split_status = array_key_exists('split_status', $get_post_meta);
+		$split_status = (array_key_exists('split_status', $get_post_meta) || array_key_exists('_wc_os_parent_order', $get_post_meta));
+		
+		$customer_permission_status = wc_os_get_customer_permission_status($order_id);
+		
+
 
 		do_action('wc_os_checkout_order_processed_before', $order_id, $split_status);
-
+		
+		if($order_id && $split_status && !is_admin() && is_checkout() && $customer_permission_status){
+				
+		}
 		
 		if(!$split_status){
 			
-			return;
+			if(!$customer_permission_status){
+				return;
+			}
 		}
 		
 
@@ -6592,12 +6898,17 @@ add_action("woocommerce_checkout_order_processed", "wc_os_checkout_order_process
 		if(function_exists('wc_os_order_remove_shipping_adjustment')){
 			wc_os_order_remove_shipping_adjustment($order_id);//exit;
 		}		
+		
 		if(!empty($order_data) && $status_lock_released){
 		
 
 			
 			wc_os_crons_light($order_id);
-			if(!empty($wc_os_general_settings) && array_key_exists('wc_os_auto_forced', $wc_os_general_settings)){
+			
+			$wc_os_auto_forced = (array_key_exists('wc_os_auto_forced', $wc_os_general_settings) || $customer_permission_status);
+			
+			
+			if(!empty($wc_os_general_settings) && $wc_os_auto_forced){
 
 				wc_os_crons($order_id);
 			}
@@ -6610,7 +6921,7 @@ add_action("woocommerce_checkout_order_processed", "wc_os_checkout_order_process
 		if(!is_admin()){
 			
 			$received_text = __wos_change_order_received_text($order_id, array(), false);
-			$wc_os_display_child_number = (array_key_exists('wc_os_display_child_number', $wc_os_general_settings) && trim($wc_os_general_settings['wc_os_display_child_number'] && $wc_os_general_settings['wc_os_display_child_number']>0)?str_replace('[NUMBER_OF_CHILD_ORDERS]', $received_text['child'], $wc_os_general_settings['wc_os_display_child_number']).'<br /><br />':'');
+			$wc_os_display_child_number = (array_key_exists('wc_os_display_child_number', $wc_os_general_settings) && trim($wc_os_general_settings['wc_os_display_child_number'] && $wc_os_general_settings['wc_os_display_child_number']>0)?str_replace('[NUMBER_OF_CHILD_ORDERS]', $received_text['total'], $wc_os_general_settings['wc_os_display_child_number']).'<br /><br />':'');
 				
 			$str = $wc_os_display_child_number.$received_text['content'];
 			
@@ -6635,13 +6946,15 @@ add_action("woocommerce_checkout_order_processed", "wc_os_checkout_order_process
 		$wc_os_general_settings = get_option('wc_os_general_settings', array());
 		$wc_split_permit = true;						
 		
+		$wc_os_customer_permission = array_key_exists('wc_os_customer_permission', $wc_os_general_settings);
 		
-		if(array_key_exists('wc_os_customer_permission', $wc_os_general_settings) && $order_id){				
+		
+		if($wc_os_customer_permission && $order_id){				
 
 			$wc_split_permit = get_post_meta($order_id, '_wc_os_customer_permitted', true);
 
 		}
-		
+		$wc_split_permit = ($wc_split_permit=='yes' || $wc_split_permit==true);
 		return $wc_split_permit;
 	}
 
@@ -6780,15 +7093,23 @@ add_action("woocommerce_checkout_order_processed", "wc_os_checkout_order_process
 
 
 		
-		$wc_os_customer_permitted = ((isset($_POST['wc_os_customer_permitted'])?sanitize_wc_os_data($_POST['wc_os_customer_permitted']):'no')=='yes');
+		
 		$_wc_os_shipping_method = (isset($_POST['shipping_method'])?sanitize_wc_os_data($_POST['shipping_method']):'');
-
-        update_post_meta($order_id, '_wc_os_customer_permitted',  $wc_os_customer_permitted);
+		
+		if(isset($_POST['wc_os_customer_permitted'])){
+			
+			$wc_os_customer_permitted = sanitize_wc_os_data($_POST['wc_os_customer_permitted']);
+			
+			$wc_os_customer_permitted = (in_array($wc_os_customer_permitted, array('yes', 'no'))?$wc_os_customer_permitted:'yes');
+			
+			update_post_meta($order_id, '_wc_os_customer_permitted',  $wc_os_customer_permitted);
+		
+		}
 		
 		
 		$split_permission_status = wc_os_get_customer_permission_status($order_id);
-
-
+		
+		
 
 		if(wc_os_order_split($order_id) && $split_permission_status){
 			
@@ -7146,7 +7467,7 @@ add_action("woocommerce_checkout_order_processed", "wc_os_checkout_order_process
 			'url' => plugin_dir_url( dirname(__FILE__) ),
 			'posted' => is_array($_POST)?count($_POST):0,
 			
-			'total_cart_items' => count($woocommerce->cart->get_cart())
+			'total_cart_items' => count(( ! WC()->cart->is_empty() )?WC()->cart->get_cart():array())
 			
 		
 
@@ -7167,9 +7488,9 @@ add_action("woocommerce_checkout_order_processed", "wc_os_checkout_order_process
 		if($is_wc_os_settings){
 			wp_enqueue_style( 'wos_bs_grid_only', plugins_url('css/bootstrap-grid.min.css', dirname(__FILE__)), array(), true );
 		}		
-		
-		$is_edit_order_page = ($pagenow=='post.php' && is_object($post) && $post->post_type=='shop_order');
-		$is_edit_profile_page = (in_array($pagenow, array('profile.php', 'user-edit.php')));
+		$subscription_split = in_array('subscription_split', $wc_os_settings['wc_os_additional']);
+		$is_edit_order_page = ($pagenow=='post.php' && is_object($post) && ($post->post_type=='shop_order' || ($subscription_split && $post->post_type=='shop_subscription')));
+		$is_edit_profile_page = (in_array($pagenow, array('profile.php', 'user-edit.php', 'edit.php')));
 	
 		if(($is_wc_os_settings && !array_key_exists('wc_os_fa', $wc_os_general_settings)) || $is_edit_order_page || $is_edit_profile_page){
 			wp_enqueue_style( 'fontawesome', plugins_url('css/fontawesome.min.css', dirname(__FILE__)), array(), true );
@@ -7225,46 +7546,8 @@ add_action("woocommerce_checkout_order_processed", "wc_os_checkout_order_process
 	
 		$order_id = 0;
 		$conflict_status_options = array();
-		if(is_object($post) && isset($post->post_type) && $post->post_type=='shop_order' && isset($_GET['action']) && $_GET['action']=='edit'){
-			$order_id = $post->ID;
-			$conflict_status = get_post_meta($order_id, 'conflict_status', true);
-			
-			if($conflict_status){
-				
-				$order_data = wc_get_order( $order_id );
-	
-				if($order_data->get_items()){			
+		$is_edit_order_page = (is_object($post) && isset($post->post_type) && $post->post_type=='shop_order' && isset($_GET['action']) && $_GET['action']=='edit');
 		
-					$wc_os_ie_selected = $wc_os_settings['wc_os_ie'];
-					
-					$products_with_actions = $wc_os_order_splitter->products_with_actions();
-					$products_with_actions = (is_array($products_with_actions)?$products_with_actions:array());
-					$actions_arr = array();
-					foreach($order_data->get_items() as $item_data){				
-
-						if(array_key_exists($item_data->get_product_id(), $products_with_actions)){
-							$actions_arr[] = $products_with_actions[$item_data->get_product_id()];
-						}
-					}
-					$actions_arr = array_unique($actions_arr);
-		
-					if(count($actions_arr)==0){ //BACKWARDS COMPATIBILITY
-					}elseif(count($actions_arr)==1){ //REGULAR/VALID/NORMAL CASE
-						$wc_os_ie_selected = current($actions_arr);
-					}elseif(count($actions_arr)>1){ //EXPECTED/INVALID/CONFLICT CASE					
-						$conflict_status_options[] = '<h6>'.__('Following product/items are configured with different split actions.', 'woo-order-splitter').'<br />'.__('Select one of these split actions to proceed for this order.', 'woo-order-splitter').'</h6>';
-						if(!empty($actions_arr)){
-							$conflict_status_options[] = '<ul>';
-							$wos_forced_ie = get_post_meta($order_id, 'wos_forced_ie', true);
-							foreach($actions_arr as $action_title){
-								$conflict_status_options[] = '<li><a data-action="'.$action_title.'" class="'.($wos_forced_ie==$action_title?'forced':'').'">'.ucwords(split_actions_display($action_title, 'title')).'</a></li>';
-							}
-							$conflict_status_options[] = '</ul><div class="wos_loading smart"></div>';
-						}
-					}				
-				}
-			}
-		}
 		$wc_os_group_meta = get_option('wc_os_group_meta', array());
 		$wc_os_group_meta = (is_array($wc_os_group_meta) && !empty($wc_os_group_meta)?$wc_os_group_meta:array('wc_os_cats'=>array('group_cats'=>array())));
 		
@@ -7278,7 +7561,7 @@ add_action("woocommerce_checkout_order_processed", "wc_os_checkout_order_process
 			'wc_os_vendor_nonce' => wp_create_nonce('wc_os_vendors_action'),
 			'defined_rules_confirm' => __('Are you sure, you want delete this rule?', 'woo-order-splitter'),
 			'this_url' => admin_url( 'admin.php?page=wc_os_settings' ),
-			'conflict_status' => (!empty($conflict_status_options)?implode('', $conflict_status_options):''),
+			'conflict_status' => '',			
 			'wc_os_defalut_split_1' => __('Manual split from order page will not follow the split rules which you defined on the settings page. Here you split with the manual selection.', 'woo-order-splitter'),
 			'wc_os_defalut_split_2' => __('Split with the rules > Orders list page and the following icon', 'woo-order-splitter').' <span class="wc_os_manual_split"><a target="_blank" href="https://ibulb.wordpress.com/2021/04/05/auto-split-vs-manual-split/" class="wc_os_split"></a></span>',			
 			'orders_list' => admin_url( 'edit.php?post_type=shop_order' ),
@@ -7301,10 +7584,94 @@ add_action("woocommerce_checkout_order_processed", "wc_os_checkout_order_process
 			'in_stock_items' => array(),
 			'backorder_items' => array(),
 			'order_items' => (object)array(),
+			'order_items_details' => array(),
 			'wc_os_all_product' => (isset($wc_os_settings['wc_os_all_product']) && $wc_os_settings['wc_os_all_product']=='all_products'),	
 		);
+		
+		if($is_edit_order_page){
+			$order_id = $post->ID;
+			$conflict_status = get_post_meta($order_id, 'conflict_status', true);
+			
+			$order_data = wc_get_order( $order_id );
+				
+				if(count($order_data->get_items())>0){			
+					
+					$order_items_details = array();
+					
+					foreach($order_data->get_items() as $order_item_key=>$order_item_data){
+						
+						$product_id = $order_item_data->get_product_id();
+						$product_cats = get_the_terms ( $product_id, 'product_cat' );
+						
+						
+						$order_items_details[$order_item_key] = array();
+						
+						if(!empty($product_cats)){
+							$in_groups = array();
+							switch($wc_os_settings['wc_os_ie']){
+								case 'group_cats':
+									$in_groups = $wc_os_settings['wc_os_cats']['group_cats'];
+								break;
+							}
 
-
+							foreach($product_cats as $product_cat_data){
+								
+								$related_group = '';
+								
+								foreach($in_groups as $group_key=>$group_items){
+									if(in_array($product_cat_data->term_id, $group_items)){
+										$related_group = ucfirst($group_key);
+									}
+								}
+								
+								if($related_group){
+									$order_items_details[$order_item_key]['cats'][$product_cat_data->term_id] = array('name'=>$product_cat_data->name, 'group'=>$related_group);
+								}
+							}
+						}
+						
+						
+					}
+					$translation_array['order_items_details'] = $order_items_details;
+					
+					if($conflict_status){
+					
+			
+						$wc_os_ie_selected = $wc_os_settings['wc_os_ie'];
+						
+						$products_with_actions = $wc_os_order_splitter->products_with_actions();
+						$products_with_actions = (is_array($products_with_actions)?$products_with_actions:array());
+						$actions_arr = array();
+						foreach($order_data->get_items() as $item_data){				
+	
+							if(array_key_exists($item_data->get_product_id(), $products_with_actions)){
+								$actions_arr[] = $products_with_actions[$item_data->get_product_id()];
+							}
+						}
+						$actions_arr = array_unique($actions_arr);
+			
+						if(count($actions_arr)==0){ //BACKWARDS COMPATIBILITY
+						}elseif(count($actions_arr)==1){ //REGULAR/VALID/NORMAL CASE
+							$wc_os_ie_selected = current($actions_arr);
+						}elseif(count($actions_arr)>1){ //EXPECTED/INVALID/CONFLICT CASE					
+							$conflict_status_options[] = '<h6>'.__('Following product/items are configured with different split actions.', 'woo-order-splitter').'<br />'.__('Select one of these split actions to proceed for this order.', 'woo-order-splitter').'</h6>';
+							if(!empty($actions_arr)){
+								$conflict_status_options[] = '<ul>';
+								$wos_forced_ie = get_post_meta($order_id, 'wos_forced_ie', true);
+								foreach($actions_arr as $action_title){
+									$conflict_status_options[] = '<li><a data-action="'.$action_title.'" class="'.($wos_forced_ie==$action_title?'forced':'').'">'.ucwords(split_actions_display($action_title, 'title')).'</a></li>';
+								}
+								$conflict_status_options[] = '</ul><div class="wos_loading smart"></div>';
+							}
+						}				
+					}
+				
+				
+					$translation_array['conflict_status'] = (!empty($conflict_status_options)?implode('', $conflict_status_options):'');					
+				
+				}
+		}
+		
 		
 		switch($wc_os_settings['wc_os_ie']){
 			case 'io':
@@ -7368,6 +7735,7 @@ add_action("woocommerce_checkout_order_processed", "wc_os_checkout_order_process
                 'isset_post' => isset($_GET['post']),
                 'mt' => (isset($_GET['mt']) ? $_GET['mt'] : ''),
                 'custom_order_statuses' => (!empty($custom_order_statuses) ? $custom_order_statuses : false),
+				'ws_os_to_split' => __('Split Orders', 'woo-order-splitter'),
 				
             );
             $translation_array = array_merge($translation_array, $shop_order_array);
@@ -7703,8 +8071,15 @@ add_action("woocommerce_checkout_order_processed", "wc_os_checkout_order_process
 	
 	function wc_os_links($actions, $post=array()){
 		
-
-	
+		//wc_os_pree($actions);wc_os_pree($post->ID);
+		
+		global $wc_os_settings, $wpdb;
+		
+		$subscription_split = in_array('subscription_split', $wc_os_settings['wc_os_additional']);
+		
+		
+		
+		
 		if (is_object($post) && $post->post_type=='shop_order' && wc_os_order_cloning()) {
 			
 			$url = admin_url( 'edit.php?post_type=shop_order&order_id=' . $post->ID );
@@ -7735,8 +8110,6 @@ add_action("woocommerce_checkout_order_processed", "wc_os_checkout_order_process
 					) 
 				) 
 			);
-			
-			
 		}
 		if (is_object($post) && $post->post_type=='product' && $post->post_author>0 && !isset($_GET['vendor'])) {
 		
@@ -7756,6 +8129,32 @@ add_action("woocommerce_checkout_order_processed", "wc_os_checkout_order_process
 			);
 			
 		}		
+		
+		if (is_object($post) && $post->post_type=='shop_subscription' && $subscription_split) {
+		
+			$url = admin_url( 'post.php?post='.$post->ID.'&action=edit&subscription_id='.$post->ID);
+			
+			$subscription = wcs_get_subscription($post->ID);
+			
+			if(count($subscription->get_items())>1){
+			
+			
+				
+				$copy_link = wp_nonce_url( add_query_arg( array( 'split' => 'init', 'split-session' => date('Ymhi') ), $url ), 'edit_order_nonce' );
+				
+				$actions = array_merge( $actions, 
+					array(
+						'split' => sprintf( '<a href="%1$s">%2$s</a>',
+							esc_url( $copy_link ), 
+							__( 'Split', 'woo-order-splitter' )
+						) 
+					) 
+				);
+				//wc_os_pree($actions);
+				
+			}
+		}		
+		//wc_os_pree($actions);
 		
 		return $actions;
 				
@@ -7821,7 +8220,7 @@ add_action("woocommerce_checkout_order_processed", "wc_os_checkout_order_process
 	add_filter( 'woocommerce_admin_order_actions', 'add_wc_os_order_status_actions_button', 100, 2 );
 	function add_wc_os_order_status_actions_button( $actions, $order ) {
 		// Display the button for all orders that have a 'processing' status
-		global $wc_os_settings;
+		global $wc_os_settings, $wc_os_woocommerce_shipping_multiple_addresses;
 	
 		$url = admin_url( 'edit.php?post_type=shop_order&order_id=' . $order->get_id() );
 
@@ -7906,6 +8305,18 @@ add_action("woocommerce_checkout_order_processed", "wc_os_checkout_order_process
 						(count($order->get_items())>=1) //17/03/2021
 					);
 				break;
+				case 'group_cats':
+					
+					
+					if($wc_os_woocommerce_shipping_multiple_addresses){
+						$_multiple_shipping = get_post_meta($order->get_id(), '_multiple_shipping', true);
+						
+						$methods_based_condition = (
+							(count($order->get_items())>0 && $order_total_qty>1 && $_multiple_shipping) //01/12/2022 - Hybrid split case written for Leslie
+						);
+					}
+					
+				break;
 				default:
 				
 					$methods_based_condition = (
@@ -7915,7 +8326,6 @@ add_action("woocommerce_checkout_order_processed", "wc_os_checkout_order_process
 					);
 				break;
 			}
-			
 			
 			
 			
@@ -8192,7 +8602,7 @@ add_action("woocommerce_checkout_order_processed", "wc_os_checkout_order_process
 		
 		global $wos_notices_css;
 		$notice_text = '';
-		
+		$content = (is_object($content)?'':$content);
 		$wos_cart_notices = get_option( 'wc_os_cart_notices', true);
 		$page_type = '';
 		
@@ -8296,7 +8706,7 @@ add_action("woocommerce_checkout_order_processed", "wc_os_checkout_order_process
 		function wos_quick_split(){
 			$url = parse_url($_POST['url']);
 			parse_str($url['query'], $query_string);
-		
+			
 			global $wc_os_order_splitter, $wc_os_general_settings, $wc_os_shipping_cost;
 			$ret = array();
 			
@@ -8400,7 +8810,8 @@ add_action("woocommerce_checkout_order_processed", "wc_os_checkout_order_process
 						
 
 						if($wc_os_customer_permitted=='on'){
-							$fee = wc_os_get_session('wc_os_calculated_shipping_cost');
+							$fee = (float)wc_os_get_session('wc_os_calculated_shipping_cost');
+							
 							$resp['total'] = wc_price(WC()->cart->get_cart_contents_total() + WC()->cart->get_cart_contents_tax() + ($fee));
 						}else{
 							$fee = 0;							
@@ -10347,6 +10758,8 @@ mark.order-status.status-<?php echo $k; ?>:hover{
 		
 		$split_status = get_post_meta($order_id, 'split_status', true);
 		
+		//pree($split_status);pree($status);exit;
+		
 		if(!in_array($split_status, array($status, '-'))){
 		
 			$debug_backtrace = debug_backtrace();
@@ -10358,14 +10771,22 @@ mark.order-status.status-<?php echo $k; ?>:hover{
 			$function .= ' / '.$debug_backtrace[4]['function'];
 			$function .= ' / line_no. '.$line_no;
 			
-			if(is_array($splitted_orders)){
-				$status = (count($splitted_orders)>1?1:'-');
+			if(is_array($splitted_orders) && $status!=true){
+				$status = (count($splitted_orders)>1?true:'-');
 			}
-
 			
-			if($status!='-'){
+			$function .= ' / status. '.$status;			
+			
+			
+			
+			
+			
+			if(in_array($status, array(true, false))){
+				
 				update_post_meta($order_id, 'split_status', $status);
 			}
+			
+			//wc_os_logger('debug', $function, true);
 			
 		}
 
@@ -10390,6 +10811,8 @@ mark.order-status.status-<?php echo $k; ?>:hover{
 			$function .= ' / '.$debug_backtrace[3]['function'];
 			$function .= ' / '.$debug_backtrace[4]['function'];
 			
+			
+			//wc_os_logger('debug', $order_id.' - '.$function.' - ln. '.$line_no);
 			$updated_status = '';
 			
 			if($order_id>0){
@@ -10451,7 +10874,7 @@ mark.order-status.status-<?php echo $k; ?>:hover{
 							
 							$status = str_replace('wc-', '', $status_org);
 							$order = wc_get_order($order_id);
-							
+							$order_items = (is_object($order)?$order->get_items():array());
 							$status = apply_filters('wc_os_split_order_status_logic_hook', $order, $status);
 							
 							if(is_object($order)){
@@ -10470,7 +10893,9 @@ mark.order-status.status-<?php echo $k; ?>:hover{
 											$order->save();
 										break;
 										case 'trash':
-											wp_trash_post($order_id);
+											if(empty($order_items)){
+												wp_trash_post($order_id);
+											}
 										break;
 									}
 								}
@@ -10644,9 +11069,11 @@ mark.order-status.status-<?php echo $k; ?>:hover{
 				
 				$order_id = sanitize_wc_os_data($_GET['post']);
 				
+				
+				
 				$order = wc_get_order($order_id);
 				
-				
+				//wc_os_update_shipping_for_multiple_addresses($order_id, $order);
 				
 				
 				wc_os_pre(get_post_meta($order_id));

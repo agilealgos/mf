@@ -78,6 +78,8 @@ jQuery(document).ready(function($){
 			}
 		});				
 		
+		
+		
 		$('body').on('change', 'select[name="wc_order_action"]', function(){
 
 			var obj_wrapper = $('#order_line_items');
@@ -91,10 +93,11 @@ jQuery(document).ready(function($){
 
 				if($(this).val()=='wc_os_split_action'){
 					obj_wrapper.addClass('wc_os_selection')
-					obj_wrapper.find('tr').addClass('selected');
+					obj_wrapper.find('tr.item').addClass('selected');
 					
-					$.each($('tbody#order_line_items tr.item'), function(){
-						var item_id = $(this).data('order_item_id');
+					$.each($('tbody#order_line_items > tr.item'), function(){
+						
+						var item_id = (typeof $(this).data('order_item_id')!='unefined'?$(this).data('order_item_id'):0);
 						//console.log(item_id);
 						if(item_id in wos_obj.order_items){
 							
@@ -116,8 +119,11 @@ jQuery(document).ready(function($){
 					$('#woocommerce-order-items > div.inside').eq(0).find('.wc-order-items-editable').eq(0).prepend('<div class="wc-os-defalut-split">'+wos_obj.wc_os_defalut_split_1+'<br /><br />'+wos_obj.wc_os_defalut_split_2+'</div>');
 					
 					
-					$.each(obj_wrapper.find('tr'), function(){
-						$(this).find('td').eq(0).append('<input type="hidden" name="wc_os_ps[]" value="'+$(this).data('order_item_id')+'" />');
+					$.each(obj_wrapper.find('tr.item'), function(){
+						var order_item_id = (typeof $(this).data('order_item_id')!='unefined'?$(this).data('order_item_id'):0);
+						if(order_item_id){
+							$(this).find('td.thumb').eq(0).append('<input type="hidden" name="wc_os_ps[]" value="'+order_item_id+'" />');
+						}
 					});
 					
 					$('ul.order_actions li button.save_order').hide();
@@ -133,13 +139,16 @@ jQuery(document).ready(function($){
 		
 
 		
-		$('#order_line_items tr').on('click', function(){
+		$('tbody#order_line_items > tr.item').on('click', function(){
 			if($(this).find('input[name^="wc_os_ps"]').length>0){
 				$(this).find('input[name^="wc_os_ps"]').remove();
 				$(this).removeClass('selected');
 			}else{
-				$(this).find('td').eq(0).append('<input type="hidden" name="wc_os_ps[]" value="'+$(this).data('order_item_id')+'" />');
-				$(this).addClass('selected');
+				var order_item_id = (typeof $(this).data('order_item_id')!='unefined'?$(this).data('order_item_id'):0);
+				if(order_item_id){
+					$(this).find('td.thumb').eq(0).append('<input type="hidden" name="wc_os_ps[]" value="'+order_item_id+'" />');
+					$(this).addClass('selected');
+				}
 			}
 		});		
 		
@@ -2048,11 +2057,17 @@ jQuery(document).ready(function($){
 			$(this).parent().find('div').toggle();
 		});
 
-		$('body').on('click', '.vendor-right .vendor-rbottom > div.out-stock-amount', function(){
+		$('body').on('click', '.switch-right .switch-rbottom > div.io-remaining-items', function(){
+			var text = $(this).data('text');
+			$('input[name="wc_os_settings[io_options][io_items_remaining]"][value="'+text+'"]').prop('checked', true);
+			$(this).parent().find('div').toggle();
+		});
+
+		$('body').on('click', '.switch-right .switch-rbottom > div.out-stock-amount', function(){
 			var text = $(this).data('text');
 			$('input[name="wc_os_settings[io_options][out_stock_amount]"][value="'+text+'"]').prop('checked', true);
 			$(this).parent().find('div.out-stock-amount').toggle();
-		});
+		});		
 
 
 		$('body').on('change', 'input[name="wc_os_settings[wc_os_ie]"]', function(){
@@ -2383,6 +2398,19 @@ jQuery(document).ready(function($){
 		if($('#wc_os_rules').hasClass('nav-tab-active')){
 			$('#wc_os_rules').click();
 		}
+		
+		if(Object.keys(wos_obj.order_items_details).length>0){
+			$.each(wos_obj.order_items_details, function(item_key, item_data){				
+				var item_obj = $('tbody#order_line_items tr[data-order_item_id="'+item_key+'"]');
+				if(item_obj.length>0){
+					var item_cat_info = '';
+					$.each(item_data.cats, function(cat_id, cat_data){
+						item_cat_info += cat_data.name+' ('+cat_data.group+'), ';						
+					});
+					item_obj.attr('title', item_cat_info);
+				}
+			});
+		}		
 	}, 100);
 
     $('#wc_os_auto_clone').on('change', function(){
@@ -2725,6 +2753,10 @@ jQuery(document).ready(function($){
 				}
 
 			}
+			
+			$('.subsubsub').append('| <a href="'+wos_obj.orders_list+'&split_status=no&orderby=ID&order=desc'+'">'+wos_obj.ws_os_to_split+'</a> ');
+			
+			 
 
 			
 		}

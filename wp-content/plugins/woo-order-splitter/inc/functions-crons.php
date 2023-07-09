@@ -85,6 +85,24 @@
 	}
 	function wc_os_crons($order_id=0, $split_action=true, $force_proceed = false){
 		
+		
+		
+		$wos_quick_split = (isset($_POST['action']) && $_POST['action']=='wos_quick_split');
+		if($wos_quick_split && $order_id==0){
+
+			$url = parse_url($_POST['url']);
+			parse_str($url['query'], $query_string);
+			$order_id = $query_string['order_id'];
+		}
+		
+		$debug_backtrace = debug_backtrace();
+		
+		$function = $debug_backtrace[0]['function'];
+		$function .= ' / '.$debug_backtrace[1]['function'];
+		$function .= ' / '.$debug_backtrace[2]['function'];
+		$function .= ' / '.$debug_backtrace[3]['function'];
+		$function .= ' / '.$debug_backtrace[4]['function'];
+						
 		$user_id = is_user_logged_in()?get_current_user_id():0;
 		
 		
@@ -93,29 +111,33 @@
 		global $wpdb, $wc_os_settings, $wc_os_debug, $pagenow, $wc_os_general_settings, $wc_os_order_splitter, $wc_os_pro, $wc_os_cron_settings;
 
 		
-		$split_proceed = ($order_id || (!is_admin() || wc_os_is_orders_list()));
+		$split_proceed = ($order_id || (!is_admin() || wc_os_is_orders_list() || wc_os_is_subscription_list()));
 		
 		
 		$wc_os_cron_shop_order_page = (is_array($wc_os_general_settings) && ((!empty($wc_os_general_settings) && array_key_exists('wc_os_cron_shop_order_page', $wc_os_general_settings))));
 		
+		
 
-
-		if(wc_os_is_orders_list()){
+		if(wc_os_is_orders_list() || wc_os_is_subscription_list()){
 			
-			if(!$wc_os_cron_shop_order_page || (date('i')%2==0)){// && !array_key_exists('debug')
+			if(!$wc_os_cron_shop_order_page || (date('i')%2==0 && !isset($_GET['debug']))){// && !array_key_exists('debug')
 				return;
 			}
 			
 		}
-		
+			
+		//wc_os_pree($order_id);exit;
 		if($order_id){
 			
 			$order_meta_keys = array_keys(get_post_meta($order_id));
+			
 			if(!empty($order_meta_keys)){
 				$halt_keys = array('_shipstation_exported');
 				$halt_keys_confirmed = array_intersect($halt_keys, $order_meta_keys);
 				if(count($halt_keys_confirmed)>0){
-					update_post_meta($order_id, 'split_status', true);
+					update_post_meta($order_id, 'split_status', true);					
+					wc_os_logger('debug', '$order_id: '.$order_id.' - '.$function.' - '.implode(' *** ', $halt_keys_confirmed), true);
+					//delete_post_meta($order_id, '_shipstation_exported');
 					return;
 				}
 			}
@@ -125,14 +147,14 @@
 		}
 		
 		if($split_proceed){
-			$last_split_id = $wpdb->get_row("SELECT post_id FROM $wpdb->postmeta WHERE meta_key='split_status' ORDER BY post_id DESC LIMIT 1");
-			if(is_object($last_split_id)){
-				$last_split_id = $last_split_id->post_id;
+			$for_last_split_id = $wpdb->get_row("SELECT post_id FROM $wpdb->postmeta WHERE meta_key='split_status' ORDER BY post_id DESC LIMIT 1");
+			if(is_object($for_last_split_id)){
+				$last_split_id = $for_last_split_id->post_id;
 			}		
 
 			$last_split_id = ((array_key_exists('wc-os-last-split-id', $wc_os_cron_settings) && $wc_os_cron_settings['wc-os-last-split-id']>0)?$wc_os_cron_settings['wc-os-last-split-id']:$last_split_id);
 
-			if($order_id && $order_id<$last_split_id){
+			if(!$wos_quick_split && $order_id && $order_id<$last_split_id){
 				update_post_meta($order_id, 'split_status', true);
 				return;
 			}
@@ -146,7 +168,7 @@
 		
 		
 		
-		
+		//pree($last_split_id);exit;
 		
 		
 		
@@ -158,7 +180,6 @@
 		
 			
 			
-			//$split_action = $split_action?(get_post_meta($order_id, 'wc_os_customer_permitted', true)== 'yes'):$split_action;
 				
 						
 			$wc_os_general_settings = get_option('wc_os_general_settings', array());
@@ -169,12 +190,12 @@
 			
 			
 			
-			$customer_permission_required = array_key_exists('wc_os_customer_permitted', $wc_os_general_settings);
+			$customer_permission_required = array_key_exists('wc_os_customer_permission', $wc_os_general_settings);
 			
 			if($customer_permission_required){
 			
 				if($order_id){
-					$split_action = $split_action?(get_post_meta($order_id, 'wc_os_customer_permitted', true) == 'yes'):$split_action;
+					$split_action = wc_os_get_customer_permission_status($order_id);
 				}else{
 					$split_action = false;
 				}
@@ -197,7 +218,7 @@
 			
 			if(!$order_id){
 				
-
+				
 				if($wc_os_pro && function_exists('wc_os_get_io_setting') && wc_os_get_io_setting('out_stock_automation')=='yes'){
 			
 					$cron_query = "SELECT p.ID, p.post_status FROM $wpdb->postmeta mt RIGHT JOIN $wpdb->posts p ON p.ID=mt.post_id AND p.post_type='shop_order' WHERE p.post_status NOT IN('trash') AND mt.meta_key IN ('_wos_out_of_stock') AND p.ID>=$last_split_id GROUP BY p.ID ORDER BY p.ID DESC";
@@ -392,11 +413,11 @@
 					}
 				}		
 				
-			
-			
+				
+				
 			
 				$cron_query = "SELECT p.ID FROM $wpdb->postmeta mt RIGHT JOIN $wpdb->posts p ON p.ID=mt.post_id AND p.post_type='shop_order' WHERE p.post_status NOT IN ('trash') AND mt.meta_key IN ('_wos_consider_split_email') AND p.ID>=$last_split_id";
-
+				//pree($order_id.' - '.$cron_query);exit;
 				$wc_os_order_key_cron = $wpdb->get_results($cron_query);			
 			
 				if(!empty($wc_os_order_key_cron)){
@@ -553,15 +574,21 @@
 				
 				
 			}
+			
+			$shop_post_type = 'shop_order';
+			
+			if(wc_os_is_subscription_list()){
+				$shop_post_type = 'shop_subscription';				
+			}
 				
 			
-			$cron_query = "SELECT p.ID FROM $wpdb->postmeta mt RIGHT JOIN $wpdb->posts p ON p.ID=mt.post_id AND p.post_type IN ('shop_order') ".($order_id?'AND p.ID IN ('.$order_id.') ':'')."WHERE p.post_status NOT IN ('trash') AND mt.meta_key='wc_os_order_splitter_cron' AND p.ID>=$last_split_id GROUP BY mt.post_id ORDER BY p.ID DESC";// AND mt.meta_key!='splitted_from'
+			$cron_query = "SELECT p.ID FROM $wpdb->postmeta mt RIGHT JOIN $wpdb->posts p ON p.ID=mt.post_id AND p.post_type IN ('$shop_post_type') ".($order_id?'AND p.ID IN ('.$order_id.') ':'')."WHERE p.post_status NOT IN ('trash') AND mt.meta_key='wc_os_order_splitter_cron' AND p.ID>=$last_split_id GROUP BY mt.post_id ORDER BY p.ID DESC";// AND mt.meta_key!='splitted_from'
 			
 
 			
 			$wc_os_order_key_cron = $wpdb->get_results($cron_query);
 
-			
+			//pree($cron_query);pree($wc_os_order_key_cron);exit;
 			
 			if($wc_os_debug)
 			wc_os_pree($wc_os_order_key_cron);
@@ -614,17 +641,17 @@
 			}			
 
 			
-
+			//pree($wc_os_order_splitter_cron);exit;
 
 			if(!empty($wc_os_order_splitter_cron)){
 				
-				
+				//pree($wc_os_order_splitter_cron);exit;
 				
 				foreach($wc_os_order_splitter_cron as $order_id_split => $auto_split){
 
 					
-					if ( get_post_type( $order_id_split ) != 'shop_order') {
-						wc_os_update_split_status($order_id_split,559);
+					if (  !in_array(get_post_type( $order_id_split), array('shop_order','shop_subscription')) ) {
+						wc_os_update_split_status($order_id_split,655);
 						continue;
 					}
 					if(!wc_os_order_split($order_id_split)){
@@ -658,7 +685,7 @@
 					
 					
 					
-					
+					//pree($auto_split);exit;
 					
 					if($auto_split){	
 
@@ -678,6 +705,9 @@
 						
 
 							
+							if($customer_permission_required){
+								$split_action = wc_os_get_customer_permission_status($order_id_split);
+							}
 							
 							
 							
@@ -685,26 +715,24 @@
 								default:
 									
 
-
 									
-									if($customer_permission_required){
-										$split_action = (get_post_meta($order_id_split, 'wc_os_customer_permitted', true) == 'yes');
-									}
 
 									
 									if($split_action){
 										
-								
+										//pree($order_id_split);exit;
 										$get_post_meta = get_post_meta($order_id_split);
 
 										$split_status_exists = array_key_exists('split_status', $get_post_meta);
 										$order_id_split_status = ($split_status_exists && $get_post_meta['split_status']==1);
 										
 										$wc_os_logger_str = 'split_order_logic > '.date('d M, Y H:i:s A').' ~ '.$order_id_split.' SPLITTED '.($order_id_split_status?'YES':'NO');
+										
+										
 
 										
 										if(!$order_id_split_status){
-											
+											//pree($order_id_split_status);pree($order_id_split);exit;
 											$wc_os_prcess_status = $wc_os_order_splitter->split_order_logic($order_id_split);//, $wc_os_products);
 
 
@@ -718,7 +746,6 @@
 								break;
 								case 'default':
 
-									
 									
 									if($split_action){
 										$wc_os_order_splitter->split_order($order_id_split);
@@ -858,21 +885,17 @@
 								//$order_data = wc_get_order( $order_id );
 								$status = ($status?'wc-'.str_replace('wc-', '', $status):'');
 								$update_post = array('ID' => $order_id, 'post_status' => $status);
-							
-								//wp_update_post($update_post);
-								$is_custom_status = get_post_meta($order_id, '_wos_custom_status_update', true);
 								
-								//if($is_custom_status!=$status){					
-									//wp_update_post($update_post);
-									
-									$updated_status = wc_os_set_order_status($order_id, $status, false, 793);
+								
+								$get_post_meta = get_post_meta($order_id);
 
-									
-									//update_wcfm_order_status($order_id, $status);
+								$split_status_exists = array_key_exists('split_status', $get_post_meta);
 							
-								//}
-								
-								
+							
+								if($split_status_exists)
+								$updated_status = wc_os_set_order_status($order_id, $status, false, 898);
+
+							
 							
 								unset($removal_arr[$order_id]);
 								update_option('wos_update_status', $removal_arr);

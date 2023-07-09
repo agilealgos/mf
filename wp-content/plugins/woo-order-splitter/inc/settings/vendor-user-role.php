@@ -81,6 +81,7 @@
 
 		}
 		$wc_os_vendors_remaining = get_option('wc_os_vendors_remaining', 'group');
+		
         ?>
 
         </select>

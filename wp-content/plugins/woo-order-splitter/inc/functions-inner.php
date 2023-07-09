@@ -221,6 +221,38 @@
 	
 		}
 		
+		
+		if( $pagenow == 'edit.php' && $post_type == 'shop_order' && isset($_GET['split_status']) && in_array($_GET['split_status'], array('yes', 'no')) ) {
+			
+			$split_status = sanitize_wc_os_data($_GET['split_status']);
+			$split_status =(in_array($split_status, array('yes', '1', 'true'))?1:0);
+			
+	
+			$query->query_vars['post_status'] = 'any';
+			$query->query_vars['meta_query']['relation'] = 'OR';
+			
+			$query->query_vars['meta_query'][] = array(
+				'key' => 'split_status',
+				'value' => $split_status,
+				'compare' => '=',
+			);
+			if($split_status){
+				$query->query_vars['meta_query'][] = array(
+					'key' => 'split_status',
+					'compare' => 'EXISTS' 
+				);
+			}else{
+				$query->query_vars['meta_query'][] = array(
+					'key' => 'split_status',
+					'compare' => 'NOT EXISTS' 
+				);
+			}
+			
+			
+			//pree($query->query_vars);exit;
+	
+		}		
+		
 	
 	
 	}
@@ -356,34 +388,57 @@
 		
 		if(!$order_id){ return; }
 		
-		$_multiple_shipping = get_post_meta($order_id, '_multiple_shipping', true);
+		$_multiple_shipping = get_post_meta($order_id, '_multiple_shipping', true);//'yes';//
 		
-
+		//wc_os_pree($_multiple_shipping);
 		
 		if($_multiple_shipping=='yes'){
 			$_multiple_shipping_updated = false;
 			$order = (is_object($order)?$order:wc_get_order($order_id));
 			$_shipping_addresses = get_post_meta($order_id, '_shipping_addresses', true);
+			$_wos_include_item_key = get_post_meta($order_id, '_wos_include_item_key', true);
+			//wc_os_pree($_shipping_addresses);
+			//wc_os_pree($_wos_include_item_key);
 			if(is_array($_shipping_addresses)){
 				foreach($order->get_items() as $key=>$val){
 					$order_product_id =  $val->get_product_id();
-					
+					$multiple_items_to_multiple_addresses = array();
 					foreach($_shipping_addresses as $_shipping_key=>$_shipping_val){
-						if(stristr($_shipping_key, '_'.$order_product_id.'_')){
+						$substr_key = stristr($_shipping_key, '_'.$order_product_id.'_');
+						//wc_os_pree($substr_key);
+						if($substr_key){
 							//wc_os_pree($_shipping_key.': '.$_shipping_val);
 							$shipping_item_index = explode('_', $_shipping_key);
 							array_splice($shipping_item_index, count($shipping_item_index) - 3, 3);
 							$shipping_item_index = implode('_', $shipping_item_index);
-							update_post_meta($order_id, '_'.$shipping_item_index, $_shipping_val);
+							//update_post_meta($order_id, '_'.$shipping_item_index, $_shipping_val);
+							$multiple_items_to_multiple_addresses[$substr_key][$shipping_item_index] = $_shipping_val;
 							$_multiple_shipping_updated = true;
 						}
 					}
+					if(!empty($multiple_items_to_multiple_addresses)){
+						foreach($multiple_items_to_multiple_addresses as $multiple_key=>$multiple_address_data){
+							$multiple_address_data_str = str_replace(array(' '), '', strtolower(implode('', $multiple_address_data)));
+							if(stristr($_wos_include_item_key, $multiple_address_data_str)){
+								$multiple_items_to_multiple_addresses[$multiple_address_data_str] = $multiple_address_data;
+								
+								foreach($multiple_address_data as $_shipping_key=>$_shipping_val){
+									wc_os_pree($order_id.', _'.$_shipping_key.', '.$_shipping_val);
+									update_post_meta($order_id, '_'.$_shipping_key, $_shipping_val);
+								}
+							}
+							unset($multiple_items_to_multiple_addresses[$multiple_key]);
+						}
+					}
+					
+					//wc_os_pree($multiple_items_to_multiple_addresses);
 				}
 			}
 			if($_multiple_shipping_updated){
 				update_post_meta($order_id, '_multiple_shipping', false);
 			}
 		}
+		
 		
 	}
 
@@ -498,6 +553,8 @@
 					$order = new WC_Order($new_oder);
 						
 					wc_os_update_shipping_for_multiple_addresses($new_oder, $order); //19/11/2022 - WooCommerce Ship to Multiple Addresses
+					
+					//wc_os_logger('debug', '#'.$new_oder.' ~ '.$order_split_created, true);
 						
                     if($order_split_created || $order_split_created_admin || $order_split_created_vendor){
 						
@@ -519,76 +576,85 @@
 
                             case 'completed':
 
-                                $email_template = $mails['WC_Email_Customer_Completed_Order'];
+                                $email_template = new WC_Email_Customer_Completed_Order();//$mails['WC_Email_Customer_Completed_Order'];
 
-                                break;
+							break;
 
                             case 'pending':
 							case 'on-hold':
 
-                                $email_template = $mails['WC_Email_Customer_On_Hold_Order'];
+                                $email_template = new WC_Email_Customer_On_Hold_Order();//$mails['WC_Email_Customer_On_Hold_Order'];
 
-                                break;
+							break;
 
                             case 'processing':
 
-                                $email_template = $mails['WC_Email_Customer_Processing_Order'];
+                                $email_template = new WC_Email_Customer_Processing_Order();//$mails['WC_Email_Customer_Processing_Order'];
 
-                                break;
+							break;
 
 
                             case 'cancelled':
 
-                                $email_template = $mails['WC_Email_Cancelled_Order'];
+                                $email_template = new WC_Email_Cancelled_Order();//$mails['WC_Email_Cancelled_Order'];
 
-                                break;
+							break;
 
 
                             case 'refunded':
 
-                                $email_template = $mails['WC_Email_Customer_Refunded_Order'];
+                                $email_template = new WC_Email_Customer_Refunded_Order();//$mails['WC_Email_Customer_Refunded_Order'];
 
-                                break;
+							break;
 
                             case 'failed':
 
-                                $email_template = $mails['WC_Email_Failed_Order'];
+                                $email_template = new WC_Email_Failed_Order();//$mails['WC_Email_Failed_Order'];
 
-                                break;
+							break;
 
 
                             default:
 
                                 if($order->is_paid()){
 
-                                    $email_template = $mails['WC_Email_Customer_Processing_Order'];
+                                    $email_template = new WC_Email_Customer_Processing_Order();//$mails['WC_Email_Customer_Processing_Order'];
 
                                 }else{
 
-                                    $email_template = $mails['WC_Email_Customer_On_Hold_Order'];
+                                    $email_template = new WC_Email_Customer_On_Hold_Order();//$mails['WC_Email_Customer_On_Hold_Order'];
 
                                 }
 
 
-                                break;
+                           break;
 
 
                         }
 
-						$new_order_email_template = $mails['WC_Email_New_Order'];
+						$new_order_email_template = new WC_Email_New_Order();//$mails['WC_Email_New_Order'];
 
                         if($order_split_created){
 							$req_order_status = wc_os_get_status_setting('customer_email', false);
 							
 							
 							$wc_os_logger_str = $new_oder.' - '.$order_status.' - New Orders Created After Split - Customer';
-						
 							
-							if(!$req_order_status || ($req_order_status==$order_status)){
+							$required_order_status = (!$req_order_status || ($req_order_status==$order_status));
+							
+							$wc_os_logger_str .= ' [$req_order_status = '.$req_order_status.' & $order_status = '.$order_status.']';
+							
+							
+							
+							if($required_order_status){
 								
 								$email_template->trigger($new_oder);	//New Orders Created After Split - Customer
+								$wc_os_logger_str .= ' > <b class="green">SENT</b>';
 
 							}
+							
+							wc_os_logger('debug', $wc_os_logger_str, true);
+							//wc_os_logger('debug', $email_template, true);
 							
 					
 							
@@ -1707,7 +1773,7 @@
 		
 		<td valign="top"><label for="wia-<?php echo esc_attr($attrib_key); ?>"><?php echo esc_html($attrib_data['label']); ?></label></td>
 		
-		<td><label class="avs-attribs" for="wia-<?php echo esc_attr($attrib_key); ?>"><?php echo wp_kses_post(implode(', ',  $attrib_data['values'])); ?></label>
+		<td><label class="avs-attribs" for="wia-<?php echo esc_attr($attrib_key); ?>"><?php echo wp_kses_post((is_array($attrib_data['values'])?implode(', ',  $attrib_data['values']):$attrib_data['values'])); ?></label>
         <?php if(function_exists('attrib_value_nodes')){ attrib_value_nodes($attrib_data['values'], $attrib_key); } ?>
         </td>
 
@@ -2061,7 +2127,7 @@
 
 <input id="wic-<?php echo esc_attr($category->term_id); ?>" <?php checked($split_group!=''); ?> type="checkbox" name="<?php echo esc_attr($wc_os_ie_name); ?>" value="<?php echo esc_attr($category->term_id); ?>" /></td>
 
-<td><a target="_blank" href="<?php echo admin_url(); ?>/edit.php?product_cat=<?php echo esc_attr($category->slug); ?>&post_type=product"><?php echo esc_html($category->count); ?></a></td>
+<td><a target="_blank" href="<?php echo admin_url(); ?>edit.php?product_cat=<?php echo esc_attr($category->slug); ?>&post_type=product"><?php echo esc_html($category->count); ?></a></td>
 
 <td><label for="wic-<?php echo esc_attr($category->term_id); ?>"><?php echo esc_html($category->name); ?></label></td>
 
@@ -2130,7 +2196,7 @@
 
 <td><input id="wic-<?php echo esc_attr($category->term_id); ?>" <?php checked($ticked); ?> type="checkbox" name="<?php echo esc_attr($wc_os_ie_name); ?>" value="<?php echo esc_attr($category->term_id); ?>" class="<?php echo $ticked?'':'hides'; ?>" /></td>
 
-<td><a target="_blank" href="<?php echo admin_url(); ?>/edit.php?product_cat=<?php echo esc_url($category->slug); ?>&post_type=product"><?php echo esc_html($category->count); ?></a></td>
+<td><a target="_blank" href="<?php echo admin_url(); ?>edit.php?product_cat=<?php echo esc_attr($category->slug); ?>&post_type=product"><?php echo esc_html($category->count); ?></a></td>
 
 <td><label for="wic-<?php echo esc_attr($category->term_id); ?>"><?php echo wp_kses_post($category_name); ?></label></td>
 
@@ -3047,7 +3113,7 @@
 		function attrib_value_nodes($values=array(), $attrib_key=''){
 			global $wc_os_settings;
 			$wc_os_attributes_nodes = (array_key_exists('wc_os_attributes_nodes', $wc_os_settings)?$wc_os_settings['wc_os_attributes_nodes']:array());
-			$attributes_nodes = (array_key_exists($attrib_key, $wc_os_attributes_nodes)?$wc_os_attributes_nodes[$attrib_key]:array());
+			$attributes_nodes = (is_array($wc_os_attributes_nodes)?(array_key_exists($attrib_key, $wc_os_attributes_nodes)?$wc_os_attributes_nodes[$attrib_key]:array()):array());
 			
 ?>
 <div class="attrib_value_nodes">

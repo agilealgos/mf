@@ -149,7 +149,11 @@
             <div class="alert alert-warning mt-3 clearfix" role="alert">
 			  <?php _e('Order emails should have the following format in body content so the outgoing email can be recogonized as a parent or child email with the order number.', 'woo-order-splitter'); ?><br /><br />
               <?php _e('Subject:', 'woo-order-splitter'); ?> <strong><?php _e('order #000000', 'woo-order-splitter'); ?></strong><br />
-              <?php _e('Message:', 'woo-order-splitter'); ?> <strong><?php _e('[Order #000000]', 'woo-order-splitter'); ?></strong>
+              <?php _e('Message:', 'woo-order-splitter'); ?> <strong><?php _e('[Order #000000]', 'woo-order-splitter'); ?></strong><br /><br />
+
+              
+              <?php _e('Alternatively, provide the pattern here:', 'woo-order-splitter'); ?> <strong><input type="text" name="wc_os_email_settings[order_number_pattern]" value="<?php echo (array_key_exists('order_number_pattern', $wc_os_general_settings)?$wc_os_general_settings['order_number_pattern']:''); ?>" /></strong> <small>(e.g. <u>Order #</u> or <u>n°</u> or <u>Order number:</u>)</small>
+              
             </div>
 <?php
 	

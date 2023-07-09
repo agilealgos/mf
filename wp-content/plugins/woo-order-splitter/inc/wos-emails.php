@@ -111,7 +111,7 @@
 					
 					$order_received_text = __wos_change_order_received_text($pref['original']);
 					
-					$wc_os_display_child_number = (array_key_exists('wc_os_display_child_number', $wc_os_general_settings) && trim($wc_os_general_settings['wc_os_display_child_number'] && $wc_os_general_settings['wc_os_display_child_number']>0)?str_replace('[NUMBER_OF_CHILD_ORDERS]', $order_received_text['child'], $wc_os_general_settings['wc_os_display_child_number']).'<br /><br />':'');
+					$wc_os_display_child_number = (array_key_exists('wc_os_display_child_number', $wc_os_general_settings) && trim($wc_os_general_settings['wc_os_display_child_number'] && $wc_os_general_settings['wc_os_display_child_number']>0)?str_replace('[NUMBER_OF_CHILD_ORDERS]', $order_received_text['total'], $wc_os_general_settings['wc_os_display_child_number']).'<br /><br />':'');
 					
 					$order_received_text = $wc_os_display_child_number.$order_received_text['content'];
 
@@ -142,13 +142,14 @@
 				if($post_author_id){
 					
 					$post_author = get_userdata( $post_author_id );
-					$author_roles = $post_author->roles;
+					$post_author = (is_object($post_author)?$post_author:array());
+					$author_roles = (is_object($post_author)?$post_author->roles:array());
 					$author_roles = (is_array($author_roles)?$author_roles:array());
 					$admin_user = (user_can( $post_author_id, 'manage_options' ) || in_array('administrator', $author_roles));
 					
                     if($summary_email){ //SUMMARY EMAIL
 
-                        if(!empty($post_author) && isset($post_author->user_email) && !in_array($post_author->user_email, $to) && !$admin_user){
+                        if(is_object($post_author) && isset($post_author->user_email) && !in_array($post_author->user_email, $to) && !$admin_user){
 
 						    $to[] = $post_author->user_email;
 							$display_name = strtoupper($post_author->display_name);
@@ -276,8 +277,8 @@
 				if(is_object($new_oder_status) && !empty($new_oder_status)){
 					if(!$status){
 						
-						$new_order_email_template = $mails['WC_Email_New_Order'];
-						
+						$new_order_email_template = new WC_Email_New_Order();//$mails['WC_Email_New_Order'];
+						//wc_os_logger('debug', $new_oder.' - 281', true);
 						$new_order_email_template->trigger($new_oder);	//New Orders Created After Split - Admin
 											
 						//sleep(2);
@@ -326,8 +327,8 @@
 		
 				if(!$status){
 					
-					$new_order_email_template = $mails['WC_Email_New_Order'];
-					
+					$new_order_email_template = new WC_Email_New_Order();//$mails['WC_Email_New_Order'];
+					wc_os_logger('debug', $new_oder.' - 331', true);
 					$new_order_email_template->trigger($new_oder);	//New Orders Created After Split - Admin
 
 
@@ -575,9 +576,9 @@
 			
 			
 			
-			$return = array('return'=>true, 'to'=>$args['to'], 'order_id'=>$order_id);
+			$return = array('return'=>true, 'to'=>$args['to'], 'order_id'=>$order_id, 'parent_id'=>0);
 
-			
+			//wc_os_logger('debug', $return, true);
 
 			global $wc_os_settings, $wc_os_general_settings, $wc_os_shipping_cost;
 			$wc_os_general_settings = get_option('wc_os_general_settings', array());
@@ -590,12 +591,93 @@
 			
 			$_wc_os_emails_sent_to = array();
 			
+			$order_number_pattern = trim(array_key_exists('order_number_pattern', $wc_os_general_settings)?$wc_os_general_settings['order_number_pattern']:'');
+			$order_number_pattern = ($order_number_pattern?$order_number_pattern:'#');
 			$order_split_created_admin = array_key_exists('wc_os_order_created_email_admin', $wc_os_general_settings);
 			$order_split_created = array_key_exists('wc_os_order_created_email', $wc_os_general_settings);
 			$wc_os_general_settings['wc_os_vendor_email_template'] = (array_key_exists('wc_os_vendor_email_template', $wc_os_general_settings)?$wc_os_general_settings['wc_os_vendor_email_template']:'');
 			$wc_os_general_settings['wc_os_vendor_email_template'] = ($wc_os_general_settings['wc_os_vendor_email_template']==''?'WC_Email_New_Order':'');
 			$vendor_split_created = ($wc_os_general_settings['wc_os_vendor_email_template']!='' && ($wc_os_settings['wc_os_ie']=='group_by_vendors' || $wc_os_settings['wc_os_ie']=='group_by_woo_vendors'));
 			
+			//wc_os_logger('debug', '#'.$order_id.' / $order_number_pattern: '.$order_number_pattern.' - 602', true);
+			
+			if(!$order_id && $order_number_pattern!='#'){
+				$message = $args['message'];			
+				$message = explode($order_number_pattern, $message);
+				if(!empty($message)){
+					foreach($message as $msg_str){
+						if($order_id){ continue; }
+						$msg_str = explode(' ', $msg_str);
+						$msg_str = current($msg_str);
+						$msg_str = trim($msg_str);
+						
+						$wc_os_logger_str = $order_number_pattern.' -> '.$msg_str.' - 614';
+						//wc_os_logger('debug', $wc_os_logger_str, true);
+						
+						if(is_numeric($msg_str)){
+							$order_id = $msg_str;
+						}
+					}
+				}
+
+				$subject = str_replace(
+					array(get_bloginfo( 'name' )),
+					array('{site_title}'), 
+					$args['subject']
+				);
+				
+				$subject = explode($order_number_pattern, $subject);
+				
+				if(!$order_id){
+					if(!empty($subject)){
+						foreach($subject as $msg_str){
+							if($order_id){ continue; }
+							$msg_str = explode(' ', $msg_str);
+							$msg_str = current($msg_str);
+							$msg_str = trim($msg_str);
+							
+							$wc_os_logger_str = $order_number_pattern.' -> '.$msg_str.' - 639';
+							//wc_os_logger('debug', $wc_os_logger_str, true);
+							
+							if(is_numeric($msg_str)){
+								$order_id = $msg_str;
+							}
+						}
+					}				
+				}
+				//wc_os_logger('debug', $subject, true);
+				$_wc_os_parent_order = get_post_meta($order_id, '_wc_os_parent_order', true);
+				//wc_os_logger('debug', '#'.$order_id.' / $_wc_os_parent_order: '.$_wc_os_parent_order.' - 650', true);
+				if($_wc_os_parent_order=='yes'){
+					
+					$return['parent_id'] = $order_id;
+					
+					$_wc_os_masked_child_order_number = get_post_meta($order_id, '_wc_os_masked_child_order_number', true);
+					$_wc_os_masked_child_order_number = (is_array($_wc_os_masked_child_order_number)?$_wc_os_masked_child_order_number:array());
+					//wc_os_logger('debug', $_wc_os_masked_child_order_number, true);
+					if(is_array($_wc_os_masked_child_order_number) && !empty($_wc_os_masked_child_order_number)){
+						$_wc_os_masked_child_order_number = array_unique($_wc_os_masked_child_order_number);
+						//wc_os_logger('debug', $_wc_os_masked_child_order_number, true);
+						$subject_last = trim(end($subject));
+						//wc_os_logger('debug', '$subject_last: '.$subject_last, true);
+						foreach($_wc_os_masked_child_order_number as $masked_key=>$child_order_id){
+							//wc_os_logger('debug', '$masked_key: '.$masked_key.' = '.'$child_order_id: '.$child_order_id, true);
+							if($masked_key==$subject_last){
+								$order_id = $child_order_id;
+								$return['return'] = true;
+							}
+						}
+						/*if(array_key_exists($subject_last, $_wc_os_masked_child_order_number)){
+							$order_id = $_wc_os_masked_child_order_number[$subject_last];
+						}*/
+					}
+				}
+				
+				
+
+			}
+			
+			//wc_os_logger('debug', '#'.$order_id.' / $order_number_pattern: '.$order_number_pattern.' - 670', true);
 			
 			
 			
@@ -664,11 +746,13 @@
 			
 			
 			$find = __('Order', 'woocommerce');
+			//wc_os_logger('debug', '#'.$order_id.' / $order_number_pattern: '.$order_number_pattern, true);
 			if(!$order_id){
 				$message = $args['message'];
 				$order_id = wc_os_get_order_id_from_str($message, '['.$find.' ', ']');
 				$order_id = ($order_id?$order_id:wc_os_get_order_id_from_str($message, $find.' ', ' ('));
 			}
+			//wc_os_logger('debug', '#'.$order_id.' / $order_number_pattern: '.$order_number_pattern, true);
 			if(!$order_id){
 				$message = $args['message'];			
 				$message = explode($find, $message);
@@ -682,6 +766,7 @@
 				}
 				
 			}
+			
 
 			$is_child_order = false;
 			$is_parent_order = false;
@@ -691,7 +776,7 @@
 			
 			if($order_id){
 				
-				//$wc_os_logger_str = 'C. wc_os_filter_mails Order# '.$order_id.' > '.$return['to'];
+				$wc_os_logger_str = 'C. wc_os_filter_mails Order# '.$order_id.' > '.$return['to'];
 				
 				
 				$post_meta = get_post_meta($order_id);
@@ -950,16 +1035,10 @@
 							
 						}else{
 							
-							
-							
-							
-							
-							
-							$return['return'] = false;
-							
-							
+							//$return['return'] = false; //18/05/2023 - Ronny
 							
 						}
+						
 					}else{
 						
 
@@ -1040,6 +1119,32 @@
 			}
 			
 			$return['order_id'] = $order_id;	
+			
+			wc_os_logger('debug', 'Order #'.$return['order_id'].' * Parent #'.$return['parent_id'].' '.($return['return']?'':'NOT').' SENT to '.$return['to'].'- 1128', true);
+			
+			
+			$meta = get_post_meta($order_id);
+			$str_arr = array();
+			if(is_array($meta) || is_object($meta)){
+				foreach($meta as $k=>$v){
+					$str_arr[] = '#'.$order_id.' [ '.$k.' = '.(is_array($v)?implode(', ', $v):$v).' ]';
+					
+				}
+			}
+			//wc_os_logger('debug', implode('<br />', $str_arr), true);
+			$_to = $return['to'];
+			
+			$_wc_os_parent_order = get_post_meta($order_id, '_wc_os_parent_order', true);
+			$_wc_os_child_order = get_post_meta($order_id, '_wc_os_child_order', true);
+			
+			if($_wc_os_parent_order=='yes' && $wc_os_parent_order_email_off){
+				$return['to'] = 'PARENT ORDER EMAILS - OFF';
+			}
+			if($_wc_os_child_order=='yes' && $order_split_created_admin){
+				//$return['to'] = $_to;
+			}
+			wc_os_logger('debug', '#'.$order_id.' - Parent = '.$_wc_os_parent_order.' - '.$wc_os_parent_order_email_off.' - '.$return['to'], true);
+			wc_os_logger('debug', '#'.$order_id.' - Child = '.$_wc_os_child_order.' - '.$order_split_created_admin.' - '.$return['to'], true);
 
 			return $return;
 			
@@ -1076,9 +1181,9 @@
 		$order_id = $proceed_args['order_id'];
 		$proceed = $proceed_args['return'];
 		
-		$wc_os_logger_str = 'Silver. wc_os_redirect_mails '.$args['to'].' / '.$proceed_args['to'];
-		
-		
+		$wc_os_logger_str = 'Silver. wc_os_redirect_mails '.$args['to'].' / '.$proceed_args['to'].' / '.$args['subject'];
+		//order_number_pattern
+		//wc_os_logger('debug', $wc_os_logger_str.' - 1082', true);
 		
 		$args['to'] = $proceed_args['to'];
 		
@@ -1089,6 +1194,8 @@
 		if($order_id && !$proceed){
 			
 			$args['to'] = 'DENIED BY RULES - '.$args['to'];
+			//wc_os_logger('debug', $proceed_args, true);
+			//wc_os_logger('debug', $args, true);
 			
 			return $args;
 			

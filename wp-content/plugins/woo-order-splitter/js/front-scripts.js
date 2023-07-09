@@ -33,7 +33,7 @@ function wc_os_trigger_permission_for_spit($, internal){
 				
 				if(wos_obj.wc_os_packages_overview == 'on'){
 					$.blockUI({message:''});
-					setTimeout(function(){ document.location.reload(); }, 1000);
+					setTimeout(function(){ document.location.reload(); }, 3000);
 				}
 
 			}
@@ -106,6 +106,8 @@ function wc_os_trigger_permission_for_spit($, internal){
 				}
 			}
 			
+			setTimeout(function(){ document.location.reload(); }, 1000);
+			
 		});
 		
 		if(wc_os_customer_permitted=='on'){
@@ -137,7 +139,47 @@ function wc_os_trigger_permission_for_spit($, internal){
 }
 jQuery(document).ready(function($){
 	
-	
+	$('body').on('change', 'select#coderockz_woo_delivery_delivery_selection_box', function(){
+		var v = $(this).val();
+		$('div.wc_os_review_order label.wos-delivery-date').hide();
+		switch(v){
+			case 'delivery':
+				$('div.wc_os_review_order label.wos-delivery-date').show();
+				var dp_obj = $('div.wc_os_review_order label.wos-delivery-date input[type="text"]');
+				if($('#coderockz_woo_delivery_date_datepicker').length>0){
+					$.each($('#coderockz_woo_delivery_date_datepicker').data(), function(a, v){
+						if(typeof v=='object'){							
+							dp_obj.attr('data-'+a, v);//"['"+v.join("','")+"']");
+						}else{
+							dp_obj.attr('data-'+a, v);
+						}
+					});
+				}
+				dp_obj = $('div.wc_os_review_order label.wos-delivery-date input[type="text"]');
+				var bZ = dp_obj.data("date_format");
+								
+				var arr = dp_obj.data("disable_week_days");
+				var arr2 = arr.split(",");
+				var arr3 = [];
+				jQuery.each(arr2, function(i, v){
+					v = parseInt(v);
+					arr3.push(v);
+				});
+			
+								
+				dp_obj.flatpickr({
+					dateFormat: bZ,
+					minDate: "today",
+					disable:[
+						function(date) {
+					
+						return (jQuery.inArray(date.getDay(), arr3)!==-1);
+						}
+					]
+				});
+			break;
+		}
+	});
 	
 	setTimeout(function(){
 		if(wos_obj.is_thank_you==true && $('.woocommerce-order-details').length>0 && wos_obj.posted==0){		

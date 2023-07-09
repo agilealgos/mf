@@ -78,11 +78,12 @@ class Assets {
 				'wpo-wcpdf',
 				'wpo_wcpdf_ajax',
 				array(
-					'ajaxurl'			 => admin_url( 'admin-ajax.php' ), // URL to WordPress ajax handling page  
-					'nonce'				 => wp_create_nonce('generate_wpo_wcpdf'),
-					'bulk_actions'		 => array_keys( $bulk_actions ),
-					'confirm_delete'	 => __( 'Are you sure you want to delete this document? This cannot be undone.', 'woocommerce-pdf-invoices-packing-slips'),
-					'confirm_regenerate' => __( 'Are you sure you want to regenerate this document? This will make the document reflect the most current settings (such as footer text, document name, etc.) rather than using historical settings.', 'woocommerce-pdf-invoices-packing-slips'),
+					'ajaxurl'			           => admin_url( 'admin-ajax.php' ), // URL to WordPress ajax handling page  
+					'nonce'				           => wp_create_nonce('generate_wpo_wcpdf'),
+					'bulk_actions'		           => array_keys( $bulk_actions ),
+					'confirm_delete'	           => __( 'Are you sure you want to delete this document? This cannot be undone.', 'woocommerce-pdf-invoices-packing-slips'),
+					'confirm_regenerate'           => __( 'Are you sure you want to regenerate this document? This will make the document reflect the most current settings (such as footer text, document name, etc.) rather than using historical settings.', 'woocommerce-pdf-invoices-packing-slips'),
+					'sticky_document_data_metabox' => apply_filters( 'wpo_wcpdf_sticky_document_data_metabox', true ),
 				)
 			);
 		}
@@ -112,6 +113,9 @@ class Assets {
 				#wpo-wcpdf-preview-wrapper .slider.slide-right:after {
 					content: '".__( 'Settings', 'woocommerce-pdf-invoices-packing-slips' )."';
 			}" );
+			wp_add_inline_style( 'wpo-wcpdf-settings-styles', "#upgrade-table td span.feature-available {
+				background-image: url(".WPO_WCPDF()->plugin_url().'/assets/images/checkmark.svg'.") !important;
+			}" );
 
 			// SCRIPTS
 			wp_enqueue_script( 'wc-enhanced-select' );
@@ -127,7 +131,7 @@ class Assets {
 				array(
 					'ajaxurl'                   => admin_url( 'admin-ajax.php' ),
 					'template_paths'            => WPO_WCPDF()->settings->get_installed_templates(),
-					'pdfjs_worker'              => WPO_WCPDF()->plugin_url() . '/assets/js/pdf_js/pdf.worker.js',
+					'pdfjs_worker'              => WPO_WCPDF()->plugin_url() . '/assets/js/pdf_js/pdf.worker.min.js', // taken from https://cdnjs.com/libraries/pdf.js
 					'preview_excluded_settings' => apply_filters( 'wpo_wcpdf_preview_excluded_settings', array(
 						// general
 						'download_display',
@@ -144,6 +148,8 @@ class Assets {
 						'invoice_date_column',
 						'disable_free',
 						'use_latest_settings',
+						'mark_printed',
+						'unmark_printed'
 					) ),
 					'pointers'                  => array(
 						'wcpdf_document_settings_sections' => array(
@@ -165,6 +171,17 @@ class Assets {
 					'mysql_int_size_limit'      => __( 'The number should be smaller than 2147483647. Please note you should add your next document number without prefix, suffix or padding.', 'woocommerce-pdf-invoices-packing-slips' ),
 				)
 			);
+			
+			// preview PDFJS
+			$debug_settings = get_option( 'wpo_wcpdf_settings_debug', array() );
+			if ( ! isset( $debug_settings['disable_preview'] ) ) {
+				wp_enqueue_script(
+					'wpo-wcpdf-pdfjs',
+					WPO_WCPDF()->plugin_url() . '/assets/js/pdf_js/pdf.min.js', // taken from https://cdnjs.com/libraries/pdf.js
+					array(),
+					'3.7.107'
+				);
+			}
 
 			wp_enqueue_media();
 			wp_enqueue_script(
@@ -182,6 +199,32 @@ class Assets {
 				wp_enqueue_style( 'wp-pointer' );
 			}
 
+		}
+		
+		// status/debug page scripts
+		if ( isset( $_REQUEST['page'] ) && $_REQUEST['page'] == 'wpo_wcpdf_options_page' && isset( $_REQUEST['tab'] ) && $_REQUEST['tab'] == 'debug' ) {
+			
+			wp_enqueue_style(
+				'wpo-wcpdf-debug-tools-styles',
+				WPO_WCPDF()->plugin_url() . '/assets/css/debug-tools'.$suffix.'.css',
+				WPO_WCPDF_VERSION
+			);
+			wp_enqueue_script(
+				'wpo-wcpdf-debug',
+				WPO_WCPDF()->plugin_url() . '/assets/js/debug-script'.$suffix.'.js',
+				[ 'jquery', 'jquery-blockui' ],
+				WPO_WCPDF_VERSION
+			);
+			wp_localize_script(
+				'wpo-wcpdf-debug',
+				'wpo_wcpdf_debug',
+				[
+					'ajaxurl'        => admin_url( 'admin-ajax.php' ),
+					'nonce'          => wp_create_nonce( 'wpo_wcpdf_debug_nonce' ),
+					'download_label' => __( 'Download', 'woocommerce-pdf-invoices-packing-slips' ),
+				]
+			);
+			
 		}
 	}
 

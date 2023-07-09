@@ -2,8 +2,8 @@
 Contributors: fahadmahmood
 Tags: preorder, split, orders, duplicate, shipstation, on-hold, split orders, split funds
 Requires at least: 4.4
-Tested up to: 6.1
-Stable tag: 4.8.0
+Tested up to: 6.2
+Stable tag: 4.9.2
 Requires PHP: 7.0
 License: GPL2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -357,6 +357,51 @@ iv) Easily create custom order statuses and trigger custom emails when order sta
 65. Order statuses with Background + Text color selection
 
 == Changelog ==
+= 4.9.2 =
+* Fix: Manual split option on edit page improved with the CSS selector refinement. [02/07/2023][Thanks to Mo Hassan]
+* New: Orders list, split order filter added in the order status row as "Split Order" text to filter all to-split orders. [09/07/2023][Thanks to Mo Hassan]
+
+= 4.9.1 =
+* Fix: Combine function revised and improved for the variations. [15/06/2023][Thanks to Urban Islander / Hideto Yoshida]
+
+= 4.9.0 =
+* Fix: Grouped Categories Mode refined for WooCommerce Ship to Multiple Addresses. [12/06/2023][Thanks to Philsiong]
+
+= 4.8.9 =
+* Fix: In-stock / out-stock split method revised. [30/05/2023][Thanks to Mathias]
+
+= 4.8.8 =
+* Fix: Woo Vendors split method improved. [20/05/2023][Thanks to Marta / Jacobo Casanovas]
+
+= 4.8.7 =
+* New: WooCommerce Delivery & Pickup Date Time Pro / Coderockz_Woo_Delivery compatibility added in default split method. [13/05/2023][Thanks to John Tolkovski and Daniel from Dankos Web Team]
+* Fix: Emails delivery function improved for the DENIED BY RULES thing. [18/05/2023][Thanks to Ronny]
+
+= 4.8.6 =
+* New: In-stock / out-stock split method improved with a new option to split pre-order items into multiple orders. [13/05/2023][Thanks to Steve Senella]
+
+= 4.8.5 =
+* Fix: Thank you page text improved with addition of another filter hook and split status meta key. [13/04/2023][Thanks to Georg Szeless]
+* Fix: Split threshold value for each child order using grouped categories split method revised. [14/04/2023][Thanks to Benjamin Hugueño]
+* Fix: Grouped categories split method refind without threshold value. [22/04/2023][Thanks to Jason Medeiros & Patryk Dziabas]
+
+= 4.8.4 =
+* Split threshold value for each item in child orders for grouped categories split method refined. [21/03/2023][Thanks to Patryk Dziabas]
+
+= 4.8.3 =
+* New: Split threshold value for each item in child orders for grouped categories split method improved. [21/03/2023][Thanks to Patryk Dziabas]
+
+= 4.8.2 =
+* Fix: Parent order email option under emails tab has been refined.[14/03/2023][Thanks to Kevin Nakada]
+* New: Split threshold value for each item in child orders for grouped categories split method introduced.[17/03/2023][Thanks to Benjamin Hugueño]
+
+= 4.8.1 =
+* New: Quantity split ability added to the Grouped Categories split method using the WordPress plugin "WooCommerce Ship to Multiple Addresses". [01/12/2022][Thanks to Leslie / Gifts from Colorado]
+* New: Subscription split added for only default split method.[07/12/2022][Thanks to Davide Masserini]
+* Fix: Group by Vendors split method improved for the single vendor items case with and without remove items from parent option checked.[06/01/2022][Thanks to Venu Arethoti]
+* New: Subscription split improved with qty. split possibility.[09/03/2023][Thanks to Wojciech Surma]
+* Fix: Emails section revised with the object instead of an array from WC()->mailer()->get_emails().[10/03/2023][Thanks to Tobias Derksen]
+
 = 4.8.0 =
 * New: Many to one relationship managed for child orders related to shipping address section using the WordPress plugin "WooCommerce Ship to Multiple Addresses". [18/11/2022][Thanks to Leslie / Gifts from Colorado]
 * New: Trash option added to original order section after split action. [21/11/2022]
@@ -1125,6 +1170,30 @@ iv) Easily create custom order statuses and trigger custom emails when order sta
 * A few important updates in settings.
 
 == Upgrade Notice ==
+= 4.9.2 =
+Fix: Manual split option on edit page improved with the CSS selector refinement.
+= 4.9.1 =
+Fix: Combine function revised and improved for the variations.
+= 4.9.0 =
+Fix: Grouped Categories Mode refined for WooCommerce Ship to Multiple Addresses.
+= 4.8.9 =
+Fix: In-stock / out-stock split method revised.
+= 4.8.8 =
+Fix: Woo Vendors split method improved.
+= 4.8.7 =
+New: WooCommerce Delivery & Pickup Date Time Pro / Coderockz_Woo_Delivery compatibility added in default split method.
+= 4.8.6 =
+New: In-stock / out-stock split method improved with a new option to split pre-order items into multiple orders.
+= 4.8.5 =
+Thank you page text improved with addition of another filter hook and split status meta key.
+= 4.8.4 =
+Split threshold value for each item in child orders for grouped categories split method refined.
+= 4.8.3 =
+New: Split threshold value for each item in child orders for grouped categories split method improved.
+= 4.8.2 =
+New: Split threshold value for each item in child orders for grouped categories split method introduced.
+= 4.8.1 =
+New: Quantity split ability added to the Grouped Categories split method using the WordPress plugin "WooCommerce Ship to Multiple Addresses".
 = 4.7.9 =
 Fix: In-stock/Out-of-stock related split method improvements.
 = 4.7.8 =
