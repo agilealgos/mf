@@ -9,12 +9,13 @@ class Wt_Advanced_Order_Number {
     protected $loader;
     protected $plugin_name;
     protected $version;
+    public $plugin_common = null;
 
     public function __construct() {
         if (defined('WT_SEQUENCIAL_ORDNUMBER_VERSION')) {
             $this->version = WT_SEQUENCIAL_ORDNUMBER_VERSION;
         } else {
-            $this->version = '1.4.9';
+            $this->version = '1.5.2';
         }
         $this->plugin_name = 'wt-advanced-order-number';
         $this->plugin_base_name = WT_SEQUENCIAL_ORDNUMBER_BASE_NAME;
@@ -23,8 +24,11 @@ class Wt_Advanced_Order_Number {
         $this->set_locale();
         $this->define_admin_hooks();
         $this->define_public_hooks();
+
         if ( is_admin() ) {
-            add_filter( 'woocommerce_get_settings_pages', array( $this, 'add_woocommerce_settings_tab'), PHP_INT_MAX);
+            $settings_pages_priority = PHP_INT_MAX;
+            $settings_pages_priority = apply_filters('wt_alter_get_settings_pages_priority',$settings_pages_priority);
+            add_filter( 'woocommerce_get_settings_pages', array( $this, 'add_woocommerce_settings_tab'), $settings_pages_priority);
         }
     }
 
@@ -37,8 +41,16 @@ class Wt_Advanced_Order_Number {
         require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-wt-advanced-order-number-review_request.php';
         //add other solutions section
         require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-wt-advanced-order-number-other-solution.php';
+        
+        /**
+		 * The class responsible for defining all actions that occur in common for public and admin -facing
+		 * side of the site.
+		 */ 
+        require_once plugin_dir_path( dirname( __FILE__ ) ) . 'common/class-wt-advanced-order-number_common.php';
 
         $this->loader = new Wt_Advanced_Order_Number_Loader();
+        $this->plugin_common = new Wt_Advanced_Order_Number_Common($this->get_plugin_name(), $this->get_version());
+
     }
 
     private function set_locale() {
@@ -59,8 +71,11 @@ class Wt_Advanced_Order_Number {
             $this->loader->add_filter('woocommerce_shop_order_search_fields', $plugin_admin, 'custom_ordernumber_search_field');
         }
 
-        add_action('plugins_loaded', array($this, 'setup_sequential_number'));
-    
+        add_action('plugins_loaded', array($this, 'setup_sequential_number'));    
+    }
+
+    public function define_common_hooks() {
+        $this->plugin_common= Wt_Advanced_Order_Number_Common::get_instance( $this->get_plugin_name(), $this->get_version() );
     }
 
     public function add_woocommerce_settings_tab( $settings ) {
@@ -96,6 +111,8 @@ class Wt_Advanced_Order_Number {
      /**
      * Replaced the wcs_subscription_meta hook with wcs_subscription_meta_query to avoid a Array to string conversion PHP warning.
      * @since   1.4.4
+     * Added new filter 'wt_sequential_alter_shop_order_meta_priority'.
+     * @since   1.5.2
      */
 
     public function setup_sequential_number() {
@@ -103,7 +120,11 @@ class Wt_Advanced_Order_Number {
         //add_action('wp_insert_post', array($this, 'set_sequential_number'), 10, 2);
         //add_action( 'woocommerce_checkout_update_order_meta', array( $this, 'set_sequential_number' ), 10, 1 );
         add_action( 'woocommerce_new_order', array( $this, 'set_sequential_number' ), 10, 1 );
-        add_action( 'woocommerce_process_shop_order_meta',    array( $this, 'set_sequential_number' ), 35, 2 );
+                
+        $manual_order_priority = 35;
+        $manual_order_priority = apply_filters('wt_sequential_alter_shop_order_meta_priority',$manual_order_priority);
+        //sets sequential order number when order created through admin
+        add_action( 'woocommerce_process_shop_order_meta',    array( $this, 'set_sequential_number' ), $manual_order_priority, 2 );
         add_action( 'woocommerce_before_resend_order_emails', array( $this, 'set_sequential_number' ), 10, 1 );
 
         //REST API
@@ -125,9 +146,19 @@ class Wt_Advanced_Order_Number {
         }
 
         // WC Subscriptions support
-        add_filter( 'wcs_subscription_meta_query', array( $this, 'subscriptions_remove_renewal_order_number_meta' ) );
-        add_filter( 'wcs_renewal_order_meta_query', array( $this, 'subscriptions_remove_renewal_order_number_meta' ) );
-        add_filter( 'wcs_renewal_order_created',    array( $this, 'subscriptions_sequential_order_number' ), 10, 2 );
+        if ( in_array( 'woocommerce-subscriptions/woocommerce-subscriptions.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ), true ) ) 
+        {
+            add_filter( 'wcs_subscription_meta_query', array( $this, 'subscriptions_remove_renewal_order_number_meta' ) );
+            add_filter( 'wcs_renewal_order_created',    array( $this, 'subscriptions_sequential_order_number' ), 10, 2 );
+            $subscription_version = class_exists( 'WC_Subscriptions' ) && ! empty( WC_Subscriptions::$version ) ? WC_Subscriptions::$version : null;
+
+            // Prevent data being copied to subscriptions
+            if ( null !== $subscription_version && version_compare( $subscription_version, '2.5.0', '>=' ) ) {
+                add_filter( 'wc_subscriptions_renewal_order_data', array( $this, 'wt_seq_remove_renewal_order_meta'), 10 );
+            } else {
+                add_filter( 'wcs_renewal_order_meta_query', array( $this, 'subscriptions_remove_renewal_order_number_meta' ), 10 );
+            }
+        }
 
         // Webtoffee Subscriptions support
         add_filter( 'hf_subscription_meta_query', array( $this, 'subscriptions_remove_renewal_order_number_meta' ) );
@@ -168,23 +199,27 @@ class Wt_Advanced_Order_Number {
             $posts_per_page = 50;
 
             do {
-                $order_ids = get_posts(array('post_type' => 'shop_order', 'fields' => 'ids', 'offset' => $offset, 'posts_per_page' => $posts_per_page, 'post_status' => 'any', 'orderby' => 'date', 'order' => 'ASC'));
 
+                $order_ids = Wt_Advanced_Order_Number_Common::get_orders(array(
+                    'post_type' => 'shop_order', 
+                    'offset' => $offset,
+                    'posts_per_page' => $posts_per_page, 
+                    'post_status' => 'any', 
+                    'orderby' => 'date', 
+                    'order' => 'ASC'));
 
                 if (!empty($order_ids)) {
-
                     foreach ($order_ids as $order_id) {
-                        if (get_post_meta($order_id, '_order_number', TRUE) === '' || $rerun === TRUE) {
+                        if (Wt_Advanced_Order_Number_Common::get_order_meta($order_id, '_order_number') === '' || $rerun === TRUE) {
                             $prefix = self::get_sequence_prefix($order_id);
                             $start_no_padding=self::add_order_no_padding($start);
                             $order_number = self::add_prefix_suffix($start_no_padding,$order_id);
                             $order_number = apply_filters('wt_order_number_sequence_data', $order_number, $prefix, $order_id);
-                            update_post_meta($order_id, '_order_number', $order_number);
+                            Wt_Advanced_Order_Number_Common::update_order_meta($order_id, '_order_number', $order_number);
                             $start++;
                         }
                     }
                 }
-
 
                 $offset += $posts_per_page;
             } while (count($order_ids) === $posts_per_page);
@@ -316,12 +351,14 @@ class Wt_Advanced_Order_Number {
                 $date_val=time();
                 $order_date_format=$date_shortcode;
                 $order_date_format=apply_filters('wt_order_number_date_format',$order_date_format);
-                if(!empty($order_id))
+                $order = new WC_Order($order_id);
+                if(!empty($order))
                 { 
-                    $date_val=strtotime(get_the_date('Y-m-d H:i:s', $order_id));
+                   $date_val=strtotime($order->order_date);;
                 }
-                $date=date($order_date_format, $date_val);
-                $shortcode_text=str_replace("[$date_shortcode]", $date, $shortcode_text); 
+                $date_val=date($order_date_format, $date_val);
+
+                $shortcode_text=str_replace("[$date_shortcode]", $date_val, $shortcode_text); 
             }
         }
         return $shortcode_text;
@@ -406,6 +443,7 @@ class Wt_Advanced_Order_Number {
      * Add WooCommerce QuickPay Support
      *
      * @since 1.4.6
+     * @since 1.5.2 Added HPOS Compatibility
      *
      * @param string $order_number
      * @param WC_Order $order
@@ -416,7 +454,8 @@ class Wt_Advanced_Order_Number {
     public function wt_quickpay_order_number_for_api( $order_number, $order, $recurring ) {
 
         $order_id = (WC()->version < '2.7.0') ? $order->id : $order->get_id();
-        $sequence_number = get_post_meta($order_id, '_order_number', true);
+        $sequence_number = Wt_Advanced_Order_Number_Common::get_order_meta($order_id, '_order_number');
+
         if( !empty( $sequence_number ) )
         {
             $order_number = $sequence_number;
@@ -428,6 +467,7 @@ class Wt_Advanced_Order_Number {
      * Add WooCommerce Amazon Pay Support
      *
      * @since 1.4.7
+     * @since 1.5.2 Added HPOS Compatibility
      * 
      * Filter the merchant reference ID sent to Amazon
      * 
@@ -438,7 +478,8 @@ class Wt_Advanced_Order_Number {
      */
     function wt_amazon_pay_order_number( $order_id ) {
 
-        $sequence_number = get_post_meta($order_id, '_order_number', true);
+        $sequence_number = Wt_Advanced_Order_Number_Common::get_order_meta($order_id, '_order_number');
+
         if( !empty( $sequence_number )) 
         {
             return $sequence_number;
@@ -479,6 +520,22 @@ class Wt_Advanced_Order_Number {
         return false;
     }
 
+    /**
+     * Don't copy over order number meta when creating a parent or child renewal order when WC subscritions version greater than 2.5.0
+     *
+     * Prevents unnecessary order meta from polluting parent renewal orders,
+     * and set order number for subscription orders
+     *
+     * @since 1.5.0
+     * @param array $order_meta_query query for pulling the metadata
+     * @return string
+     */
+
+    public function wt_seq_remove_renewal_order_meta( $order_meta ) {
+        unset( $order_meta['_order_number'] );
+        return $order_meta;
+    }
+
     private function define_public_hooks() {
 
         $plugin_public = new Wt_Advanced_Order_Number_Public($this->get_plugin_name(), $this->get_version());
@@ -490,6 +547,13 @@ class Wt_Advanced_Order_Number {
     /**
      * Added new filter 'wt_sequential_change_last_order_number'.
      * @since   1.4.4
+     * Added new filter 'wt_sequential_alter_order_number'.
+     * @since   1.5.2
+     * Added additional loop to avoid order number duplication in heavy traffic site
+     * @since 1.5.0
+     * Added conditionalx check to avoid sequential order number generation for subscription orders.
+     * @since 1.5.0
+     * @since 1.5.2 Added HPOS Compatibility
      */
 
     public function set_sequential_number($post_id, $post = array() ) {
@@ -502,8 +566,23 @@ class Wt_Advanced_Order_Number {
             $wpdb->query('START TRANSACTION');
 
             $order = $post_id instanceof \WC_Order ? $post_id : wc_get_order( $post_id );
+
+            // checks whether the order is subscription order
+            if ( is_object( $order ) && is_a( $order, 'WC_Subscription' ) ) {
+                $is_subscription = true;
+            } elseif ( is_numeric( $order ) && 'shop_subscription' === get_post_type( $order ) ) {
+                $is_subscription = true;
+            } else {
+                $is_subscription = false;
+            }
+            $is_subscription=apply_filters('wt_sequential_is_subscription_order',$is_subscription,$order);
+            // If order is subscription skip sequential order number generation.
+            if( true === $is_subscription)
+            {
+                return ;
+            }
             $order_id = (WC()->version < '2.7.0') ? $order->id : $order->get_id();
-            $order_number = get_post_meta($order_id, '_order_number', TRUE);
+            $order_number = Wt_Advanced_Order_Number_Common::get_order_meta($order_id, '_order_number');
             $increment_counter = !empty((int) get_option('wt_sequence_increment_counter', 1)) ? (int) get_option('wt_sequence_increment_counter', 1) : 1;
             $is_old_order = self::is_old_order($order_id);
             $is_old_order = apply_filters('wt_sequential_is_old_order',$is_old_order,$order_id);
@@ -542,11 +621,24 @@ class Wt_Advanced_Order_Number {
                     $next_order_number = self::add_prefix_suffix($next_insert_id_padding,$order_id);               
                 }
 
-                $sql = "INSERT INTO {$wpdb->postmeta} (post_id, meta_key, meta_value) VALUES (%d,%s,%s)";
+                // filter to alter the order number.
+                $next_order_number = apply_filters('wt_sequential_alter_order_number',$next_order_number,$order);
 
-                $query = $wpdb->prepare($sql, $post_id, '_order_number', $next_order_number);
+                // attempt the query up to 3 times for a much higher success rate if it fails (due to Deadlock)
+                $success = false;
 
-                $res = $wpdb->query($query);
+                $loop_count = 7;
+                // filter to alter the no of loops to check duplication.
+                $loop_count = apply_filters('wt_sequential_alter_loop_count',$loop_count,$order_id);
+
+                for ( $i = 0; $i < $loop_count && ! $success; $i++ ) {
+
+                    // this seems to me like the safest way to avoid order number duplication
+                    Wt_Advanced_Order_Number_Common::update_order_meta($post_id, '_order_number', $next_order_number);
+                    
+                    $success = true;
+
+                }
 
                 // If everything fine 
                 $wpdb->query( 'COMMIT' ); //commits all queries
@@ -581,7 +673,7 @@ class Wt_Advanced_Order_Number {
     public function display_sequence_number($order_number, $order) {
 
         $order_id = (WC()->version < '2.7.0') ? $order->id : $order->get_id();
-        $sequential_order_number = get_post_meta($order_id, '_order_number', TRUE);
+        $sequential_order_number = Wt_Advanced_Order_Number_Common::get_order_meta($order_id, '_order_number');
         $sequential_order_number = apply_filters('wt_alter_sequence_number',$sequential_order_number,$order_id);
         return ($sequential_order_number) ? $sequential_order_number : $order_number;
     }

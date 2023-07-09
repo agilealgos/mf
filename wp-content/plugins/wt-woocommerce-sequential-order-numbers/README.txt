@@ -3,8 +3,8 @@ Contributors: webtoffee
 Donate link: https://www.webtoffee.com/plugins/
 Tags: sequential order number, custom order number, order number, sequential order, woocommerce, sequential, woocommerce sequential order number, advanced order number, woocommerce custom order number, change order number, woocommerce change order number, woocommerce order numbers
 Requires at least: 3.0.1
-Tested up to: 6.1
-Stable tag: 1.4.9
+Tested up to: 6.2
+Stable tag: 1.5.2
 Requires PHP: 5.6
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -34,7 +34,7 @@ When you activate the sequential order number plugin, if you have no orders in y
 * Enable **order tracking** to easily find order details
 * Supports WooCommerce custom order numbers
 * Tested OK with PHP 8
-* Tested OK with WooCommerce 7.1.1
+* Tested OK with WooCommerce 7.3.0
 
 
 >**Note:** If you like to make any of your other plugins (invoice/payment/shipment) compatible with the Sequential Order Numbers for WooCommerce, please make the below tweak.
@@ -148,6 +148,21 @@ Yes. It's possible to add order date prefix.
 
 
 == Changelog ==
+
+= 1.5.2 26-6-2023 =
+* [Add] - HPOS Compatibility.
+* [Enhancement] - Add 3 new filters 'wt_alter_get_settings_pages_priority','wt_sequential_alter_shop_order_meta_priority' and 'wt_sequential_alter_order_number'.
+* [Compatibility] - Tested OK with WooCommerce 7.8.0
+* [Compatibility] - Tested OK with WordPress 6.2.2
+
+= 1.5.1 =
+* [Compatibility] - WooCommerce 7.6.0
+
+= 1.5.0 =
+* [Fix] - Duplicate order numbers issue when orders placed simultaneously in heavy traffic site.
+* [Compatibility] - WooCommerce Subscriptions 4.7
+* [Compatibility] - WooCommerce 7.3
+* [Compatibility] - WordPress 6.2
 
 = 1.4.9 =
 * [Fix] - Issue of generating duplicate order number for simultaneously placed orders is fixed.
@@ -373,8 +388,8 @@ Yes. It's possible to add order date prefix.
 
 == Upgrade Notice ==
 
-= 1.4.9 =
-* [Fix] - Issue of generating duplicate order number for simultaneously placed orders is fixed.
-* [Enhancement] - New side banner.
-* [Enhancement] - Custom page for displaying other WebToffee plugins.
-* [Compatibility] - WooCommerce 7.1.1
+= 1.5.2  =
+* [Add] - HPOS Compatibility.
+* [Enhancement] - Add 3 new filters 'wt_alter_get_settings_pages_priority','wt_sequential_alter_shop_order_meta_priority' and 'wt_sequential_alter_order_number'.
+* [Compatibility] - Tested OK with WooCommerce 7.8.0
+* [Compatibility] - Tested OK with WordPress 6.2.2

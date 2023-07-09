@@ -2,7 +2,7 @@
  * Variation Swatches for WooCommerce
  *
  * Author: Emran Ahmed ( emran.bd.08@gmail.com )
- * Date: 1/18/2023, 12:54:50 PM
+ * Date: 7/5/2023, 4:48:58 PM
  * Released under the GPLv3 license.
  */
 .button.button-danger {
@@ -53,6 +53,42 @@
   height: 30px;
   border: rgba(0, 0, 0, 0.2) 1px solid;
   border-radius: 2px;
+}
+
+.woo_variation_swatches_product_label_settings.column-woo_variation_swatches_product_label_settings {
+  vertical-align: middle;
+}
+.woo_variation_swatches_product_label_settings.column-woo_variation_swatches_product_label_settings span {
+  font-size: 1rem;
+  color: var(--wp-admin-theme-color);
+}
+
+table.wp-list-table span.wvs-info {
+  display: block;
+  text-indent: -9999px;
+  position: relative;
+  height: 1em;
+  width: 1em;
+  margin: 0 auto;
+}
+
+table.wp-list-table span.wvs-info::before {
+  font-family: Dashicons;
+  speak: never;
+  font-weight: 400;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  margin: 0;
+  text-indent: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  content: "\f339";
 }
 
 #woo-variation-swatches-tutorials-wrapper {
@@ -209,6 +245,9 @@
   margin: 10px;
 }
 .woo-variation-swatches-variation-product-options-wrapper #saved-message {
+  display: none;
+}
+.woo-variation-swatches-variation-product-options-wrapper #individual-swatches-info.swatches-info-hide {
   display: none;
 }
 .woo-variation-swatches-variation-product-options-wrapper h4 {

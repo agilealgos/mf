@@ -15,13 +15,13 @@
  * Plugin Name:       Sequential Order Numbers for WooCommerce
  * Plugin URI:        https://wordpress.org/plugins/wt-woocommerce-sequential-order-numbers/
  * Description:       Automatically sets sequential order number for WooCommerce orders placed by either customers or by admin through backend.
- * Version:           1.4.9
+ * Version:           1.5.2
  * Author:            WebToffee
  * Author URI:        https://www.webtoffee.com/
  * License:           GPLv3
  * License URI:       https://www.gnu.org/licenses/gpl-3.0.html
  * WC requires at least: 2.1.0
- * WC tested up to:   7.1
+ * WC tested up to:   7.8
  * Text Domain:       wt-woocommerce-sequential-order-numbers
  * Domain Path:       /languages
  */
@@ -34,9 +34,9 @@ if ( ! defined( 'WPINC' ) ) {
 include_once(ABSPATH.'wp-admin/includes/plugin.php');
 
  /** 
-    *   @since 1.4.0
-    *   Check whether pro version active in site.
-    */
+ *   @since 1.4.0
+ *   Check whether pro version active in site.
+ */
 
 $current_plugin_name='Sequential Order Numbers for WooCommerce';
 $wt_seq_order_no_plugin_conflict=true;
@@ -60,7 +60,9 @@ if(!$wt_seq_order_no_plugin_conflict)
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
-define( 'WT_SEQUENCIAL_ORDNUMBER_VERSION', '1.4.9' );
+if (!defined('WT_SEQUENCIAL_ORDNUMBER_VERSION')) {
+    define('WT_SEQUENCIAL_ORDNUMBER_VERSION', '1.5.2');
+}
 
 if (!defined('WT_SEQUENCIAL_ORDNUMBER_BASE_NAME')) {
     define('WT_SEQUENCIAL_ORDNUMBER_BASE_NAME', plugin_basename(__FILE__));
@@ -149,3 +151,17 @@ if(function_exists('run_wt_advanced_order_number'))
         }
     }
 }
+
+/**
+ *  Declare compatibility with custom order tables for WooCommerce.
+ * 
+ *  @since 1.5.2
+ *  
+ */
+
+// Declare our support for the HPOS feature
+add_action( 'before_woocommerce_init', function() {
+	if ( class_exists( '\Automattic\WooCommerce\Utilities\FeaturesUtil' ) ) {
+		\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
+	}
+});

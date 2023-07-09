@@ -19,11 +19,11 @@ if ( ! defined( 'WPINC' ) ) {die;
 .wt_seq_widget_column_3{;text-align:left;vertical-align: text-top;position: relative;height:170px;}
 .wt_seq_installed_button{padding-left:10px;}
 .wt_seq_free_button{padding-left:10px;}
-.wt_seq_free_btn_a{}
+.wt_seq_free_btn_a{text-decoration: none;}
 .wt_seq_get_premium_btn {text-align:center;padding: 6px 1px 0px 1px;height:25px; width:100%; background: linear-gradient(90.67deg, #2608DF -34.86%, #3284FF 115.74%);box-shadow: 0px 4px 13px rgb(46 80 242 / 39%);border-radius: 5px;display: inline-block;font-style: normal;font-size: 12px;line-height: 18px;color: #FFFFFF;text-decoration: none;}
 .wt_seq_get_premium_btn:hover {box-shadow: 0px 3px 13px rgb(46 80 242 / 50%);text-decoration: none;transform: translateY(2px);transition: all .2s ease;color: #FFFFFF;}
-.wt_seq_installed_btn{height:30px;width:109px; border-style: solid;border-color: #2A2EEA;border-radius: 5px;color: #2A2EEA;}
-.wt_seq_free_btn{height:30px;width:109px; border-style: solid;border-color: #2A2EEA;border-radius: 5px;color: #2A2EEA;cursor: pointer;}
+.wt_seq_installed_btn{height:23px;padding-top: 6px;width:109px; border-style: solid;border-color: #2A2EEA;border-radius: 5px;color: #2A2EEA; text-align: center;}
+.wt_seq_free_btn{height:23px;width:109px; border-style: solid;border-color: #2A2EEA;border-radius: 5px;color: #2A2EEA;cursor: pointer;text-align: center;padding: 6px 1px 0px 1px;}
 </style>
 <script type="text/javascript">
     //hide save settings button in license section
@@ -45,6 +45,77 @@ $wf_admin_img_path = WT_SEQUENCIAL_ORDNUMBER_URL . 'admin/images/other_solutions
 
 /* Plugin lists array */
 $plugins=array(
+            'wt_ipc_addon' => array(
+            'title'         => __('WooCommerce PDF Invoices, Packing Slips and Credit Notes', 'wt-woocommerce-sequential-order-numbers'),
+            'description'   => __('Easily generate & print fully customized PDF Invoices, Packing Slips, and Credit Notes for your orders. Automatically send the documents to the recipients by attaching them to the order status emails.', 'wt-woocommerce-sequential-order-numbers'),
+            'image_url'     => 'wt_ipc_logo.png',
+            'premium_url'   => 'https://www.webtoffee.com/product/woocommerce-pdf-invoices-packing-slips/?utm_source=other_solution_page&utm_medium=free_plugin&utm_campaign=PDF_invoice',
+            'basic_url'     => '',
+            'pro_plugin'    => 'wt-woocommerce-invoice-addon/wt-woocommerce-invoice-addon.php',
+            'basic_plugin'  => '',
+        ),
+        'wt_sdd_addon' => array(
+            'title'         => __('WooCommerce Shipping Labels, Dispatch Labels and Delivery Notes', 'wt-woocommerce-sequential-order-numbers'),
+            'description'   => __('Automatically generate WooCommerce Shipping Labels, Dispatch Labels, and Delivery Notes with custom settings and layouts. Customize the label sizes and add extra product or order fields as required.', 'wt-woocommerce-sequential-order-numbers'),
+            'image_url'     => 'wt_sdd_logo.png',
+            'premium_url'   => 'https://www.webtoffee.com/product/woocommerce-shipping-labels-delivery-notes/?utm_source=other_solution_page&utm_medium=free_plugin&utm_campaign=Shipping_Label',
+            'basic_url'     => '',
+            'pro_plugin'    => 'wt-woocommerce-shippinglabel-addon/wt-woocommerce-shippinglabel-addon.php',
+            'basic_plugin'  => '',
+        ),
+        'wt_pl_addon' => array(
+            'title'         => __('WooCommerce Picklists', 'wt-woocommerce-sequential-order-numbers'),
+            'description'   => __('Customize, generate and print WooCommerce picklists for all orders on your store and automatically attach them to the order status emails. Add product variation data and other fields to the document.', 'wt-woocommerce-sequential-order-numbers'),
+            'image_url'     => 'wt_pl_logo.png',
+            'premium_url'   => 'https://www.webtoffee.com/product/woocommerce-picklist/?utm_source=other_solution_page&utm_medium=free_plugin&utm_campaign=Picklist',
+            'basic_url'     => '',
+            'pro_plugin'    => 'wt-woocommerce-picklist-addon/wt-woocommerce-picklist-addon.php',
+            'basic_plugin'  => '',
+        ),
+        'wt_pi_addon' => array(
+            'title'         => __('WooCommerce Proforma Invoices', 'wt-woocommerce-sequential-order-numbers'),
+            'description'   => __('Automate the generation of WooCommerce proforma invoices when new orders are placed and send them to your customers via order emails. Customize the layout and content of the invoice as per your needs.', 'wt-woocommerce-sequential-order-numbers'),
+            'image_url'     => 'wt_pi_logo.png',
+            'premium_url'   => 'https://www.webtoffee.com/product/woocommerce-proforma-invoice/?utm_source=other_solution_page&utm_medium=free_plugin&utm_campaign=Proforma_Invoice',
+            'basic_url'     => '',
+            'pro_plugin'    => 'wt-woocommerce-proforma-addon/wt-woocommerce-proforma-addon.php',
+            'basic_plugin'  => '',
+        ),
+        'wt_al_addon' => array(
+            'title'         => __('WooCommerce Address Labels', 'wt-woocommerce-sequential-order-numbers'),
+            'description'   => __('Generate address labels for all orders in your store and easily print them in bulk. Customize the label layout and create labels of different types (shipping, billing, return, from address) with ease.', 'wt-woocommerce-sequential-order-numbers'),
+            'image_url'     => 'wt_al_logo.png',
+            'premium_url'   => 'https://www.webtoffee.com/product/woocommerce-address-label/?utm_source=other_solution_page&utm_medium=free_plugin&utm_campaign=Address_Label',
+            'basic_url'     => '',
+            'pro_plugin'    => 'wt-woocommerce-addresslabel-addon/wt-woocommerce-addresslabel-addon.php',
+            'basic_plugin'  => '',
+        ),
+        'product_feed_sync' => array(
+            'title'         => __('WebToffee WooCommerce Product Feed & Sync Manager', 'wt-woocommerce-sequential-order-numbers'),
+            'description'   => __('Generate WooCommerce product feeds for Google Merchant Center and Facebook Business Manager. Use the Facebook catalog sync manager to sync WooCommerce products with Facebook and Instagram shops.', 'wt-woocommerce-sequential-order-numbers'),
+            'image_url'     => 'product-feed-sync.png',
+            'premium_url'   => 'https://www.webtoffee.com/product/product-catalog-sync-for-facebook/?utm_source=other_solution_page&utm_medium=free_plugin&utm_campaign=WooCommerce_Product_Feed',
+            'pro_plugin'    => 'webtoffee-product-feed-pro/webtoffee-product-feed-pro.php',
+            'basic_plugin'  => 'webtoffee-product-feed/webtoffee-product-feed.php',
+        ),
+        'request_quote' => array(
+            'title'         => __('WebToffee Woocommerce Request a Quote', 'wt-woocommerce-sequential-order-numbers'),
+            'description'   => __('Configure a fully optimized WooCommerce quote request set up in your store. Allow customers to request quotes and store managers to respond to them. Hide product prices, set up email alerts, and more.', 'wt-woocommerce-sequential-order-numbers'),
+            'image_url'     => 'request-quote.png',
+            'premium_url'   => 'https://www.webtoffee.com/product/woocommerce-request-a-quote/?utm_source=other_solution_page&utm_medium=free_plugin&utm_campaign=Request_Quote',
+            'basic_url'     => '',
+            'pro_plugin'    => 'wt-woo-request-quote/wt-woo-request-quote.php',
+            'basic_plugin'  => '',
+        ),
+        'diplay_discount' => array(
+            'title'         => __('Display Discounts for WooCommerce', 'wt-woocommerce-sequential-order-numbers'),
+            'description'   => __('Display the WooCommerce coupon deals available for each product on the respective product pages. Make use of multiple coupon layouts & display options to fully optimize the look & feel of the coupons.', 'wt-woocommerce-sequential-order-numbers'),
+            'image_url'     => 'display-discounts.png',
+            'premium_url'   => 'https://www.webtoffee.com/product/display-woocommerce-discounts/?utm_source=other_solution_page&utm_medium=free_plugin&utm_campaign=Display_Discounts',
+            'basic_url'     => '',
+            'pro_plugin'    => 'wt-display-discounts-for-woocommerce/wt-display-discounts-for-woocommerce.php',
+            'basic_plugin'  => '',
+        ),
         'best_sellers_plugin' => array(
             'title'         => __('WebToffee WooCommerce Best Sellers', 'wt-woocommerce-sequential-order-numbers'),
             'description'   => __('Highlight top-selling products on your WooCommerce store using best seller labels, sliders, and custom seals. You can display ranking positions for best-seller products in different categories.', 'wt-woocommerce-sequential-order-numbers'),
@@ -124,8 +195,8 @@ $plugins=array(
             'premium_url'   => 'https://www.webtoffee.com/product/woocommerce-import-export-suite/?utm_source=other_solution_page&utm_medium=free_plugin&utm_campaign=Import_Export_Suite',
             'basic_url'     => '',
             'pro_plugin'    => array(
-                'product'   => 'wt-import-export-for-woo-user/wt-import-export-for-woo-user.php',
-                'user'      => 'wt-import-export-for-woo-order/wt-import-export-for-woo-order.php',
+                'product'   => 'wt-import-export-for-woo-product/wt-import-export-for-woo-product.php',
+                'user'      => 'wt-import-export-for-woo-user/wt-import-export-for-woo-user.php',
                 'order'     => 'wt-import-export-for-woo-order/wt-import-export-for-woo-order.php',
                 ),
             'basic_plugin'  => '', 
@@ -239,9 +310,9 @@ $plugins=array(
 		            { 
                     ?>
                     <div class="wt_seq_installed_button">
-                        <button class="wt_seq_installed_btn">
+                        <div class="wt_seq_installed_btn">
                             <?php _e('Installed','wt-woocommerce-sequential-order-numbers'); ?>
-                        </button>
+                        </div>
                     </div>
                     <?php               
                     }elseif(isset($value['basic_plugin']) && "" !== $value['basic_plugin'] && !is_plugin_active($value['basic_plugin'])
@@ -250,9 +321,9 @@ $plugins=array(
                     ?>
                     <div class="wt_seq_free_button">
                         <a class="wt_seq_free_btn_a" href="<?php echo esc_url($value['basic_url']); ?>" target="_blank">
-                            <button class="wt_seq_free_btn">
+                            <div class="wt_seq_free_btn">
                                 <?php _e('Get Free Plugin','wt-woocommerce-sequential-order-numbers'); ?>
-                            </button>
+                            </div>
                         </a>
                     </div>
 
