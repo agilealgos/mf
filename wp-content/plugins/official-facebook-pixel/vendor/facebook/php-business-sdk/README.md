@@ -1,8 +1,8 @@
 # Facebook Business SDK for PHP
 
 [![Packagist](https://img.shields.io/packagist/v/facebook/php-business-sdk.svg?style=flat-square)](https://packagist.org/packages/facebook/php-business-sdk)
-[![License](https://img.shields.io/badge/license-Facebook%20Platform-blue.svg?style=flat-square)](https://github.com/facebook/facebook-php-business-sdk/blob/master/LICENSE)
-[![Build Status](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Ffacebook%2Ffacebook-php-business-sdk%2Fbadge%3Fref%3Dmaster&style=flat)](https://actions-badge.atrox.dev/facebook/facebook-php-business-sdk/goto?ref=master)
+[![License](https://img.shields.io/badge/license-Facebook%20Platform-blue.svg?style=flat-square)](https://github.com/facebook/facebook-php-business-sdk/blob/main/LICENSE)
+[![Build Status](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Ffacebook%2Ffacebook-php-business-sdk%2Fbadge%3Fref%3Dmaster&style=flat)](https://actions-badge.atrox.dev/facebook/facebook-php-business-sdk/goto?ref=main)
 [![Scrutinizer](https://img.shields.io/scrutinizer/g/facebook/facebook-php-business-sdk.svg?style=flat-square)](https://scrutinizer-ci.com/g/facebook/facebook-php-business-sdk)
 [![Scrutinizer Coverage](https://img.shields.io/scrutinizer/coverage/g/facebook/facebook-php-business-sdk.svg?style=flat-square)](https://scrutinizer-ci.com/g/facebook/facebook-php-business-sdk)
 
@@ -25,8 +25,7 @@ To manage the Marketing API, please visit your
 <a href="https://developers.facebook.com/apps/<YOUR APP ID>/dashboard"> App Dashboard </a>
 and add the <b>Marketing API</b> product to your app.
 
-**IMPORTANT**: For security, it is recommended that you turn on 'App Secret
-Proof for Server API calls' in your app's Settings->Advanced page.
+**IMPORTANT**: For security, it is recommended that you turn on 'Require App Secret' in your app's Settings->Advanced page.
 
 ### Obtain An Access Token
 
@@ -61,7 +60,7 @@ Add the following to your `composer.json` file:
 ```json
 {
     "require": {
-        "facebook/php-business-sdk": "5.0.5"
+        "facebook/php-business-sdk": "12.0.*"
     }
 }
 ```

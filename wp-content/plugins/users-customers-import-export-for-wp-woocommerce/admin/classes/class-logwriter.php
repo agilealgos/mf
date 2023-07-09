@@ -51,9 +51,9 @@ class Wt_Import_Export_For_Woo_Basic_Logwriter extends Wt_Import_Export_For_Woo_
 	*	@param string 	$action_type	action type
 	*	@param mixed 	$data			array/string of data to write
 	*/
-   public static function write_log( $post_type, $action_type, $data ) {
+        public static function write_log( $post_type, $action_type, $data ) {
 
-			//if ( Wt_Import_Export_For_Woo_Basic_Common_Helper::get_advanced_settings( 'enable_import_log' ) == 1 ) {
+			if ( Wt_Import_Export_For_Woo_Basic_Common_Helper::get_advanced_settings( 'enable_import_log' ) == 1 ) {
 				/**
 				 * 	Checks log file created for the current day
 				 */
@@ -73,7 +73,7 @@ class Wt_Import_Export_For_Woo_Basic_Logwriter extends Wt_Import_Export_For_Woo_
 				} else {
 					self::write_row( $date_string . " - " . $data );
 				}
-			//}
+			}
 	}
 
 		/**

@@ -32,6 +32,8 @@ class Wt_Import_Export_For_Woo_Basic_Export
 	public $default_export_method='';  /* configure this value in `advanced_setting_fields` method */
 	public $use_bom = true;
 	public $form_data=array();
+        public $validation_rule = array();
+        public $step_need_validation_filter = array();        
 
 	public function __construct()
 	{

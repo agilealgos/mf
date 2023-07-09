@@ -43,7 +43,9 @@ if (!function_exists( 'is_plugin_active' ) )
 
 if( is_plugin_active( 'woocommerce/woocommerce.php' ) ):
     
-	$columns['total_spent'] = 'total_spent';
+    $columns['orders'] = 'orders';    
+    $columns['total_spent'] = 'total_spent';    
+    $columns['aov'] = 'aov';
     $columns['billing_first_name'] = 'billing_first_name';
     $columns['billing_last_name'] = 'billing_last_name';
     $columns['billing_company'] = 'billing_company';

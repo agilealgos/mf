@@ -295,3 +295,73 @@ if(!function_exists('wt_iew_utf8ize_basic')){
         return $d;
     }
 }
+
+/**
+ * Outputs a HTML element with a star rating for a given rating.
+ *
+ * Outputs a HTML element with the star rating exposed on a 0..5 scale in
+ * half star increments (ie. 1, 1.5, 2 stars). Optionally, if specified, the
+ * number of ratings may also be displayed by passing the $number parameter.
+ *
+ * @since 3.8.0 - WP
+ * @since 4.4.0 Introduced the `echo` parameter. - WP
+ *
+ * @param array $args {
+ *     Optional. Array of star ratings arguments.
+ *
+ *     @type int|float $rating The rating to display, expressed in either a 0.5 rating increment,
+ *                             or percentage. Default 0.
+ *     @type string    $type   Format that the $rating is in. Valid values are 'rating' (default),
+ *                             or, 'percent'. Default 'rating'.
+ *     @type int       $number The number of ratings that makes up this rating. Default 0.
+ *     @type bool      $echo   Whether to echo the generated markup. False to return the markup instead
+ *                             of echoing it. Default true.
+ * }
+ * @return string Star rating HTML.
+ */
+if(!function_exists('wt_wp_star_rating')){
+function wt_wp_star_rating( $args = array() ) {
+	$defaults    = array(
+		'rating' => 0,
+		'type'   => 'rating',
+		'number' => 0,
+		'echo'   => true,
+	);
+	$parsed_args = wp_parse_args( $args, $defaults );
+
+	// Non-English decimal places when the $rating is coming from a string.
+	$rating = (float) str_replace( ',', '.', $parsed_args['rating'] );
+
+	// Convert percentage to star rating, 0..5 in .5 increments.
+	if ( 'percent' === $parsed_args['type'] ) {
+		$rating = round( $rating / 10, 0 ) / 2;
+	}
+
+	// Calculate the number of each type of star needed.
+	$full_stars  = floor( $rating );
+	$half_stars  = ceil( $rating - $full_stars );
+	$empty_stars = 5 - $full_stars - $half_stars;
+
+	if ( $parsed_args['number'] ) {
+		/* translators: 1: The rating, 2: The number of ratings. */
+		$format = _n( '%1$s rating based on %2$s rating', '%1$s rating based on %2$s ratings', $parsed_args['number'] );
+		$title  = sprintf( $format, number_format_i18n( $rating, 1 ), number_format_i18n( $parsed_args['number'] ) );
+	} else {
+		/* translators: %s: The rating. */
+		$title = sprintf( __( '%s rating' ), number_format_i18n( $rating, 1 ) );
+	}
+
+	$output  = '<div class="wt-star-rating">';
+	$output .= '<span class="screen-reader-text">' . $title . '</span>';
+	$output .= str_repeat( '<div class="wt-star wt-star-full" aria-hidden="true"></div>', $full_stars );
+	$output .= str_repeat( '<div class="wt-star wt-star-half" aria-hidden="true"></div>', $half_stars );
+	$output .= str_repeat( '<div class="wt-star wt-star-empty" aria-hidden="true"></div>', $empty_stars );
+	$output .= '</div>';
+
+	if ( $parsed_args['echo'] ) {
+		echo $output;
+	}
+
+	return $output;
+}
+}

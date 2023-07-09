@@ -38,8 +38,9 @@ $columns['last_update'] = array('title'=>'last_update','description'=>'');
 
 
 if( is_plugin_active( 'woocommerce/woocommerce.php' ) ):
-    
-    $columns['total_spent'] = array('title'=>'total_spent','description'=>'');	
+    $columns['orders'] = array('title'=>'orders','description'=>'');    
+    $columns['total_spent'] = array('title'=>'total_spent','description'=>'');    
+    $columns['aov'] = array('title'=>'aov','description'=>'');	
     $columns['billing_first_name'] = array('title'=>'Billing first name','description'=>'');
     $columns['billing_last_name'] = array('title'=>'Billing last name','description'=>'');
     $columns['billing_company'] = array('title'=>'Billing company','description'=>'');

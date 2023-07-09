@@ -290,7 +290,7 @@ wt_iew_popup={
 			}
 		});
 		jQuery('.wt_iew_popup_close, .wt_iew_popup_cancel, .wt_iew_popup_close_btn').unbind('click').click(function(){
-			jQuery('.wt_iew_overlay, .wt_iew_popup').hide();
+			jQuery('.wt_iew_overlay, .wt_iew_popup, .wt-something-went-wrong').hide();
 		});
 	}
 }

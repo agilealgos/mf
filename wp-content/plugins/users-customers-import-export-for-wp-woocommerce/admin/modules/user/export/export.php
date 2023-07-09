@@ -196,10 +196,20 @@ class Wt_Import_Export_For_Woo_basic_User_Export {
                 $customer_data[$key] = !empty($user->{$key}) ? base64_encode(json_encode(maybe_unserialize($user->{$key}))) : '';
                 continue;
             }
-            if ( 'total_spent' === $key ) {
-                $customer_data[$key] = !empty($user->ID) ? wc_get_customer_total_spent($user->ID) : '';
+            if ( 'orders' === $key ) {
+                $customer_data[$key] = !empty($user->ID) ? wc_get_customer_order_count($user->ID) : 0;
                 continue;
-            }			
+            }            
+            if ( 'total_spent' === $key ) {
+                $customer_data[$key] = !empty($user->ID) ? wc_get_customer_total_spent($user->ID) : 0.00;
+                continue;
+            }
+            if ( 'aov' === $key ) {
+                $total_spent = !empty($user->ID) ? wc_get_customer_total_spent($user->ID) : 0.00;
+                $order_count = !empty($user->ID) ? wc_get_customer_order_count($user->ID) : 0;
+                $customer_data[$key] = ( $order_count ) ? round( ( (float)$total_spent / (float)$order_count ), 2 ) : 0.00;
+                continue;
+            }	            
             if($key == $wpdb->prefix.'user_level'){
                 $customer_data[$key] = (!empty($user->{$key})) ? $user->{$key} : 0;
                 continue;

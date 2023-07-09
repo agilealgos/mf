@@ -42,7 +42,6 @@ class PageSubscribedFieldsValues extends AbstractEnum {
   const AWARDS = 'awards';
   const BIO = 'bio';
   const BIRTHDAY = 'birthday';
-  const BRANDED_CAMERA = 'branded_camera';
   const CATEGORY = 'category';
   const CHECKINS = 'checkins';
   const COMPANY_OVERVIEW = 'company_overview';
@@ -60,6 +59,7 @@ class PageSubscribedFieldsValues extends AbstractEnum {
   const HOURS = 'hours';
   const INBOX_LABELS = 'inbox_labels';
   const INVOICE_ACCESS_INVOICE_CHANGE = 'invoice_access_invoice_change';
+  const INVOICE_ACCESS_INVOICE_DRAFT_CHANGE = 'invoice_access_invoice_draft_change';
   const INVOICE_ACCESS_ONBOARDING_STATUS_ACTIVE = 'invoice_access_onboarding_status_active';
   const LEADGEN = 'leadgen';
   const LEADGEN_FAT = 'leadgen_fat';
@@ -87,7 +87,6 @@ class PageSubscribedFieldsValues extends AbstractEnum {
   const MESSAGING_HANDOVERS = 'messaging_handovers';
   const MESSAGING_OPTINS = 'messaging_optins';
   const MESSAGING_OPTOUTS = 'messaging_optouts';
-  const MESSAGING_PAGE_FEEDBACK = 'messaging_page_feedback';
   const MESSAGING_PAYMENTS = 'messaging_payments';
   const MESSAGING_POLICY_ENFORCEMENT = 'messaging_policy_enforcement';
   const MESSAGING_POSTBACKS = 'messaging_postbacks';

@@ -585,6 +585,12 @@ class Wt_Import_Export_For_Woo_Basic_History
 					{
 						@unlink($log_file_path);
 					}
+					$log_path=Wt_Import_Export_For_Woo_Basic_Log::$log_dir;
+					$wt_log_path = glob($log_path.'/'.$listv['id'].'_*.log');
+					if(isset($wt_log_path[0]) && !empty($wt_log_path[0]) && file_exists($wt_log_path[0]))
+					{
+						@unlink($wt_log_path[0]);
+					}
 				}
 			}	
 		}

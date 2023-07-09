@@ -27,6 +27,9 @@ foreach($form_fields as $key=>$value)
 	$before_form_field=(isset($value['before_form_field']) ? $value['before_form_field'] : '');
 	$merge_left=(isset($value['merge_left']) ? $value['merge_left'] : false); /* merge field td with left td */
 	$merge_right=(isset($value['merge_right']) ? $value['merge_right'] : false); /* merge field td with right td */
+		
+	$tip_description = ! empty( $value['tip_description'] ) ? $value['tip_description'] : '';	
+	
 	$colspan=1;
 	if($merge_left)
 	{
@@ -170,6 +173,13 @@ foreach($form_fields as $key=>$value)
 			?>
 				<th class="<?php echo $td_class1;?>">
 					<label><?php echo isset($value['label']) ? $value['label'] : ''; ?></label>
+					<?php
+					if ( $tip_description ) : ?>
+					<span class="dashicons dashicons-editor-help wt-iew-tips" 
+						data-wt-iew-tip="						
+						<span class='wt_iew_tooltip_span'><?php echo wp_kses_post( $tip_description );?> </span>">			
+					</span>
+					<?php endif; ?>					
 				</th>
 			<?php
 			}
@@ -179,6 +189,7 @@ foreach($form_fields as $key=>$value)
 				<?php
 				if($field_html=='')
 				{
+					
 					echo $before_form_field;
 					if($type=='text' || $type=='number' || $type=='password')
 					{

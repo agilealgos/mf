@@ -1,10 +1,10 @@
 === Meta pixel for WordPress ===
 Contributors: facebook
 Tags: Facebook, Facebook Conversion Pixel, Facebook Pixel, Facebook Pixel Events, Conversions API, facebook retargeting, facebook standard events, Meta, Meta pixel, Meta Conversion API,
-Requires at least: 4.4
-Tested up to: 6.0
-Requires PHP: 5.6
-Stable tag: 3.0.7
+Requires at least: 5.7
+Tested up to: 6.2
+Requires PHP: 7.2
+Stable tag: 3.0.11
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -54,6 +54,24 @@ If you get stuck, or have any questions, you can ask for help in the [Facebook f
 Of course! This plugin is open sourced on the Facebook Incubator GitHub. You can find the code and contribution instructions in the [plugin repository](https://github.com/facebookincubator/Facebook-Pixel-for-WordPress).
 
 == Changelog ==
+= 2023-06-13 version 3.0.12 =
+* Remove async processing from OpenBridge events
+* Get PII from session
+
+= 2023-05-22 version 3.0.11 =
+* Remove the dependency of Gravity Forms
+
+= 2023-04-25 version 3.0.10 =
+* Remove delays in firing pixel events
+* Upgrade to PHP SDK 16.0.*
+* Fix compatibility issues for PHP
+
+= 2023-04-03 version 3.0.9 =
+* Removed hard coded OpenBridge Javascript
+* Fix async events UserData key mapping. #32
+* Delay pixel events firing, to track engaged visitors
+* Bug Fixes
+
 = 2022-10-31 version 3.0.8 =
 * Fix PII drop when converting Pixel payload to Conversion API payload
 * Rebranded the extension from Facebook pixel to Meta pixel

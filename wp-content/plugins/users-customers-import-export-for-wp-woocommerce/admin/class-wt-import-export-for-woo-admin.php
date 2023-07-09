@@ -139,6 +139,8 @@ class Wt_Import_Export_For_Woo_Admin_Basic {
 				'sure'=>__('Are you sure?'),
 				'use_expression'=>__('Apply'),
 				'cancel'=>__('Cancel'),
+				'hide_features'=>__('Hide features'),
+				'show_features'=>__('Show features'),				
 			),
                         'pro_plugins' => array(
                             'order' => array(
@@ -189,7 +191,14 @@ class Wt_Import_Export_For_Woo_Admin_Basic {
                                 'icon_url' => WT_U_IEW_PLUGIN_URL.'assets/images/gopro/user-ie.svg',
 								'sample_csv_url' => "https://www.webtoffee.com/wp-content/uploads/2020/10/Sample_Users.csv",
 								'is_active' => true
-                            )
+                            ),
+                            'subscription' => array(
+                                'url' => "https://www.webtoffee.com/product/order-import-export-plugin-for-woocommerce/?utm_source=free_plugin_revamp&utm_medium=basic_revamp&utm_campaign=Order_Import_Export&utm_content=" . WT_U_IEW_VERSION,
+                                'name' => __('Order, Coupon, Subscription Export Import for WooCommerce'),
+                                'icon_url' => WT_U_IEW_PLUGIN_URL.'assets/images/gopro/order-ie.svg',
+								'sample_csv_url' => "https://www.webtoffee.com/wp-content/uploads/2021/04/Subscription_Sample_CSV.csv",
+								'is_active' => false
+                            ),							
                     )                    
 		);
 		wp_localize_script($this->plugin_name, 'wt_iew_basic_params', $params);
@@ -413,7 +422,8 @@ class Wt_Import_Export_For_Woo_Admin_Basic {
                     'product_categories'=>'product-import-export-for-woo', 
                     'product_tags'=>'product-import-export-for-woo',                     
                     'order'=>'order-import-export-for-woocommerce',
-                    'coupon'=>'order-import-export-for-woocommerce',                                        
+                    'coupon'=>'order-import-export-for-woocommerce',
+					'subscription'=>'order-import-export-for-woocommerce',
                 );
                 foreach ($addon_modules_basic as $module_key => $module_path)
                 {

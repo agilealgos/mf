@@ -226,6 +226,7 @@ class Wt_Import_Export_For_Woo_basic_User {
 			$arr['product_categories'] = __('Product Categories', 'users-customers-import-export-for-wp-woocommerce');
 			$arr['product_tags'] = __('Product Tags', 'users-customers-import-export-for-wp-woocommerce');
 			$arr['user'] = __('User/Customer', 'users-customers-import-export-for-wp-woocommerce');
+			$arr['subscription'] = __('Subscription', 'users-customers-import-export-for-wp-woocommerce');
 		}
 		return $arr;
     }
@@ -516,6 +517,7 @@ class Wt_Import_Export_For_Woo_basic_User {
             'value' => 0,
             'field_name' => 'export_guest_user',
             'help_text' => __('Enabling this option will include all guest customers in the export.'),
+			'tip_description' => __( 'Guest users here means the users who checked out from the site without creating an account, provided that the store settings allow guest user checkout. These user details won’t be available in the wp_user table from where our plugin export the user data. Thus we are extracting minimal data like address, email, etc, and whatever data that we can get from the woocommerce order details. Obviously, for these users, the columns like password, username, user created date, etc will be empty.' ),
         );
 		}
         

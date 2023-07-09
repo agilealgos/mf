@@ -89,7 +89,7 @@ class Wt_Import_Export_For_Woo_Basic_Csvreader
 	            		if(count($key_arr)>1)
 	            		{
 	            			$meta_key=$key_arr[0];
-	            			if(!isset($sample_data[$meta_key]))
+	            			if(!isset($sample_data[$meta_key]) || !is_array($sample_data[$meta_key]))
 	            			{
 	            				$sample_data[$meta_key]=array();
 	            			}

@@ -119,10 +119,12 @@ class PageFields extends AbstractEnum {
   const MEMBERS = 'members';
   const MERCHANT_ID = 'merchant_id';
   const MERCHANT_REVIEW_STATUS = 'merchant_review_status';
+  const MESSAGING_FEATURE_STATUS = 'messaging_feature_status';
   const MESSENGER_ADS_DEFAULT_ICEBREAKERS = 'messenger_ads_default_icebreakers';
   const MESSENGER_ADS_DEFAULT_PAGE_WELCOME_MESSAGE = 'messenger_ads_default_page_welcome_message';
   const MESSENGER_ADS_DEFAULT_QUICK_REPLIES = 'messenger_ads_default_quick_replies';
   const MESSENGER_ADS_QUICK_REPLIES_TYPE = 'messenger_ads_quick_replies_type';
+  const MINI_SHOP_STOREFRONT = 'mini_shop_storefront';
   const MISSION = 'mission';
   const MPG = 'mpg';
   const NAME = 'name';
@@ -131,6 +133,7 @@ class PageFields extends AbstractEnum {
   const NEW_LIKE_COUNT = 'new_like_count';
   const OFFER_ELIGIBLE = 'offer_eligible';
   const OVERALL_STAR_RATING = 'overall_star_rating';
+  const OWNER_BUSINESS = 'owner_business';
   const PAGE_TOKEN = 'page_token';
   const PARENT_PAGE = 'parent_page';
   const PARKING = 'parking';
@@ -266,10 +269,12 @@ class PageFields extends AbstractEnum {
       'members' => 'string',
       'merchant_id' => 'string',
       'merchant_review_status' => 'string',
+      'messaging_feature_status' => 'MessagingFeatureStatus',
       'messenger_ads_default_icebreakers' => 'list<string>',
       'messenger_ads_default_page_welcome_message' => 'MessengerDestinationPageWelcomeMessage',
       'messenger_ads_default_quick_replies' => 'list<string>',
       'messenger_ads_quick_replies_type' => 'string',
+      'mini_shop_storefront' => 'Shop',
       'mission' => 'string',
       'mpg' => 'string',
       'name' => 'string',
@@ -278,6 +283,7 @@ class PageFields extends AbstractEnum {
       'new_like_count' => 'unsigned int',
       'offer_eligible' => 'bool',
       'overall_star_rating' => 'float',
+      'owner_business' => 'Business',
       'page_token' => 'string',
       'parent_page' => 'Page',
       'parking' => 'PageParking',

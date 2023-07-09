@@ -38,7 +38,9 @@ use FacebookAds\Enum\AbstractEnum;
 class WhatsAppBusinessAccountTasksValues extends AbstractEnum {
 
   const DEVELOP = 'DEVELOP';
+  const FULL_CONTROL = 'FULL_CONTROL';
   const MANAGE = 'MANAGE';
+  const MANAGE_EXTENSIONS = 'MANAGE_EXTENSIONS';
   const MANAGE_PHONE = 'MANAGE_PHONE';
   const MANAGE_TEMPLATES = 'MANAGE_TEMPLATES';
   const MESSAGING = 'MESSAGING';

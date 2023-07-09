@@ -5,10 +5,10 @@
   Description: Export and Import User/Customers details From and To your WordPress/WooCommerce.
   Author: WebToffee
   Author URI: https://www.webtoffee.com/product/wordpress-users-woocommerce-customers-import-export/
-  Version: 2.3.7
+  Version: 2.4.1
   Text Domain: users-customers-import-export-for-wp-woocommerce
   Domain Path: /languages
-  WC tested up to: 7.2
+  WC tested up to: 7.8
   Requires at least: 3.0
   Requires PHP: 5.6
   License: GPLv3
@@ -48,20 +48,14 @@ if (!defined('WT_IEW_DEBUG_BASIC_TROUBLESHOOT')) {
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
-define('WT_U_IEW_VERSION', '2.3.7');
+define('WT_U_IEW_VERSION', '2.4.1');
 
 /**
  * The code that runs during plugin activation.
  * This action is documented in includes/class-wt-import-export-for-woo-activator.php
  */
 function activate_wt_import_export_for_woo_basic_user() {
-//        if(is_plugin_active('wt-import-export-for-woo-user/wt-import-export-for-woo-user.php')){           
-//            deactivate_plugins( basename( __FILE__ ) );
-//            wp_die(
-//                    '<p>'.__("Is everything fine? You already have the Premium version installed in your website. For any issues, kindly raise a ticket via <a target='_blank' href='https://www.webtoffee.com/support/'>support</a>")
-//                    . '</p> <a href="' . admin_url( 'plugins.php' ) . '">' . __( 'go back') . '</a>'
-//            );
-//        }    
+   
     require_once plugin_dir_path(__FILE__) . 'includes/class-wt-import-export-for-woo-activator.php';
     Wt_Import_Export_For_Woo_Basic_Activator_User::activate();
 }
@@ -245,3 +239,23 @@ function export_csv_linkin_user_listing_page($which) {
 }
 
 add_filter('manage_users_extra_tablenav', 'export_csv_linkin_user_listing_page');
+
+/*
+ * Add CSS for Pro Upgrade link in export/import menu
+ */
+add_action('admin_head', 'wt_pro_upgrad_link');
+
+if (!function_exists('wt_pro_upgrad_link')) {
+
+	function wt_pro_upgrad_link() {
+		echo '<style>.wp-submenu li span.wt-go-premium {font-weight: 700;color: #28e499;} </style>';
+	}
+
+}
+
+// HPOS compatibility decleration
+add_action( 'before_woocommerce_init', function() {
+	if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
+		\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
+	}
+} );

@@ -35,6 +35,8 @@ class Wt_Import_Export_For_Woo_Basic_Import
 	public $form_data=array();
 	public $temp_import_file='';
 	private $to_process='';
+        public $allowed_import_file_type_mime=array();
+        public $step_need_validation_filter=array();        
 
 	public function __construct()
 	{

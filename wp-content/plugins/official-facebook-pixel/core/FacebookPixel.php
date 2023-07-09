@@ -52,13 +52,13 @@ class FacebookPixel {
 n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
 n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
 t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
-document,'script','https://connect.facebook.net/en_US/fbevents.js');
+document,'script','https://connect.facebook.net/en_US/fbevents.js?v=next');
 </script>
 <!-- End Meta Pixel Code -->
 ";
 
   private static $pixelFbqCodeWithoutScript = "
-  fbq('%s', '%s'%s%s);
+    fbq('%s', '%s'%s%s);
   ";
 
   private static $pixelNoscriptCode = "
@@ -96,6 +96,25 @@ src=\"https://www.facebook.com/tr?id=%s&ev=%s%s&noscript=1\" />
   }
 
   /**
+   * Gets OpenBridge set config code
+   */
+
+  public static function getOpenBridgeConfigCode(){
+    if (empty(self::$pixelId)) {
+      return;
+    }
+
+    $code = "
+      <script type='text/javascript'>
+        var url = window.location.href + '?ob=open-bridge';
+        fbq('set', 'openbridge', '%s', url);
+      </script>
+    ";
+    return sprintf($code, self::$pixelId);
+   }
+
+
+  /**
    * Gets FB pixel init code
    */
   public static function getPixelInitCode($agent_string, $param = array(), $with_script_tag = true) {
@@ -103,9 +122,11 @@ src=\"https://www.facebook.com/tr?id=%s&ev=%s%s&noscript=1\" />
       return;
     }
 
+    $pixelFbqCodeWithoutScript = "fbq('%s', '%s'%s%s)";
+
     $code = $with_script_tag
-    ? "<script type='text/javascript'>" . self::$pixelFbqCodeWithoutScript . "</script>"
-    : self::$pixelFbqCodeWithoutScript;
+    ? "<script type='text/javascript'>" . $pixelFbqCodeWithoutScript . "</script>"
+    : $pixelFbqCodeWithoutScript;
     $param_str = $param;
     if (is_array($param)) {
       $param_str = json_encode($param, JSON_PRETTY_PRINT | JSON_FORCE_OBJECT);
@@ -148,45 +169,6 @@ src=\"https://www.facebook.com/tr?id=%s&ev=%s%s&noscript=1\" />
       $event,
       ', ' . $param_str,
       '');
-  }
-
-  /**
-   * Loads open_bridge configs
-   */
-  public static function getOpenBridgeConfiguration() {
-    $pixelId = self::$pixelId;
-    $eventsFilter = FacebookWordpressOptions::getCapiIntegrationEventsFilter();
-    $obFilePath = plugins_url( '../js/openbridge_plugin.js', __FILE__ );
-
-    return <<<EOT
-    <script type='text/javascript'>
-
-      function updateConfig() {
-        var eventsFilter = "$eventsFilter";
-        var eventsFilterList = eventsFilter.split(',');
-        fbq.instance.pluginConfig.set("$pixelId", 'openbridge',
-          {'endpoints':
-            [{
-              'targetDomain': window.location.href,
-              'endpoint': window.location.href + '.open-bridge'
-            }],
-            'eventsFilter': {
-              'eventNames':eventsFilterList,
-              'filteringMode':'blocklist'
-            }
-          }
-        );
-        fbq.instance.configLoaded("$pixelId");
-      }
-
-      window.onload = function() {
-        var s = document.createElement('script');
-        s.setAttribute('src', "$obFilePath");
-        s.setAttribute('onload', 'updateConfig()');
-        document.body.appendChild( s );
-      }
-    </script>
-EOT;
   }
 
   /**
