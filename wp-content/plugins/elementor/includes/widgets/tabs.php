@@ -99,7 +99,7 @@ class Widget_Tabs extends Widget_Base {
 		$repeater->add_control(
 			'tab_title',
 			[
-				'label' => esc_html__( 'Title & Description', 'elementor' ),
+				'label' => esc_html__( 'Title', 'elementor' ),
 				'type' => Controls_Manager::TEXT,
 				'default' => esc_html__( 'Tab Title', 'elementor' ),
 				'placeholder' => esc_html__( 'Tab Title', 'elementor' ),
@@ -117,7 +117,6 @@ class Widget_Tabs extends Widget_Base {
 				'default' => esc_html__( 'Tab Content', 'elementor' ),
 				'placeholder' => esc_html__( 'Tab Content', 'elementor' ),
 				'type' => Controls_Manager::WYSIWYG,
-				'show_label' => false,
 			]
 		);
 
@@ -276,9 +275,8 @@ class Widget_Tabs extends Widget_Base {
 			[
 				'label' => esc_html__( 'Border Width', 'elementor' ),
 				'type' => Controls_Manager::SLIDER,
-				'size_units' => [ 'px', '%', 'em' ],
+				'size_units' => [ 'px', '%', 'em', 'rem', 'vw', 'custom' ],
 				'default' => [
-					'unit' => 'px',
 					'size' => 1,
 				],
 				'range' => [
