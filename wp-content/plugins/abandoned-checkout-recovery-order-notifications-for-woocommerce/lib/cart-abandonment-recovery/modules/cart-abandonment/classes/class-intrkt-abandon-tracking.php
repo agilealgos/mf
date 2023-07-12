@@ -185,13 +185,17 @@ class INTRKT_ABANDON_Tracking {
 				}
 				$other_fields = unserialize( $result->other_fields );
 
-				$parts = explode( ',', $other_fields['INTRKT_location'] );
-				if ( count( $parts ) > 1 ) {
-					$country = $parts[0];
-					$city    = trim( $parts[1] );
-				} else {
-					$country = $parts[0];
-					$city    = '';
+				$country = '';
+				$city    = '';
+				if ( isset( $other_fields['INTRKT_location'] ) ) {
+					$parts = explode( ',', $other_fields['INTRKT_location'] );
+					if ( count( $parts ) > 1 ) {
+						$country = $parts[0];
+						$city    = trim( $parts[1] );
+					} else {
+						$country = $parts[0];
+						$city    = '';
+					}
 				}
 
 				foreach ( $other_fields as $key => $value ) {
