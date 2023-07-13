@@ -82,7 +82,7 @@ class SCFW_SizeChart_User_Feedback
     public function scfw_seconds_to_words( $seconds )
     {
         // Get the years.
-        $years = intval( $seconds ) / YEAR_IN_SECONDS % 100;
+        $years = (int) round( intval( $seconds ) / YEAR_IN_SECONDS ) % 100;
         
         if ( $years > 1 ) {
             /* translators: Number of years */
@@ -92,7 +92,7 @@ class SCFW_SizeChart_User_Feedback
         }
         
         // Get the weeks.
-        $weeks = intval( $seconds ) / WEEK_IN_SECONDS % 52;
+        $weeks = (int) round( intval( $seconds ) / WEEK_IN_SECONDS ) % 52;
         
         if ( $weeks > 1 ) {
             /* translators: Number of weeks */
@@ -102,7 +102,7 @@ class SCFW_SizeChart_User_Feedback
         }
         
         // Get the days.
-        $days = intval( $seconds ) / DAY_IN_SECONDS % 7;
+        $days = (int) round( intval( $seconds ) / DAY_IN_SECONDS ) % 7;
         
         if ( $days > 1 ) {
             /* translators: Number of days */
@@ -112,7 +112,7 @@ class SCFW_SizeChart_User_Feedback
         }
         
         // Get the hours.
-        $hours = intval( $seconds ) / HOUR_IN_SECONDS % 24;
+        $hours = (int) round( intval( $seconds ) / HOUR_IN_SECONDS ) % 24;
         
         if ( $hours > 1 ) {
             /* translators: Number of hours */
@@ -122,7 +122,7 @@ class SCFW_SizeChart_User_Feedback
         }
         
         // Get the minutes.
-        $minutes = intval( $seconds ) / MINUTE_IN_SECONDS % 60;
+        $minutes = (int) round( intval( $seconds ) / MINUTE_IN_SECONDS ) % 60;
         
         if ( $minutes > 1 ) {
             /* translators: Number of minutes */
@@ -166,10 +166,12 @@ class SCFW_SizeChart_User_Feedback
      */
     public function scfw_display_admin_notice()
     {
+        $get_page = filter_input( INPUT_GET, 'page', FILTER_SANITIZE_SPECIAL_CHARS );
         $screen = get_current_screen();
+        $current_page = ( isset( $get_page ) && !empty($get_page) ? 'post_type=size-chart&page=' . $get_page : 'post_type=size-chart' );
         
         if ( isset( $screen->base ) && ('plugins' === $screen->base || 'edit-size-chart' === $screen->id) ) {
-            $no_bug_url = wp_nonce_url( admin_url( 'plugins.php?' . $this->nobug_option . '=true' ), 'editorsSizeChart-feedback-nounce' );
+            $no_bug_url = wp_nonce_url( admin_url( 'edit.php?' . $current_page . '&' . $this->nobug_option . '=true' ), 'editorsSizeChart-feedback-nounce' );
             $time = $this->scfw_seconds_to_words( time() - get_site_option( $this->date_option ) );
             ?>
 
@@ -290,7 +292,7 @@ class SCFW_SizeChart_User_Feedback
             /* translators: 1. Name, 2. Time */
             ?>
 							<?php 
-            printf( esc_html__( 'You have been using %1$s for %2$s now. Mind leaving a review to let us know know what you think? We\'d really appreciate it!', 'size-chart-for-woocommerce' ), esc_html( $this->name ), esc_html( $time ) );
+            printf( esc_html__( 'You have been using %1$s for %2$s now. Mind leaving a review to let us know what you think? We\'d really appreciate it!', 'size-chart-for-woocommerce' ), esc_html( $this->name ), esc_html( $time ) );
             ?>
 						</p>
 					</div>

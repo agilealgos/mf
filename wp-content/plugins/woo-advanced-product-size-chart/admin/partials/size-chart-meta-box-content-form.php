@@ -160,60 +160,6 @@ esc_attr_e( 'Upload', 'size-chart-for-woocommerce' );
 ?>" disabled/>
         </div>
     </div>
-
-    <!-- <div id="field">
-        <div class="field-title">
-            <h4>
-                <label for="chart-attributes">
-					<?php 
-//esc_html_e( 'Chart Attributes', 'size-chart-for-woocommerce' );
-?>
-                </label>
-            </h4>
-        </div>
-        <div class="field-description">
-			<?php 
-//esc_html_e( 'Select attributes for chart to appear on.', 'size-chart-for-woocommerce' );
-?>
-        </div>
-        <div class="field-item">
-            <select name="chart-attributes[]" id="chart-attributes" multiple="multiple">
-                <?php 
-// $all_attributes = wc_get_attribute_taxonomies();
-// if ( is_array( $all_attributes ) && ! empty( $all_attributes ) ) {
-//     foreach ( $all_attributes as $attribute ) {
-?>
-                            <optgroup label="<?php 
-//echo esc_attr( $attribute->attribute_label );
-?>">
-                                <?php 
-// Get its value for currnt attribute
-// $attribute_values = get_terms("pa_" . $attribute->attribute_name, array('hide_empty' => false));
-// if ( ! empty( $attribute_values ) ) {
-//     foreach ( $attribute_values as $value ) {
-?>
-                                            <option value="<?php 
-//echo esc_attr($value->term_id);
-?>" <?php 
-//selected( true, in_array( $value->term_id, $chart_attributes, true ), true );
-?>>
-                                                <?php 
-//echo esc_html($value->name)
-?>
-                                            </option>
-                                        <?php 
-// }
-// }
-?>
-                            </optgroup>
-                        <?php 
-//     }
-// }
-?>
-            </select>
-        </div>
-    </div> -->
-
     <div id="field">
         <div class="field-title">
             <h4>
@@ -415,7 +361,7 @@ if ( scfw_fs()->is__premium_only() && scfw_fs()->can_use_premium_code() ) {
                 <select id="chart-country" name="chart-country[]" multiple="multiple">
                     <?php 
     foreach ( $countries as $country_code => $country_name ) {
-        $selected = ( !empty($chart_country) && in_array( $country_code, $chart_country ) ? 'selected=selected' : '' );
+        $selected = ( !empty($chart_country) && in_array( $country_code, $chart_country, true ) ? 'selected=selected' : '' );
         ?>
                         <option value="<?php 
         echo  esc_attr( $country_code ) ;

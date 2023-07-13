@@ -64,7 +64,7 @@ admin_url( 'admin.php?page=size-chart-setting-page' );
 ?>" enctype="multipart/form-data">
 			<?php 
 wp_nonce_field( "size_chart_page" );
-$get_page = filter_input( INPUT_GET, 'page', FILTER_SANITIZE_STRING );
+$get_page = filter_input( INPUT_GET, 'page', FILTER_SANITIZE_SPECIAL_CHARS );
 
 if ( 'edit.php' === $pagenow && 'size-chart-setting-page' === $get_page ) {
     $available_in_pro_text = __( '(Available in Pro Version) ', 'size-chart-for-woocommerce' );
@@ -96,7 +96,7 @@ if ( 'edit.php' === $pagenow && 'size-chart-setting-page' === $get_page ) {
                         </legend>
                         <div class="setting-description">
                             <p><?php 
-    esc_html_e( 'Select user roles to whome grant the access to manage(Add, Update, Delete) size chart. ', 'size-chart-for-woocommerce' );
+    esc_html_e( 'Select user roles to whom grant the access to manage (Add, Update, Delete) size chart. ', 'size-chart-for-woocommerce' );
     ?></p>
                             <?php 
     echo  esc_html( $available_in_pro_text ) ;
@@ -123,7 +123,7 @@ if ( 'edit.php' === $pagenow && 'size-chart-setting-page' === $get_page ) {
                     
                     if ( !empty($size_chart_get_user_roles) ) {
                         
-                        if ( in_array( $role, $size_chart_get_user_roles ) ) {
+                        if ( in_array( $role, $size_chart_get_user_roles, true ) ) {
                             $selected = 'selected';
                         } else {
                             $selected = '';
