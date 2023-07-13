@@ -14,17 +14,17 @@
  * @wordpress-plugin
  * Plugin Name:       Points and Rewards for WooCommerce
  * Description:       <code><strong>Points and Rewards for WooCommerce</strong></code> plugin allow merchants to reward their loyal customers with referral rewards points on store activities. <a href="https://wpswings.com/woocommerce-plugins/?utm_source=wpswings-shop-page&utm_medium=par-org-backend&utm_campaign=more-plugin" target="_blank"> Elevate your e-commerce store by exploring more on <strong> WP Swings </strong></a>
- * Version:           1.4.0
+ * Version:           1.7.0
  * Author:            WP Swings
  * Author URI:        https://wpswings.com/?utm_source=wpswings-par-official&utm_medium=par-org-backend&utm_campaign=official
  * Plugin URI:        https://wordpress.org/plugins/points-and-rewards-for-woocommerce/
  * Text Domain:       points-and-rewards-for-woocommerce
  * Domain Path:       /languages
  *
- * Requires at least    : 5.1.0
- * Tested up to         : 6.1.1
- * WC requires at least : 5.1.0
- * WC tested up to      : 7.3.0
+ * Requires at least    : 5.5.0
+ * Tested up to         : 6.2.2
+ * WC requires at least : 5.5.0
+ * WC tested up to      : 7.8.0
  *
  * License:           GNU General Public License v3.0
  * License URI:       https://www.gnu.org/licenses/gpl-3.0.html
@@ -32,7 +32,7 @@
 
 // If this file is called directly, abort.
 if ( ! defined( 'ABSPATH' ) ) {
-	die;
+	exit;
 }
 
 require_once ABSPATH . 'wp-admin/includes/plugin.php';
@@ -46,12 +46,15 @@ if ( isset( $plug['ultimate-woocommerce-points-and-rewards/ultimate-woocommerce-
 }
 
 // To Activate plugin only when WooCommerce is active.
-$activated = false;
-// Check if WooCommerce is active.
-include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
+$activated      = true;
+$active_plugins = (array) get_option( 'active_plugins', array() );
 
-if ( is_plugin_active( 'woocommerce/woocommerce.php' ) ) {
-	$activated = true;
+// Multisite Compatibility.
+if ( is_multisite() ) {
+	$active_plugins = array_merge( $active_plugins, get_site_option( 'active_sitewide_plugins', array() ) );
+}
+if ( ! ( array_key_exists( 'woocommerce/woocommerce.php', $active_plugins ) || in_array( 'woocommerce/woocommerce.php', $active_plugins ) ) ) {
+	$activated = false;
 }
 
 $plug = get_plugins();
@@ -64,7 +67,7 @@ if ( $activated ) {
 	 */
 	function define_rewardeem_woocommerce_points_rewards_constants() {
 
-		rewardeem_woocommerce_points_rewards_constants( 'REWARDEEM_WOOCOMMERCE_POINTS_REWARDS_VERSION', '1.4.0' );
+		rewardeem_woocommerce_points_rewards_constants( 'REWARDEEM_WOOCOMMERCE_POINTS_REWARDS_VERSION', '1.7.0' );
 		rewardeem_woocommerce_points_rewards_constants( 'WPS_RWPR_DIR_PATH', plugin_dir_path( __FILE__ ) );
 		rewardeem_woocommerce_points_rewards_constants( 'WPS_RWPR_DIR_URL', plugin_dir_url( __FILE__ ) );
 		rewardeem_woocommerce_points_rewards_constants( 'WPS_RWPR_HOME_URL', admin_url() );
@@ -99,10 +102,11 @@ if ( $activated ) {
 		if ( strpos( $file, 'points-rewards-for-woocommerce.php' ) !== false ) {
 
 			$row_meta = array(
-				'demo'     => '<a target="_blank" href="https://demo.wpswings.com/points-and-rewards-for-woocommerce-pro/?utm_source=wpswings-par-demo&utm_medium=par-org-backend&utm_campaign=par-demo"><i class="fas fa-laptop"></i><img src="' . esc_html( WPS_RWPR_DIR_URL ) . 'admin/images/Demo.svg" class="wps-info-img" alt="Demo image">' . esc_html__( 'Demo', 'points-and-rewards-for-woocommerce' ) . '</a>',
-				'docs'     => '<a target="_blank" href="https://docs.wpswings.com/points-and-rewards-for-woocommerce/?utm_source=wpswings-par-doc&utm_medium=par-org-backend&utm_campaign=par-doc"><i class="far fa-file-alt"></i><img src="' . esc_html( WPS_RWPR_DIR_URL ) . 'admin/images/Documentation.svg" class="wps-info-img" alt="Demo image">' . esc_html__( 'Documentation', 'points-and-rewards-for-woocommerce' ) . '</a>',
-				'support'  => '<a target="_blank" href="https://wpswings.com/submit-query/?utm_source=wpswings-par-query&utm_medium=par-org-backend&utm_campaign=submit-query"><i class="fas fa-user-ninja"></i><img src="' . esc_html( WPS_RWPR_DIR_URL ) . 'admin/images/Support.svg" class="wps-info-img" alt="Demo image">' . esc_html__( 'Support', 'points-and-rewards-for-woocommerce' ) . '</a>',
-				'services' => '<a target="_blank" href="https://wpswings.com/woocommerce-services/?utm_source=wpswings-par-services&utm_medium=par-org-backend&utm_campaign=woocommerce-services"><i class="fas fa-user-ninja"></i><img src="' . esc_html( WPS_RWPR_DIR_URL ) . 'admin/images/Services.svg" class="wps-info-img" alt="Demo image">' . esc_html__( 'Services', 'points-and-rewards-for-woocommerce' ) . '</a>',
+				'demo'     => '<a target="_blank" href="https://demo.wpswings.com/points-and-rewards-for-woocommerce-pro/?utm_source=wpswings-par-demo&utm_medium=par-org-backend&utm_campaign=par-demo"><i></i><img src="' . esc_html( WPS_RWPR_DIR_URL ) . 'admin/images/Demo.svg" class="wps-info-img" alt="Demo image">' . esc_html__( 'Demo', 'points-and-rewards-for-woocommerce' ) . '</a>',
+				'docs'     => '<a target="_blank" href="https://docs.wpswings.com/points-and-rewards-for-woocommerce/?utm_source=wpswings-par-doc&utm_medium=par-org-backend&utm_campaign=par-doc"><i></i><img src="' . esc_html( WPS_RWPR_DIR_URL ) . 'admin/images/Documentation.svg" class="wps-info-img" alt="Demo image">' . esc_html__( 'Documentation', 'points-and-rewards-for-woocommerce' ) . '</a>',
+				'videos'   => '<a target="_blank" href="https://www.youtube.com/watch?v=WWktrnAI88U&list=PLwUHVEkPKlHlxoQ27Qxkd8buLx_LPtPBh&index=1"><i></i><img src="' . esc_html( WPS_RWPR_DIR_URL ) . 'admin/images/wps-youtube.svg" class="wps-wpr-img-youtube" alt="Demo image">' . esc_html__( 'Video', 'points-and-rewards-for-woocommerce' ) . '</a>',
+				'support'  => '<a target="_blank" href="https://wpswings.com/submit-query/?utm_source=wpswings-par-query&utm_medium=par-org-backend&utm_campaign=submit-query"><i></i><img src="' . esc_html( WPS_RWPR_DIR_URL ) . 'admin/images/Support.svg" class="wps-info-img" alt="Demo image">' . esc_html__( 'Support', 'points-and-rewards-for-woocommerce' ) . '</a>',
+				'services' => '<a target="_blank" href="https://wpswings.com/woocommerce-services/?utm_source=wpswings-par-services&utm_medium=par-org-backend&utm_campaign=woocommerce-services"><i></i><img src="' . esc_html( WPS_RWPR_DIR_URL ) . 'admin/images/Services.svg" class="wps-info-img" alt="Demo image">' . esc_html__( 'Services', 'points-and-rewards-for-woocommerce' ) . '</a>',
 			);
 			return array_merge( $links, $row_meta );
 		}
@@ -160,6 +164,7 @@ if ( $activated ) {
 		}
 	}
 	add_shortcode( 'MYCURRENTUSERLEVEL', 'wps_wpr_mycurrentlevel_shortcode' );
+
 	/**
 	 * Display your Current Level by using shortcode
 	 *
@@ -183,6 +188,7 @@ if ( $activated ) {
 		}
 	}
 	add_shortcode( 'SIGNUPNOTIFICATION', 'wps_wpr_signupnotif_shortcode' );
+
 	/**
 	 * Display the SIgnup Notification by using shortcode
 	 *
@@ -232,7 +238,6 @@ if ( $activated ) {
 		$my_link = array(
 			'settings' => '<a href="' . admin_url( 'admin.php?page=wps-rwpr-setting' ) . '">' . esc_html__( 'Settings', 'points-and-rewards-for-woocommerce' ) . '</a>',
 		);
-
 		$mfw_plugins = get_plugins();
 		if ( ! isset( $mfw_plugins['ultimate-woocommerce-points-and-rewards/ultimate-woocommerce-points-and-rewards.php'] ) ) {
 
@@ -261,9 +266,9 @@ if ( $activated ) {
 		$wp_date     = date_i18n( $date_format, $saved_date );
 		$wp_time     = date_i18n( $time_format, $saved_date );
 		$return_date = $wp_date . ' ' . $wp_time;
-
 		return $return_date;
 	}
+
 	if ( ! function_exists( 'array_key_first' ) ) {
 		/**
 		 * This function is used to return the first key
@@ -283,21 +288,61 @@ if ( $activated ) {
 
 	register_activation_hook( __FILE__, 'wps_wpr_flush_rewrite_rules' );
 	register_deactivation_hook( __FILE__, 'wps_wpr_flush_rewrite_rules' );
+
 	/**
-	 * This function is used to create tabs
+	 * This function is used to create points tab.
 	 *
-	 * @name wps_wpr_flush_rewrite_rules
-	 * @since 1.1.0.
-	 * @author WP Swings <webmaster@wpswings.com>
-	 * @link https://www.wpswings.com/
+	 * @param string $network_wide network_wide.
+	 * @return void
 	 */
-	function wps_wpr_flush_rewrite_rules() {
+	function wps_wpr_flush_rewrite_rules( $network_wide ) {
 
-		add_rewrite_endpoint( 'points', EP_PAGES );
-		add_rewrite_endpoint( 'view-log', EP_PAGES );
-		flush_rewrite_rules();
+		// Multisite compatibility.
+		global $wpdb;
+		if ( is_multisite() && $network_wide ) {
+			// Get all blogs in the network and activate plugin on each one.
+			$blog_ids = $wpdb->get_col( "SELECT blog_id FROM $wpdb->blogs" );
+			foreach ( $blog_ids as $blog_id ) {
+				switch_to_blog( $blog_id );
 
+				add_rewrite_endpoint( 'points', EP_PAGES );
+				add_rewrite_endpoint( 'view-log', EP_PAGES );
+				flush_rewrite_rules();
+
+				restore_current_blog();
+			}
+		} else {
+
+			add_rewrite_endpoint( 'points', EP_PAGES );
+			add_rewrite_endpoint( 'view-log', EP_PAGES );
+			flush_rewrite_rules();
+		}
 	}
+
+	/**
+	 * Add endpoints when a new blog is created.
+	 *
+	 * @param object $new_site New site object.
+	 * @return void
+	 */
+	function wps_wpr_on_create_blogs( $new_site ) {
+
+		if ( ! function_exists( 'is_plugin_active_for_network' ) ) {
+			require_once ABSPATH . '/wp-admin/includes/plugin.php';
+		}
+
+		if ( is_plugin_active_for_network( 'points-rewards-for-woocommerce/points-rewards-for-woocommerce.php' ) ) {
+			$blog_id = $new_site->blog_id;
+			switch_to_blog( $blog_id );
+
+			add_rewrite_endpoint( 'points', EP_PAGES );
+			add_rewrite_endpoint( 'view-log', EP_PAGES );
+			flush_rewrite_rules();
+
+			restore_current_blog();
+		}
+	}
+	add_action( 'wp_initialize_site', 'wps_wpr_on_create_blogs', 900 );
 
 	/**
 	 * Wps_wpr_convert_db_keys function
@@ -307,21 +352,22 @@ if ( $activated ) {
 	function wps_wpr_convert_db_keys() {
 		$wps_check_key_exist = get_option( 'wps_par_org_convert_keys', false );
 		if ( ! $wps_check_key_exist && function_exists( 'wps_wpr_convert_db_keys' ) ) {
-				wps_normal_update_option();
-				wps_general_settings_update_option();
-				wps_per_currency_update_option();
-				wps_points_notification_update_option();
-				wps_add_points_membership_option();
-				wps_wpr_assign_points();
-				wps_wp_other_settings();
-				wps_order_total_migrate();
-				wps_product_purchase_point();
-				wps_point_expiration_setting();
-				wps_notification_add_on();
-				wps_api_setting_addon();
-				update_option( 'wps_par_org_convert_keys', true );
+			wps_normal_update_option();
+			wps_general_settings_update_option();
+			wps_per_currency_update_option();
+			wps_points_notification_update_option();
+			wps_add_points_membership_option();
+			wps_wpr_assign_points();
+			wps_wp_other_settings();
+			wps_order_total_migrate();
+			wps_product_purchase_point();
+			wps_point_expiration_setting();
+			wps_notification_add_on();
+			wps_api_setting_addon();
+			update_option( 'wps_par_org_convert_keys', true );
 		}
 	}
+
 	/**
 	 * Wps_api_setting_addon function
 	 *
@@ -339,6 +385,7 @@ if ( $activated ) {
 		}
 		update_option( 'wps_wpr_api_features_settings', $general_migrate_settings );
 	}
+
 	/**
 	 * Wps_product_purchase_point function
 	 *
@@ -356,6 +403,7 @@ if ( $activated ) {
 		}
 		update_option( 'wps_wpr_product_purchase_settings', $general_migrate_settings );
 	}
+
 	/**
 	 * Undocumented function
 	 *
@@ -372,6 +420,7 @@ if ( $activated ) {
 		}
 		update_option( 'wps_wpr_points_expiration_settings', $general_migrate_settings );
 	}
+
 	/**
 	 * Undocumented function
 	 *
@@ -388,6 +437,7 @@ if ( $activated ) {
 		}
 		update_option( 'wps_wpr_notification_addon_settings', $general_migrate_settings );
 	}
+
 	/**
 	 * Undocumented function
 	 *
@@ -407,6 +457,7 @@ if ( $activated ) {
 			update_option( 'wps_wpr_notify_hide_notification', $mesg_wps_value );
 		}
 	}
+
 	/**
 	 * Undocumented function
 	 *
@@ -424,6 +475,7 @@ if ( $activated ) {
 		update_option( 'wps_wpr_settings_gallery', $general_migrate_settings );
 
 	}
+
 	/**
 	 * Undocumented function
 	 *
@@ -440,6 +492,7 @@ if ( $activated ) {
 		}
 		update_option( 'wps_wpr_coupons_gallery', $general_migrate_settings );
 	}
+
 	/**
 	 * Undocumented function
 	 *
@@ -456,8 +509,8 @@ if ( $activated ) {
 			}
 		}
 		update_option( 'wps_wpr_notificatin_array', $general_migrate_settings );
-
 	}
+
 	/**
 	 * Undocumented function
 	 *
@@ -474,6 +527,7 @@ if ( $activated ) {
 		}
 		update_option( 'wps_wpr_membership_settings', $general_migrate_settings );
 	}
+
 	/**
 	 * Undocumented function
 	 *
@@ -491,6 +545,7 @@ if ( $activated ) {
 		}
 		update_option( 'wps_wpr_assign_products_points', $general_migrate_settings );
 	}
+
 	/**
 	 * Undocumented function
 	 *
@@ -506,10 +561,9 @@ if ( $activated ) {
 				$general_migrate_settings[ str_replace( 'mwb', 'wps', $key ) ] = str_replace( 'mwb', 'wps', $value );
 			}
 		}
-
 		update_option( 'wps_wpr_other_settings', $general_migrate_settings );
-
 	}
+
 	/**
 	 * Undocumented function
 	 *
@@ -525,13 +579,10 @@ if ( $activated ) {
 				$general_migrate_settings[ str_replace( 'mwb', 'wps', $key ) ] = str_replace( 'mwb', 'wps', $value );
 			}
 		}
-
 		update_option( 'wps_wpr_order_total_settings', $general_migrate_settings );
 	}
 
 	if ( true === $wps_par_exists ) {
-
-
 
 		add_action( 'admin_notices', 'wps_par_check_and_inform_update' );
 		/**
@@ -539,20 +590,21 @@ if ( $activated ) {
 		 */
 		function wps_par_check_and_inform_update() {
 
-			$update_file        = plugin_dir_path( dirname( __FILE__ ) ) . 'ultimate-woocommerce-points-and-rewards/class-ultimate-woocommerce-points-and-rewards-update.php';
-			$wps_plug           = get_plugins();
+			$update_file = plugin_dir_path( dirname( __FILE__ ) ) . 'ultimate-woocommerce-points-and-rewards/class-ultimate-woocommerce-points-and-rewards-update.php';
+			$wps_plug    = get_plugins();
 			if ( isset( $wps_plug['ultimate-woocommerce-points-and-rewards/ultimate-woocommerce-points-and-rewards.php'] ) ) {
 				if ( version_compare( $wps_plug['ultimate-woocommerce-points-and-rewards/ultimate-woocommerce-points-and-rewards.php']['Version'], '1.2.1', '<' ) ) {
 					$update_file = plugin_dir_path( dirname( __FILE__ ) ) . 'ultimate-woocommerce-points-and-rewards/ultimate-woocommerce-points-and-rewards-update.php';
 				}
 			}
+
 			// If present but not active.
 			if ( ! is_plugin_active( 'ultimate-woocommerce-points-and-rewards/ultimate-woocommerce-points-and-rewards.php' ) ) {
 				if ( file_exists( $update_file ) ) {
 					$wps_par_pro_license_key = get_option( 'ultimate_woocommerce_points_and_rewards_lcns_key', '' );
 					! defined( 'ULTIMATE_WOOCOMMERCE_POINTS_AND_REWARDS_LICENSE_KEY' ) && define( 'ULTIMATE_WOOCOMMERCE_POINTS_AND_REWARDS_LICENSE_KEY', $wps_par_pro_license_key );
 					! defined( 'ULTIMATE_WOOCOMMERCE_POINTS_AND_REWARDS_BASE_FILE' ) && define( 'ULTIMATE_WOOCOMMERCE_POINTS_AND_REWARDS_BASE_FILE', 'ultimate-woocommerce-points-and-rewards/ultimate-woocommerce-points-and-rewards.php' );
-					! defined( 'ULTIMATE_WOOCOMMERCE_POINTS_AND_REWARDS_VERSION' ) && define( 'ULTIMATE_WOOCOMMERCE_POINTS_AND_REWARDS_VERSION', '1.4.0' );
+					! defined( 'ULTIMATE_WOOCOMMERCE_POINTS_AND_REWARDS_VERSION' ) && define( 'ULTIMATE_WOOCOMMERCE_POINTS_AND_REWARDS_VERSION', '1.7.0' );
 				}
 				require_once $update_file;
 			}
@@ -563,6 +615,7 @@ if ( $activated ) {
 			}
 		}
 	}
+
 	/**
 	 * Migration to new domain notice.
 	 *
@@ -573,7 +626,7 @@ if ( $activated ) {
 	function wps_wpr_upgrade_notice( $plugin_file, $plugin_data, $status ) {
 
 		?>
-			<tr class="plugin-update-tr active notice-warning notice-alt">
+		<tr class="plugin-update-tr active notice-warning notice-alt">
 			<td colspan="4" class="plugin-update colspanchange">
 				<div class="notice notice-error inline update-message notice-alt">
 					<p class='wps-notice-title wps-notice-section'>
@@ -600,7 +653,7 @@ if ( $activated ) {
 	function wps_wpr_show_notice_on_plugin_dashboard() {
 		if ( class_exists( 'Points_Rewards_For_WooCommerce_Admin' ) ) {
 
-			$wps_par_get_count = new Points_Rewards_For_WooCommerce_Admin( 'points-and-rewards-for-woocommerce', '1.4.0' );
+			$wps_par_get_count = new Points_Rewards_For_WooCommerce_Admin( 'points-and-rewards-for-woocommerce', '1.7.0' );
 			$wps_pending_par   = $wps_par_get_count->wps_par_get_count( 'wc-pending' );
 			$wps_pending_par   = ! empty( $wps_pending_par ) && is_array( $wps_pending_par ) ? count( $wps_pending_par ) : 0;
 			$wps_count_users   = $wps_par_get_count->wps_par_get_count_users( 'users' );
@@ -672,12 +725,12 @@ if ( $activated ) {
 			<?php
 		}
 	}
+
 	if ( true === $wps_par_exists ) {
 		unset( $_GET['activate'] );
 		deactivate_plugins( plugin_basename( 'ultimate-woocommerce-points-and-rewards/ultimate-woocommerce-points-and-rewards.php' ) );
 	}
 } else {
-
 
 	// WooCommerce is not active so deactivate this plugin.
 	add_action( 'admin_init', 'rewardeem_woocommerce_points_rewards_activation_failure' );
@@ -690,12 +743,11 @@ if ( $activated ) {
 	 * @link https://www.wpswings.com/
 	 */
 	function rewardeem_woocommerce_points_rewards_activation_failure() {
-
 		deactivate_plugins( plugin_basename( __FILE__ ) );
+		unset( $_GET['activate'] );
+		// Add admin error notice.
+		add_action( 'admin_notices', 'rewardeem_woocommerce_points_rewards_activation_failure_admin_notice' );
 	}
-
-	// Add admin error notice.
-	add_action( 'admin_notices', 'rewardeem_woocommerce_points_rewards_activation_failure_admin_notice' );
 
 	/**
 	 * This function is used to deactivate plugin.
@@ -705,17 +757,14 @@ if ( $activated ) {
 	 * @link https://www.wpswings.com/
 	 */
 	function rewardeem_woocommerce_points_rewards_activation_failure_admin_notice() {
-			// hide Plugin activated notice.
-		unset( $_GET['activate'] );
+		// hide Plugin activated notice.
 		if ( ! is_plugin_active( 'woocommerce/woocommerce.php' ) ) {
 			?>
 			<div class="notice notice-error is-dismissible">
 				<p><?php esc_html_e( 'WooCommerce is not activated, Please activate WooCommerce first to activate Points and Rewards for WooCommerce.', 'points-and-rewards-for-woocommerce' ); ?></p>
 			</div>
-
 			<?php
 		}
-
 	}
 }
 
