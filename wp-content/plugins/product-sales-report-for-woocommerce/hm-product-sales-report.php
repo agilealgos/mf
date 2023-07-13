@@ -3,8 +3,8 @@
  * Plugin Name:       Product Sales Report for WooCommerce
  * Plugin URI:        https://wordpress.org/plugins/product-sales-report-for-woocommerce/
  * Description:       Generates a report on individual WooCommerce products sold during a specified time period.
- * Version:           1.5.2
- * WC tested up to:   7.2
+ * Version:           1.5.6
+ * WC tested up to:   7.6.0
  * Author:            WP Zone
  * Author URI:        http://wpzone.co/?utm_source=product-sales-report-for-woocommerce&utm_medium=link&utm_campaign=wp-plugin-author-uri
  * License:           GNU General Public License version 3 or later
@@ -16,7 +16,7 @@
 
 /*
     Product Sales Report for WooCommerce
-    Copyright (C) 2022  WP Zone
+    Copyright (C) 2023  WP Zone
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -42,7 +42,7 @@
  * See licensing and copyright information in the ./license directory.
 */
 
-define('HM_PSRF_VERSION', '1.5.2');
+define('HM_PSRF_VERSION', '1.5.4');
 define('HM_PSRF_ITEM_NAME', 'Product Sales Report for WooCommerce');
 
 load_theme_textdomain('product-sales-report-for-woocommerce', __DIR__ . '/languages');
@@ -73,6 +73,11 @@ function hm_psrf_default_report_settings() {
         'exclude_free'   => 0,
         'hm_psr_debug' => 0
     );
+}
+
+
+function hm_psrf_is_hpos() {
+	return method_exists('Automattic\WooCommerce\Utilities\OrderUtil', 'custom_orders_table_usage_is_enabled') && Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled();
 }
 
 // This function generates the Product Sales Report page HTML
@@ -257,26 +262,8 @@ function hm_sbpf_filter_query_intermediate_rounding($sql)
 	return $sql;
 }
 
-// This function generates and outputs the report body rows
-function hm_sbpf_export_body($dest, $return = false) {
-    global $woocommerce, $wpdb;
-
-    $product_ids = array();
-    if ($_POST['products'] == 'cats') {
-        $cats = array();
-        foreach ($_POST['product_cats'] as $cat)
-            if (is_numeric($cat))
-                $cats[] = $cat;
-        $product_ids = get_objects_in_term($cats, 'product_cat');
-    } else if ($_POST['products'] == 'ids') {
-        foreach (explode(',', $_POST['product_ids']) as $productId) {
-            $productId = trim($productId);
-            if (is_numeric($productId))
-                $product_ids[] = $productId;
-        }
-    }
-
-    // Calculate report start and end dates (timestamps)
+function hm_psrf_get_report_dates() {
+	// Calculate report start and end dates (timestamps)
     switch ($_POST['report_time']) {
         case '0d':
             $end_date = strtotime('midnight', current_time('timestamp'));
@@ -318,18 +305,52 @@ function hm_sbpf_export_body($dest, $return = false) {
             $end_date = strtotime('midnight', current_time('timestamp')) - 86400;
             $start_date = $end_date - (86400 * 29);
     }
+	
+	return [$start_date, $end_date];
+}
+
+function hm_psrf_on_before_woocommerce_init()
+{
+	class_exists('Automattic\WooCommerce\Utilities\FeaturesUtil') && Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('custom_order_tables', __FILE__);
+}
+add_action('before_woocommerce_init', 'hm_psrf_on_before_woocommerce_init');
+
+
+// This function generates and outputs the report body rows
+function hm_sbpf_export_body($dest, $return = false) {
+    global $woocommerce, $wpdb;
+
+    $product_ids = array();
+    if ($_POST['products'] == 'cats') {
+        $cats = array();
+        foreach ($_POST['product_cats'] as $cat)
+            if (is_numeric($cat))
+                $cats[] = $cat;
+        $product_ids = get_objects_in_term($cats, 'product_cat');
+    } else if ($_POST['products'] == 'ids') {
+        foreach (explode(',', $_POST['product_ids']) as $productId) {
+            $productId = trim($productId);
+            if (is_numeric($productId))
+                $product_ids[] = $productId;
+        }
+    }
+
+    list($start_date, $end_date) = hm_psrf_get_report_dates();
 
     // Assemble order by string
     $orderby = (in_array($_POST['orderby'], array('product_id', 'gross', 'gross_after_discount')) ? $_POST['orderby'] : 'quantity');
     $orderby .= ' ' . ($_POST['orderdir'] == 'asc' ? 'ASC' : 'DESC');
 
     // Create a new WC_Admin_Report object
-    include_once($woocommerce->plugin_path() . '/includes/admin/reports/class-wc-admin-report.php');
-    $wc_report = new WC_Admin_Report();
+	if ( hm_psrf_is_hpos() ) {
+		include_once(__DIR__.'/includes/class-wc-admin-report-hpos.php');
+		$wc_report = new WC_Admin_Report_HPOS_WPZ();
+	} else {
+		include_once($woocommerce->plugin_path().'/includes/admin/reports/class-wc-admin-report.php');
+		$wc_report = new WC_Admin_Report();
+	}
     $wc_report->start_date = $start_date;
     $wc_report->end_date = $end_date;
-
-    //echo(date('Y-m-d', $end_date));
 
     $where_meta = array();
     if ($_POST['products'] != 'all') {
@@ -489,15 +510,20 @@ function hm_psrf_add_schedulable_email_reports($reports) {
 }
 
 function hm_psrf_run_scheduled_report($reportId, $start, $end, $args = array(), $output = false) {
-    $savedReportSettings = get_option('hm_psr_report_settings');
-    if (empty($savedReportSettings[0]['fields']))
-        return false;
+    $savedReportSettings = get_option('hm_psr_report_settings', [ hm_psrf_default_report_settings() ]);
+	
     $prevPost = $_POST;
-    $_POST = $savedReportSettings[0];
-    $_POST['report_time'] = 'custom';
-    $_POST['report_start'] = date('Y-m-d', $start);
-    $_POST['report_end'] = date('Y-m-d', $end);
+	$_POST = $savedReportSettings[0];
+	if ($start !== null || $end !== null) {
+		$_POST['report_time'] = 'custom';
+		$_POST['report_start'] = date('Y-m-d', $start);
+		$_POST['report_end'] = date('Y-m-d', $end);
+	}
+	
     $_POST = array_merge($_POST, array_intersect_key($args, $_POST));
+  
+	if (empty($_POST['fields']))
+        return false;
 
     if ($output) {
         echo('<table><thead><tr>');
@@ -544,7 +570,7 @@ function hm_psrf_report_order_statuses() {
     if (!empty($_POST['order_statuses'])) {
         foreach ($_POST['order_statuses'] as $orderStatus) {
             if (isset($wcOrderStatuses[$orderStatus]))
-                $orderStatuses[] = substr($orderStatus, 3);
+                $orderStatuses[] = esc_sql(substr($orderStatus, 3));
         }
     }
     return $orderStatuses;

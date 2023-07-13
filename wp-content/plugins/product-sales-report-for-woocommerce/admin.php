@@ -14,21 +14,28 @@
             </div>
         </div>
 
-        <?php
-        // Check for WooCommerce
-        if (!class_exists('WooCommerce')) {
-            echo('<div id="ags-psrf-settings-tabs-content"><p class="ags-psrf-notification ags-psrf-notification-warning">' . esc_html__('This plugin requires that WooCommerce is installed and activated.', 'product-sales-report-for-woocommerce') . '</p></div></div></div>');
-            return;
-        } else if (!function_exists('wc_get_order_types')) {
-            echo('<div id="ags-psrf-settings-tabs-content"><p class="ags-psrf-notification ags-psrf-notification-warning">' . esc_html__('The Product Sales Report plugin requires WooCommerce 2.2 or higher. Please update your WooCommerce install.', 'product-sales-report-for-woocommerce') . '</p></div></div></div>');
-            return;
-        }
-        ?>
-
         <ul id="ags-psrf-settings-tabs">
             <li class="ags-psrf-settings-active"><a href="#settings"><?php esc_html_e('Report Settings', 'product-sales-report-for-woocommerce'); ?></a></li>
             <li><a href="#addons"><?php esc_html_e('Addons', 'product-sales-report-for-woocommerce'); ?></a></li>
         </ul>
+
+	    <?php
+	    // Check for WooCommerce
+	    if (!class_exists('WooCommerce')) {
+		    echo('<div id="ags-psrf-settings-tabs-content"><p class="ags-psrf-notification ags-psrf-notification-warning">' . esc_html__('This plugin requires that WooCommerce is installed and activated.', 'product-sales-report-for-woocommerce') . '</p></div></div></div>');
+		    return;
+	    } else if (!function_exists('wc_get_order_types')) {
+		    echo('<div id="ags-psrf-settings-tabs-content"><p class="ags-psrf-notification ags-psrf-notification-warning">' . esc_html__('The Product Sales Report plugin requires WooCommerce 2.2 or higher. Please update your WooCommerce install.', 'product-sales-report-for-woocommerce') . '</p></div></div></div>');
+		    return;
+	    }
+
+	    if (hm_psrf_is_hpos()) {
+		    echo('<div id="ags-psrf-settings-tabs-content"><p class="ags-psrf-notification ags-psrf-notification-warning">');
+		    esc_html_e('You are using High Performance Order Storage (HPOS) in WooCommerce. This plugin\'s HPOS support is currently in beta, so please validate the output as necessary.', 'product-sales-report-for-woocommerce');
+		    echo('</p></div>');
+	    }
+	    ?>
+
 
         <div id="ags-psrf-settings-tabs-content">
             <?php
