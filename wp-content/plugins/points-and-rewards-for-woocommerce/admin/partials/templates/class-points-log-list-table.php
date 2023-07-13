@@ -10,6 +10,7 @@
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
+
 if ( ! class_exists( 'WP_List_Table' ) ) {
 	require_once ABSPATH . 'wp-admin/includes/class-wp-list-table.php';
 }
@@ -24,6 +25,7 @@ if ( ! class_exists( 'WP_List_Table' ) ) {
  * @link https://www.wpswings.com/
  */
 class Points_Log_List_Table extends WP_List_Table {
+
 	/**
 	 * This is variable which is used for the store all the data.
 	 *
@@ -37,7 +39,6 @@ class Points_Log_List_Table extends WP_List_Table {
 	 * @var array $wps_total_counta variable for store data.
 	 */
 	public $wps_total_count;
-
 
 	/**
 	 * This construct colomns in point table.
@@ -120,7 +121,6 @@ class Points_Log_List_Table extends WP_List_Table {
 	public function view_html( $user_id ) {
 
 		echo '<a  href="javascript:void(0)" class="wps_points_update button button-primary wps_wpr_save_changes" data-id="' . esc_html( $user_id ) . '">' . esc_html__( 'Update', 'points-and-rewards-for-woocommerce' ) . '</a>';
-
 	}
 
 	/**
@@ -134,20 +134,56 @@ class Points_Log_List_Table extends WP_List_Table {
 
 		if ( 'bulk-delete' === $this->current_action() ) {
 			if ( isset( $_POST['points-log'] ) ) {
+
 				$wps_membership_nonce = sanitize_text_field( wp_unslash( $_POST['points-log'] ) );
 				if ( wp_verify_nonce( $wps_membership_nonce, 'points-log' ) ) {
 					if ( isset( $_POST['mpr_points_ids'] ) && ! empty( $_POST['mpr_points_ids'] ) ) {
+
 						$all_id = map_deep( wp_unslash( $_POST['mpr_points_ids'] ), 'sanitize_text_field' );
 						foreach ( $all_id as $key => $value ) {
-							delete_user_meta( $value, 'wps_wpr_points' );
+
+							$this->wps_wpr_create_points_reset_log( $value );
+							update_user_meta( $value, 'wps_wpr_points', 0 );
 						}
 					}
 				}
 			}
 		}
 		do_action( 'wps_wpr_process_bulk_reset_option', $this->current_action(), $_POST );
-
 	}
+
+	/**
+	 * This function is used to create log for resets points.
+	 *
+	 * @param String $user_id user_id.
+	 * @return void
+	 */
+	public function wps_wpr_create_points_reset_log( $user_id ) {
+
+		$get_points           = get_user_meta( $user_id, 'wps_wpr_points', true );
+		$wps_reset_points_log = get_user_meta( $user_id, 'points_details', true );
+		$wps_reset_points_log = ! empty( $wps_reset_points_log ) && is_array( $wps_reset_points_log ) ? $wps_reset_points_log : array();
+
+		if ( $get_points > 0 ) {
+			if ( isset( $wps_reset_points_log['points_reset_by_admin'] ) && ! empty( $wps_reset_points_log['points_reset_by_admin'] ) ) {
+
+				$wps_reset_log = array(
+					'points_reset_by_admin' => $get_points,
+					'date'                  => date_i18n( 'Y-m-d h:i:sa' ),
+				);
+				$wps_reset_points_log['points_reset_by_admin'][] = $wps_reset_log;
+			} else {
+
+				$wps_reset_log = array(
+					'points_reset_by_admin' => $get_points,
+					'date'                  => date_i18n( 'Y-m-d h:i:sa' ),
+				);
+				$wps_reset_points_log['points_reset_by_admin'][] = $wps_reset_log;
+			}
+			update_user_meta( $user_id, 'points_details', $wps_reset_points_log );
+		}
+	}
+
 	/**
 	 * Returns an associative array containing the bulk action
 	 *
@@ -158,6 +194,7 @@ class Points_Log_List_Table extends WP_List_Table {
 	 * @link https://www.wpswings.com/
 	 */
 	public function get_bulk_actions() {
+
 		$actions = array(
 			'bulk-delete' => __( 'Reset Points', 'points-and-rewards-for-woocommerce' ),
 		);
@@ -174,6 +211,7 @@ class Points_Log_List_Table extends WP_List_Table {
 	 * @link https://www.wpswings.com/
 	 */
 	public function get_sortable_columns() {
+
 		$sortable_columns = array(
 			'user_name'   => array( 'user_name', false ),
 			'user_email'  => array( 'user_email', false ),
@@ -189,9 +227,11 @@ class Points_Log_List_Table extends WP_List_Table {
 	 * @return array
 	 */
 	public function wps_wpr_sort_user_table( $data ) {
+
 		$points_data = array();
 		if ( ! empty( $data ) ) {
 			foreach ( $data as $sort_id ) {
+
 				$user          = get_userdata( $sort_id['id'] );
 				$points        = get_user_meta( $sort_id['id'], 'wps_wpr_points', true );
 				$points_data[] = array(
@@ -214,13 +254,14 @@ class Points_Log_List_Table extends WP_List_Table {
 	 * @link https://www.wpswings.com/
 	 */
 	public function prepare_items() {
-		$per_page              = 10;
+
+		$per_page              = ! empty( get_option( 'wps_wpr_number_items_per_page' ) ) ? get_option( 'wps_wpr_number_items_per_page' ) : 10;
 		$columns               = $this->get_columns();
 		$hidden                = array();
 		$sortable              = $this->get_sortable_columns();
 		$this->_column_headers = array( $columns, $hidden, $sortable );
+		$current_page          = $this->get_pagenum();
 		$this->process_bulk_action();
-		$current_page = $this->get_pagenum();
 
 		$this->example_data = $this->get_users_points( $current_page, $per_page );
 		$data               = $this->example_data;
@@ -228,16 +269,14 @@ class Points_Log_List_Table extends WP_List_Table {
 		$sort_data = $this->wps_wpr_sort_user_table( $data );
 		usort( $sort_data, array( $this, 'wps_wpr_usort_reorder' ) );
 
-		$total_items = $this->wps_total_count;
+		$total_items = count_users()['total_users'];
 		$this->items = $sort_data;
 		$this->set_pagination_args(
 			array(
 				'total_items' => $total_items,
 				'per_page'    => $per_page,
-				'total_pages' => ceil( $total_items / $per_page ),
 			)
 		);
-
 	}
 
 	/**
@@ -252,19 +291,24 @@ class Points_Log_List_Table extends WP_List_Table {
 	 * @param array $cloumnb column of the points.
 	 */
 	public function wps_wpr_usort_reorder( $cloumna, $cloumnb ) {
+
 		$orderby = ( ! empty( $_REQUEST['orderby'] ) ) ? sanitize_text_field( wp_unslash( $_REQUEST['orderby'] ) ) : 'id';
 		$order   = ( ! empty( $_REQUEST['order'] ) ) ? sanitize_text_field( wp_unslash( $_REQUEST['order'] ) ) : 'desc';
 		if ( is_numeric( $cloumna[ $orderby ] ) && is_numeric( $cloumnb[ $orderby ] ) ) {
 			if ( $cloumna[ $orderby ] == $cloumnb[ $orderby ] ) {
+
 				return 0;
 			} elseif ( $cloumna[ $orderby ] < $cloumnb[ $orderby ] ) {
+
 				$result = -1;
 				return ( 'asc' === $order ) ? $result : -$result;
 			} elseif ( $cloumna[ $orderby ] > $cloumnb[ $orderby ] ) {
+
 				$result = 1;
 				return ( 'asc' === $order ) ? $result : -$result;
 			}
 		} else {
+
 			$result = strcmp( $cloumna[ $orderby ], $cloumnb[ $orderby ] );
 			return ( 'asc' === $order ) ? $result : -$result;
 		}
@@ -281,6 +325,7 @@ class Points_Log_List_Table extends WP_List_Table {
 	 * @param array $item array of the items.
 	 */
 	public function column_cb( $item ) {
+
 		return sprintf(
 			'<input type="checkbox" name="mpr_points_ids[]" value="%s" />',
 			$item['id']
@@ -299,30 +344,20 @@ class Points_Log_List_Table extends WP_List_Table {
 	 * @param int $per_page no of pages.
 	 */
 	public function get_users_points( $current_page, $per_page ) {
+
 		$args = array(
-			'fields'       => 'ID',
-			'meta_query'   => array(
-				'relation' => 'OR',
-				array(
-					'key'     => 'wps_wpr_points',
-					'compare' => 'EXISTS',
-				),
-				array(
-					'key'     => 'wps_wpr_points',
-					'compare' => 'NOT EXISTS',
-				),
-			),
+			'number' => $per_page,
+			'offset' => ( $current_page - 1 ) * $per_page,
+			'fields' => 'ID',
 		);
 
-		$args['number'] = $per_page;
-		$args['offset'] = ( $current_page - 1 ) * $per_page;
 		if ( isset( $_REQUEST['s'] ) ) {
+
 			$wps_request_search = sanitize_text_field( wp_unslash( $_REQUEST['s'] ) );
 			$args['search']     = '*' . $wps_request_search . '*';
 		}
 
 		$user_data   = new WP_User_Query( $args );
-		$total_count = $user_data->get_total();
 		$user_data   = $user_data->get_results();
 		$points_data = array();
 		foreach ( $user_data as $key => $value ) {
@@ -330,25 +365,27 @@ class Points_Log_List_Table extends WP_List_Table {
 				'id' => $value,
 			);
 		}
-		$this->wps_total_count = $total_count;
 		return $points_data;
 	}
 }
 
 if ( isset( $_POST['wps_wpr_import_user'] ) && isset( $_POST['points-log'] ) ) {
+
 	$wps_membership_nonce = sanitize_text_field( wp_unslash( $_POST['points-log'] ) );
 	$import_user          = get_option( 'wps_wpr_user_imported', false );
 	if ( wp_verify_nonce( $wps_membership_nonce, 'points-log' ) ) {
 		if ( false == $import_user ) {
-			$user_data = get_users();
 
+			$user_data             = get_users();
 			$points_data           = array();
 			$flag                  = false;
 			$general_settings      = get_option( 'wps_wpr_settings_gallery', true );
 			$coupon_settings_array = get_option( 'wps_wpr_coupons_gallery', array() );
+
 			foreach ( $user_data as $key => $value ) {
 				$check_user = get_user_meta( $value->data->ID, 'wps_wpr_points', false );
 				if ( false == $check_user ) {
+
 						$today_date                       = date_i18n( 'Y-m-d h:i:sa' );
 						$wps_signup_value                 = isset( $general_settings['wps_wpr_general_signup_value'] ) ? intval( $general_settings['wps_wpr_general_signup_value'] ) : 1;
 						$import_points['import_points'][] = array(
@@ -361,6 +398,7 @@ if ( isset( $_POST['wps_wpr_import_user'] ) && isset( $_POST['points-log'] ) ) {
 						$flag                      = true;
 						$wps_wpr_notificatin_array = get_option( 'wps_wpr_notificatin_array', true );
 						if ( is_array( $wps_wpr_notificatin_array ) && ! empty( $wps_wpr_notificatin_array ) ) {
+
 							$wps_per_currency_spent_value = isset( $coupon_settings_array['wps_wpr_coupon_conversion_points'] ) ? intval( $coupon_settings_array['wps_wpr_coupon_conversion_points'] ) : 1;
 							$wps_comment_value            = isset( $general_settings['wps_comment_value'] ) ? intval( $general_settings['wps_comment_value'] ) : 1;
 							$wps_refer_value              = isset( $general_settings['wps_refer_value'] ) ? intval( $general_settings['wps_refer_value'] ) : 1;
@@ -386,8 +424,23 @@ if ( isset( $_POST['wps_wpr_import_user'] ) && isset( $_POST['points-log'] ) ) {
 		}
 	}
 }
+
+// === Save items per page data here ===
+if ( isset( $_POST['wps_wpr_items_per_page_nonce'] ) ) {
+
+	$wps_wpr_items_per_page_nonce = ! empty( $_POST['wps_wpr_items_per_page_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['wps_wpr_items_per_page_nonce'] ) ) : '';
+	if ( wp_verify_nonce( $wps_wpr_items_per_page_nonce, 'wps-wpr-items-per-page-nonce' ) ) {
+		if ( isset( $_POST['wps_wpr_save_items_per_page'] ) ) {
+
+			$wps_wpr_number_items_per_page = ! empty( $_POST['wps_wpr_number_items_per_page'] ) ? sanitize_text_field( wp_unslash( $_POST['wps_wpr_number_items_per_page'] ) ) : 10;
+			update_option( 'wps_wpr_number_items_per_page', $wps_wpr_number_items_per_page );
+		}
+	}
+}
+
 if ( isset( $_GET['action'] ) && isset( $_GET['user_id'] ) ) {
 	if ( 'view' == $_GET['action'] ) {
+
 		$user_log_id = sanitize_text_field( wp_unslash( $_GET['user_id'] ) );
 		$user_log    = get_user_meta( $user_log_id, 'wps_wpr_user_log', true );
 		?>
@@ -425,16 +478,17 @@ if ( isset( $_GET['action'] ) && isset( $_GET['user_id'] ) ) {
 					foreach ( $user_log as $key => $wps_user_log ) :
 						$wps_user_log['delete'] = 'delete';
 						?>
-
 						<tr valign="top">
 							<?php foreach ( $wps_user_log as $column_id => $column_name ) : ?>
 								<td class="forminp forminp-text">
 									<?php
 									if ( 'left' == $column_id ) {
+
 										$wps_split   = explode( '#', $key );
 										$column_name = get_post_meta( $wps_split[1], 'coupon_amount', true );
 										echo esc_html( get_woocommerce_currency_symbol() ) . esc_html( $column_name );
 									} elseif ( 'camount' == $column_id ) {
+
 										$wps_split   = explode( '#', $key );
 										$column_name = get_post_meta( $wps_split[1], 'wps_coupon_static_amount', true );
 										echo esc_html( get_woocommerce_currency_symbol() ) . esc_html( $column_name );
@@ -447,15 +501,19 @@ if ( isset( $_GET['action'] ) && isset( $_GET['user_id'] ) ) {
 
 											$column_name = get_post_meta( $wps_split[1], 'date_expires', true );
 											if ( ! empty( $column_name ) ) {
+
 												$dt = new DateTime( "@$column_name" );
 												echo esc_html( $dt->format( 'Y-m-d' ) );
 											} else {
+
 												esc_html_e( 'No Expiry', 'points-and-rewards-for-woocommerce' );
 											}
 										}
 									} elseif ( 'delete' == $column_name ) {
+
 										echo '<a href="#" class="wps_wpr_delete_user_coupon" data-id="' . esc_html( $wps_split[1] ) . '" data-user_id="' . esc_html( $user_log_id ) . '">' . esc_html__( 'Delete', 'points-and-rewards-for-woocommerce' ) . '</a>';
 									} else {
+
 										echo esc_html( $column_name );
 									}
 
@@ -469,6 +527,7 @@ if ( isset( $_GET['action'] ) && isset( $_GET['user_id'] ) ) {
 
 			<?php
 		} else {
+
 			echo '<h3>' . esc_html__( 'No Coupons Generated Yet.', 'points-and-rewards-for-woocommerce' ) . '<h3>';
 		}
 		?>
@@ -477,6 +536,7 @@ if ( isset( $_GET['action'] ) && isset( $_GET['user_id'] ) ) {
 		<?php
 
 	} elseif ( 'view_point_log' == $_GET['action'] ) {
+
 		$user_id      = sanitize_text_field( wp_unslash( $_GET['user_id'] ) );
 		$point_log    = get_user_meta( $user_id, 'points_details', true );
 		$total_points = get_user_meta( $user_id, 'wps_wpr_points', true );
@@ -485,7 +545,7 @@ if ( isset( $_GET['action'] ) && isset( $_GET['user_id'] ) ) {
 		<?php
 		if ( isset( $point_log ) && is_array( $point_log ) && null != $point_log ) {
 			?>
- 
+
 			<div class="wps_wpr_wrapper_div">
 				<?php
 				if ( array_key_exists( 'registration', $point_log ) ) {
@@ -563,10 +623,10 @@ if ( isset( $_GET['action'] ) && isset( $_GET['user_id'] ) ) {
 								<?php
 								foreach ( $point_log['Coupon_details'] as $key => $value ) {
 									?>
-								<tr valign="top">
-									<td class="forminp forminp-text"><?php echo esc_html( $value['date'] ); ?></td>
-									<td class="forminp forminp-text"><?php echo '-' . esc_html( $value['Coupon_details'] ); ?></td>
-								</tr>
+									<tr valign="top">
+										<td class="forminp forminp-text"><?php echo esc_html( $value['date'] ); ?></td>
+										<td class="forminp forminp-text"><?php echo '-' . esc_html( $value['Coupon_details'] ); ?></td>
+									</tr>
 									<?php
 								}
 								?>
@@ -827,10 +887,10 @@ if ( isset( $_GET['action'] ) && isset( $_GET['user_id'] ) ) {
 								<?php
 								foreach ( $point_log['pro_conversion_points'] as $key => $value ) {
 									?>
-								<tr valign="top">
-									<td class="forminp forminp-text"><?php echo esc_html( $value['date'] ); ?></td>
-									<td class="forminp forminp-text"><?php echo '+' . esc_html( $value['pro_conversion_points'] ); ?></td>
-								</tr>
+									<tr valign="top">
+										<td class="forminp forminp-text"><?php echo esc_html( $value['date'] ); ?></td>
+										<td class="forminp forminp-text"><?php echo '+' . esc_html( $value['pro_conversion_points'] ); ?></td>
+									</tr>
 									<?php
 								}
 								?>
@@ -860,10 +920,10 @@ if ( isset( $_GET['action'] ) && isset( $_GET['user_id'] ) ) {
 									<?php
 									foreach ( $point_log['comment'] as $key => $value ) {
 										?>
-								<tr valign="top">
-									<td class="forminp forminp-text"><?php echo esc_html( $value['date'] ); ?></td>
-									<td class="forminp forminp-text"><?php echo '+' . esc_html( $value['comment'] ); ?></td>
-								</tr>
+										<tr valign="top">
+											<td class="forminp forminp-text"><?php echo esc_html( $value['date'] ); ?></td>
+											<td class="forminp forminp-text"><?php echo '+' . esc_html( $value['comment'] ); ?></td>
+										</tr>
 										<?php
 									}
 									?>
@@ -893,10 +953,10 @@ if ( isset( $_GET['action'] ) && isset( $_GET['user_id'] ) ) {
 									<?php
 									foreach ( $point_log['membership'] as $key => $value ) {
 										?>
-									<tr valign="top">
-										<td class="forminp forminp-text"><?php echo esc_html( $value['date'] ); ?></td>
-										<td class="forminp forminp-text"><?php echo '-' . esc_html( $value['membership'] ); ?></td>
-									</tr>
+										<tr valign="top">
+											<td class="forminp forminp-text"><?php echo esc_html( $value['date'] ); ?></td>
+											<td class="forminp forminp-text"><?php echo '-' . esc_html( $value['membership'] ); ?></td>
+										</tr>
 										<?php
 									}
 									?>
@@ -909,7 +969,7 @@ if ( isset( $_GET['action'] ) && isset( $_GET['user_id'] ) ) {
 				if ( array_key_exists( 'ref_product_detail', $point_log ) ) {
 					?>
 					<div class="wps_wpr_slide_toggle">
-						<p class="wps_wpr_view_log_notice wps_wpr_common_slider" ><?php esc_html_e( 'Referral Purchase Point', 'points-and-rewards-for-woocommerce' ); ?>
+						<p class="wps_wpr_view_log_notice wps_wpr_common_slider" ><?php esc_html_e( 'Points earned by the purchase has been made by referrals', 'points-and-rewards-for-woocommerce' ); ?>
 							<a class ="wps_wpr_open_toggle"  href="javascript:;"></a>
 						</p>
 						<div class="wps_wpr_points_view"> 
@@ -924,16 +984,82 @@ if ( isset( $_GET['action'] ) && isset( $_GET['user_id'] ) ) {
 										</th>
 									</tr>
 								</thead>
-										<?php
-										foreach ( $point_log['ref_product_detail'] as $key => $value ) {
-											?>
-									<tr valign="top">
-										<td class="forminp forminp-text"><?php echo esc_html( $value['date'] ); ?></td>
-										<td class="forminp forminp-text"><?php echo '+' . esc_html( $value['ref_product_detail'] ); ?></td>
-									</tr>
-											<?php
-										}
+									<?php
+									foreach ( $point_log['ref_product_detail'] as $key => $value ) {
 										?>
+										<tr valign="top">
+											<td class="forminp forminp-text"><?php echo esc_html( $value['date'] ); ?></td>
+											<td class="forminp forminp-text"><?php echo '+' . esc_html( $value['ref_product_detail'] ); ?></td>
+										</tr>
+										<?php
+									}
+									?>
+							</table>
+						</div>
+					</div>
+					<?php
+				}
+				if ( array_key_exists( 'wps_refer_purchase_point_refund', $point_log ) ) {
+					?>
+					<div class="wps_wpr_slide_toggle">
+						<p class="wps_wpr_view_log_notice wps_wpr_common_slider" ><?php esc_html_e( 'Refunded referral purchase point', 'points-and-rewards-for-woocommerce' ); ?>
+							<a class ="wps_wpr_open_toggle"  href="javascript:;"></a>
+						</p>
+						<div class="wps_wpr_points_view"> 
+							<table class = "form-table mwp_wpr_settings  wps_wpr_common_table">
+								<thead>
+									<tr valign="top">
+										<th scope="row" class="wps_wpr_head_titledesc">
+											<span class="wps_wpr_nobr"><?php echo esc_html__( 'Date & Time', 'points-and-rewards-for-woocommerce' ); ?></span>
+										</th>
+										<th scope="row" class="wps_wpr_head_titledesc">
+											<span class="wps_wpr_nobr"><?php echo esc_html__( 'Point Status', 'points-and-rewards-for-woocommerce' ); ?></span>
+										</th>
+									</tr>
+								</thead>
+									<?php
+									foreach ( $point_log['wps_refer_purchase_point_refund'] as $key => $value ) {
+										?>
+										<tr valign="top">
+											<td class="forminp forminp-text"><?php echo esc_html( $value['date'] ); ?></td>
+											<td class="forminp forminp-text"><?php echo '-' . esc_html( $value['wps_refer_purchase_point_refund'] ); ?></td>
+										</tr>
+										<?php
+									}
+									?>
+							</table>
+						</div>
+					</div>
+					<?php
+				}
+				if ( array_key_exists( 'wps_refer_purchase_point_cancelled', $point_log ) ) {
+					?>
+					<div class="wps_wpr_slide_toggle">
+						<p class="wps_wpr_view_log_notice wps_wpr_common_slider" ><?php esc_html_e( 'Cancelled referral purchase point', 'points-and-rewards-for-woocommerce' ); ?>
+							<a class ="wps_wpr_open_toggle"  href="javascript:;"></a>
+						</p>
+						<div class="wps_wpr_points_view"> 
+							<table class = "form-table mwp_wpr_settings  wps_wpr_common_table">
+								<thead>
+									<tr valign="top">
+										<th scope="row" class="wps_wpr_head_titledesc">
+											<span class="wps_wpr_nobr"><?php echo esc_html__( 'Date & Time', 'points-and-rewards-for-woocommerce' ); ?></span>
+										</th>
+										<th scope="row" class="wps_wpr_head_titledesc">
+											<span class="wps_wpr_nobr"><?php echo esc_html__( 'Point Status', 'points-and-rewards-for-woocommerce' ); ?></span>
+										</th>
+									</tr>
+								</thead>
+									<?php
+									foreach ( $point_log['wps_refer_purchase_point_cancelled'] as $key => $value ) {
+										?>
+										<tr valign="top">
+											<td class="forminp forminp-text"><?php echo esc_html( $value['date'] ); ?></td>
+											<td class="forminp forminp-text"><?php echo '-' . esc_html( $value['wps_refer_purchase_point_cancelled'] ); ?></td>
+										</tr>
+										<?php
+									}
+									?>
 							</table>
 						</div>
 					</div>
@@ -957,16 +1083,16 @@ if ( isset( $_GET['action'] ) && isset( $_GET['user_id'] ) ) {
 										</th>
 									</tr>
 								</thead>
-										<?php
-										foreach ( $point_log['pur_by_points'] as $key => $value ) {
-											?>
-									<tr valign="top">
-										<td class="forminp forminp-text"><?php echo esc_html( $value['date'] ); ?></td>
-										<td class="forminp forminp-text"><?php echo '-' . esc_html( $value['pur_by_points'] ); ?></td>
-									</tr>
-											<?php
-										}
+									<?php
+									foreach ( $point_log['pur_by_points'] as $key => $value ) {
 										?>
+										<tr valign="top">
+											<td class="forminp forminp-text"><?php echo esc_html( $value['date'] ); ?></td>
+											<td class="forminp forminp-text"><?php echo '-' . esc_html( $value['pur_by_points'] ); ?></td>
+										</tr>
+										<?php
+									}
+									?>
 							</table>
 						</div>
 					</div>
@@ -993,10 +1119,43 @@ if ( isset( $_GET['action'] ) && isset( $_GET['user_id'] ) ) {
 									<?php
 									foreach ( $point_log['deduction_of_points'] as $key => $value ) {
 										?>
+										<tr valign="top">
+											<td class="forminp forminp-text"><?php echo esc_html( $value['date'] ); ?></td>
+											<td class="forminp forminp-text"><?php echo '-' . esc_html( $value['deduction_of_points'] ); ?></td>
+										</tr>
+										<?php
+									}
+									?>
+							</table>
+						</div>
+					</div>
+					<?php
+				}
+				if ( array_key_exists( 'reset_users_points_logs', $point_log ) ) {
+					?>
+					<div class="wps_wpr_slide_toggle">
+						<p class="wps_wpr_view_log_notice wps_wpr_common_slider" ><?php esc_html_e( 'Your points has been reset by Admin', 'points-and-rewards-for-woocommerce' ); ?>
+						<a class ="wps_wpr_open_toggle"  href="javascript:;"></a>
+					</p>
+						<div class="wps_wpr_points_view"> 
+							<table class = "form-table mwp_wpr_settings wps_wpr_common_table">
+								<thead>
 									<tr valign="top">
-										<td class="forminp forminp-text"><?php echo esc_html( $value['date'] ); ?></td>
-										<td class="forminp forminp-text"><?php echo '-' . esc_html( $value['deduction_of_points'] ); ?></td>
+										<th scope="row" class="wps_wpr_head_titledesc">
+											<span class="wps_wpr_nobr"><?php echo esc_html__( 'Date & Time', 'points-and-rewards-for-woocommerce' ); ?></span>
+										</th>
+										<th scope="row" class="wps_wpr_head_titledesc">
+											<span class="wps_wpr_nobr"><?php echo esc_html__( 'Point Status', 'points-and-rewards-for-woocommerce' ); ?></span>
+										</th>
 									</tr>
+								</thead>
+									<?php
+									foreach ( $point_log['reset_users_points_logs'] as $key => $value ) {
+										?>
+										<tr valign="top">
+											<td class="forminp forminp-text"><?php echo esc_html( $value['date'] ); ?></td>
+											<td class="forminp forminp-text"><?php echo '-' . esc_html( $value['reset_users_points_logs'] ); ?></td>
+										</tr>
 										<?php
 									}
 									?>
@@ -1023,16 +1182,16 @@ if ( isset( $_GET['action'] ) && isset( $_GET['user_id'] ) ) {
 											</th>
 										</tr>
 									</thead>
-										<?php
-										foreach ( $point_log['return_pur_points'] as $key => $value ) {
-											?>
-									<tr valign="top">
-										<td class="forminp forminp-text"><?php echo esc_html( $value['date'] ); ?></td>
-										<td class="forminp forminp-text"><?php echo '+' . esc_html( $value['return_pur_points'] ); ?></td>
-									</tr>
-											<?php
-										}
+									<?php
+									foreach ( $point_log['return_pur_points'] as $key => $value ) {
 										?>
+										<tr valign="top">
+											<td class="forminp forminp-text"><?php echo esc_html( $value['date'] ); ?></td>
+											<td class="forminp forminp-text"><?php echo '+' . esc_html( $value['return_pur_points'] ); ?></td>
+										</tr>
+										<?php
+									}
+									?>
 							</table>
 						</div>
 					</div>
@@ -1056,16 +1215,16 @@ if ( isset( $_GET['action'] ) && isset( $_GET['user_id'] ) ) {
 											</th>
 										</tr>
 									</thead>
-										<?php
-										foreach ( $point_log['deduction_currency_spent'] as $key => $value ) {
-											?>
-									<tr valign="top">
-										<td class="forminp forminp-text"><?php echo esc_html( $value['date'] ); ?></td>
-										<td class="forminp forminp-text"><?php echo '-' . esc_html( $value['deduction_currency_spent'] ); ?></td>
-									</tr>
-											<?php
-										}
+									<?php
+									foreach ( $point_log['deduction_currency_spent'] as $key => $value ) {
 										?>
+										<tr valign="top">
+											<td class="forminp forminp-text"><?php echo esc_html( $value['date'] ); ?></td>
+											<td class="forminp forminp-text"><?php echo '-' . esc_html( $value['deduction_currency_spent'] ); ?></td>
+										</tr>
+										<?php
+									}
+									?>
 							</table>
 						</div>
 					</div>
@@ -1091,10 +1250,107 @@ if ( isset( $_GET['action'] ) && isset( $_GET['user_id'] ) ) {
 								<?php
 								foreach ( $point_log['cart_subtotal_point'] as $key => $value ) {
 									?>
-								<tr valign="top">
-									<td class="forminp forminp-text"><?php echo esc_html( $value['date'] ); ?></td>
-									<td class="forminp forminp-text"><?php echo '-' . esc_html( $value['cart_subtotal_point'] ); ?> </td>
-								</tr>
+									<tr valign="top">
+										<td class="forminp forminp-text"><?php echo esc_html( $value['date'] ); ?></td>
+										<td class="forminp forminp-text"><?php echo '-' . esc_html( $value['cart_subtotal_point'] ); ?> </td>
+									</tr>
+									<?php
+								}
+								?>
+						</table>
+					</div>
+					<?php
+				}
+				if ( array_key_exists( 'order__rewards_points', $point_log ) ) {
+					?>
+					<div class="wps_wpr_slide_toggle">
+						<p class="wps_wpr_view_log_notice wps_wpr_common_slider" ><?php esc_html_e( 'Order Rewards Points', 'points-and-rewards-for-woocommerce' ); ?>
+							<a class ="wps_wpr_open_toggle"  href="javascript:;"></a>
+						</p>
+						<table class = "form-table mwp_wpr_settings wps_wpr_points_view wps_wpr_common_table">
+								<thead>
+									<tr valign="top">
+										<th scope="row" class="wps_wpr_head_titledesc">
+											<span class="wps_wpr_nobr"><?php echo esc_html__( 'Date & Time', 'points-and-rewards-for-woocommerce' ); ?></span>
+										</th>
+										<th scope="row" class="wps_wpr_head_titledesc">
+											<span class="wps_wpr_nobr"><?php echo esc_html__( 'Point Status', 'points-and-rewards-for-woocommerce' ); ?></span>
+										</th>
+									</tr>
+								</thead>
+								<?php
+								foreach ( $point_log['order__rewards_points'] as $key => $value ) {
+									?>
+									<tr valign="top">
+										<td class="forminp forminp-text"><?php echo esc_html( $value['date'] ); ?></td>
+										<td class="forminp forminp-text"><?php echo '+' . esc_html( $value['order__rewards_points'] ); ?> </td>
+									</tr>
+									<?php
+								}
+								?>
+						</table>
+					</div>
+					<?php
+				}
+				if ( array_key_exists( 'award_points_on_previous_order', $point_log ) ) {
+					?>
+					<div class="wps_wpr_slide_toggle">
+						<p class="wps_wpr_view_log_notice wps_wpr_common_slider" ><?php esc_html_e( 'Points awarded on previous order', 'points-and-rewards-for-woocommerce' ); ?>
+							<a class ="wps_wpr_open_toggle"  href="javascript:;"></a>
+						</p>
+						<table class = "form-table mwp_wpr_settings wps_wpr_points_view wps_wpr_common_table">
+								<thead>
+									<tr valign="top">
+										<th scope="row" class="wps_wpr_head_titledesc">
+											<span class="wps_wpr_nobr"><?php echo esc_html__( 'Date & Time', 'points-and-rewards-for-woocommerce' ); ?></span>
+										</th>
+										<th scope="row" class="wps_wpr_head_titledesc">
+											<span class="wps_wpr_nobr"><?php echo esc_html__( 'Point Status', 'points-and-rewards-for-woocommerce' ); ?></span>
+										</th>
+										<th scope="row" class="wps_wpr_head_titledesc">
+											<span class="wps_wpr_nobr"><?php echo esc_html__( 'Order No.', 'points-and-rewards-for-woocommerce' ); ?></span>
+										</th>
+									</tr>
+								</thead>
+								<?php
+								foreach ( $point_log['award_points_on_previous_order'] as $key => $value ) {
+									?>
+									<tr valign="top">
+										<td class="forminp forminp-text"><?php echo esc_html( $value['date'] ); ?></td>
+										<td class="forminp forminp-text"><?php echo esc_html( $value['award_points_on_previous_order'] ); ?> </td>
+										<td class="forminp forminp-text"><?php echo esc_html( $value['order_no'] ); ?> </td>
+									</tr>
+									<?php
+								}
+								?>
+						</table>
+					</div>
+					<?php
+				}
+				if ( array_key_exists( 'api_membership_logs', $point_log ) ) {
+					?>
+					<div class="wps_wpr_slide_toggle">
+						<p class="wps_wpr_view_log_notice wps_wpr_common_slider" ><?php esc_html_e( 'Membership updated via API', 'points-and-rewards-for-woocommerce' ); ?>
+							<a class ="wps_wpr_open_toggle"  href="javascript:;"></a>
+						</p>
+						<table class = "form-table mwp_wpr_settings wps_wpr_points_view wps_wpr_common_table">
+								<thead>
+									<tr valign="top">
+										<th scope="row" class="wps_wpr_head_titledesc">
+											<span class="wps_wpr_nobr"><?php echo esc_html__( 'Date & Time', 'points-and-rewards-for-woocommerce' ); ?></span>
+										</th>
+										<th scope="row" class="wps_wpr_head_titledesc">
+											<span class="wps_wpr_nobr"><?php echo esc_html__( 'Point Status', 'points-and-rewards-for-woocommerce' ); ?></span>
+										</th>
+									</tr>
+								</thead>
+								<?php
+								foreach ( $point_log['api_membership_logs'] as $key => $value ) {
+									?>
+									<tr valign="top">
+										<td class="forminp forminp-text"><?php echo esc_html( $value['date'] ); ?></td>
+										<td class="forminp forminp-text"><?php echo '-' . esc_html( $value['api_membership_logs'] ); ?> </td>
+									</tr>
 									<?php
 								}
 								?>
@@ -1153,10 +1409,10 @@ if ( isset( $_GET['action'] ) && isset( $_GET['user_id'] ) ) {
 								<?php
 								foreach ( $point_log['deduct_currency_pnt_cancel'] as $key => $value ) {
 									?>
-								<tr valign="top">
-									<td class="forminp forminp-text"><?php echo esc_html( $value['date'] ); ?></td>
-									<td class="forminp forminp-text"><?php echo '-' . esc_html( $value['deduct_currency_pnt_cancel'] ); ?></td>
-								</tr>
+									<tr valign="top">
+										<td class="forminp forminp-text"><?php echo esc_html( $value['date'] ); ?></td>
+										<td class="forminp forminp-text"><?php echo '-' . esc_html( $value['deduct_currency_pnt_cancel'] ); ?></td>
+									</tr>
 									<?php
 								}
 								?>
@@ -1215,10 +1471,10 @@ if ( isset( $_GET['action'] ) && isset( $_GET['user_id'] ) ) {
 								<?php
 								foreach ( $point_log['pur_points_cancel'] as $key => $value ) {
 									?>
-										<tr valign="top">
-											<td class="forminp forminp-text"><?php echo esc_html( $value['date'] ); ?></td>
-											<td class="forminp forminp-text"><?php echo '+' . esc_html( $value['pur_points_cancel'] ); ?></td>
-										</tr>
+									<tr valign="top">
+										<td class="forminp forminp-text"><?php echo esc_html( $value['date'] ); ?></td>
+										<td class="forminp forminp-text"><?php echo '+' . esc_html( $value['pur_points_cancel'] ); ?></td>
+									</tr>
 									<?php
 								}
 								?>
@@ -1282,18 +1538,21 @@ if ( isset( $_GET['action'] ) && isset( $_GET['user_id'] ) ) {
 								foreach ( $point_log['reference_details'] as $key => $value ) {
 									$user_name = '';
 									if ( isset( $value['refered_user'] ) && ! empty( $value['refered_user'] ) ) {
-										$user      = get_user_by( 'ID', $value['refered_user'] );
+										$user = get_user_by( 'ID', $value['refered_user'] );
+
 										if ( isset( $user ) && ! empty( $user ) ) {
+
 											$user_name = $user->user_login;
 										} else {
+
 											$user_name = esc_html__( 'This user doesn\'t exist', 'points-and-rewards-for-woocommerce' );
 										}
 									}
 									?>
 									<tr valign="top">
-											<td class="forminp forminp-text"><?php echo esc_html( $value['date'] ); ?></td>
-											<td class="forminp forminp-text"><?php echo '+' . esc_html( $value['reference_details'] ); ?></td>
-											<td class="forminp forminp-text">
+										<td class="forminp forminp-text"><?php echo esc_html( $value['date'] ); ?></td>
+										<td class="forminp forminp-text"><?php echo '+' . esc_html( $value['reference_details'] ); ?></td>
+										<td class="forminp forminp-text">
 										<?php
 										if ( isset( $user ) && ! empty( $user ) ) {
 											echo esc_html( $user_name );
@@ -1350,6 +1609,39 @@ if ( isset( $_GET['action'] ) && isset( $_GET['user_id'] ) ) {
 					</div>
 					<?php
 				}
+				if ( array_key_exists( 'points_reset_by_admin', $point_log ) ) {
+					?>
+					<div class="wps_wpr_slide_toggle">
+						<p class="wps_wpr_view_log_notice wps_wpr_common_slider" ><?php esc_html_e( 'Points Reset By Admin', 'points-and-rewards-for-woocommerce' ); ?>
+							<a class ="wps_wpr_open_toggle"  href="javascript:;"></a>
+						</p>
+						<div class="wps_wpr_points_view"> 
+							<table class = "form-table mwp_wpr_settings  wps_wpr_common_table">
+									<thead>
+										<tr valign="top">
+											<th scope="row" class="wps_wpr_head_titledesc">
+												<span class="wps_wpr_nobr"><?php echo esc_html__( 'Date & Time', 'points-and-rewards-for-woocommerce' ); ?></span>
+											</th>
+											<th scope="row" class="wps_wpr_head_titledesc">
+												<span class="wps_wpr_nobr"><?php echo esc_html__( 'Point Status', 'points-and-rewards-for-woocommerce' ); ?></span>
+											</th>
+										</tr>
+									</thead>
+									<?php
+									foreach ( $point_log['points_reset_by_admin'] as $key => $value ) {
+										?>
+										<tr valign="top">
+											<td class="forminp forminp-text"><?php echo esc_html( $value['date'] ); ?></td>
+											<td class="forminp forminp-text"><?php echo '-' . esc_html( $value['points_reset_by_admin'] ); ?></td>
+										</tr>
+										<?php
+									}
+									?>
+							</table>
+						</div>
+					</div>
+					<?php
+				}
 				if ( array_key_exists( 'Sender_point_details', $point_log ) ) {
 					?>
 					<div class="wps_wpr_slide_toggle">
@@ -1382,9 +1674,9 @@ if ( isset( $_GET['action'] ) && isset( $_GET['user_id'] ) ) {
 										<td class="forminp forminp-text"><?php echo esc_html( $value['date'] ); ?></td>
 										<td class="forminp forminp-text"><?php echo '-' . esc_html( $value['Sender_point_details'] ); ?></td>
 										<td class="forminp forminp-text">
-												<?php
-												echo esc_html( $user_name );
-												?>
+											<?php
+											echo esc_html( $user_name );
+											?>
 										</td>
 									</tr>
 									<?php
@@ -1426,9 +1718,9 @@ if ( isset( $_GET['action'] ) && isset( $_GET['user_id'] ) ) {
 									<td class="forminp forminp-text"><?php echo esc_html( $value['date'] ); ?></td>
 									<td class="forminp forminp-text"><?php echo '+' . esc_html( $value['Receiver_point_details'] ); ?> </td>
 									<td class="forminp forminp-text">
-												<?php
-												echo esc_html( $user_name );
-												?>
+										<?php
+										echo esc_html( $user_name );
+										?>
 									</td>
 								</tr>
 								<?php
@@ -1456,9 +1748,42 @@ if ( isset( $_GET['action'] ) && isset( $_GET['user_id'] ) ) {
 		}
 	}
 } else {
+
 	do_action( 'wps_wpr_add_additional_import_points' );
 	?>
-	<h3 class="wp-heading-inline" id="wps_wpr_points_table_heading"><?php esc_html_e( 'Points Table', 'points-and-rewards-for-woocommerce' ); ?></h3>
+	<!-- Previous Order Points Settings -->
+	<div class="wps_wpr_points_table_second_wrappers">
+		<h3 class="wp-heading-inline" id="wps_wpr_points_table_heading"><?php esc_html_e( 'Assign Points on Previous Orders', 'points-and-rewards-for-woocommerce' ); ?></h3>
+		<table class="form-table wps_wpr_general_setting">
+			<tbody>
+				<tr valign="top">
+					<td class="wps_wpr_instructions_tabledata">
+						<p><?php esc_html_e( 'This will help you to apply points to all previous order which are completed.', 'points-and-rewards-for-woocommerce' ); ?></p>
+					</td>
+					<td class="wps_wpr_instructions_tabledata_btn">
+						<p class="wps_wpr_button_to_assign_points">
+							<span class="wps_wpr_previous_button_wrappers">
+								<input type="number" min="1" id="wps_wpr_previous_order_point_value">
+								<input type="button" id="wps_wpr_points_on_previous_order" class="button-primary woocommerce-save-button" value="<?php esc_html_e( 'Assign Points', 'points-and-rewards-for-woocommerce' ); ?>" />
+								<img class="wps_wpr_previous_order_loader" src="<?php echo esc_url( WPS_RWPR_DIR_URL . 'admin/images/loading.gif' ); ?>">
+								<span class="wps_wpr_previous_order_notice"></span>
+							</span>
+						</p>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+
+	<!-- === Create HTML for Items per page === -->
+	<div class="wps_wpr_points_table_second_wrappers">
+		<h3 class="wp-heading-inline" id="wps_wpr_points_table_heading"><?php esc_html_e( 'Points Table', 'points-and-rewards-for-woocommerce' ); ?></h3>
+		<p><?php esc_html_e( 'Number of items per page', 'points-and-rewards-for-woocommerce' ); ?></p>
+		<input type="number" max="200" name="wps_wpr_number_items_per_page" id="wps_wpr_number_items_per_page" value="<?php echo esc_html( ! empty( get_option( 'wps_wpr_number_items_per_page' ) ) ? get_option( 'wps_wpr_number_items_per_page' ) : 10 ); ?>">
+		<input type="hidden" name="wps_wpr_items_per_page_nonce" value="<?php echo esc_html( wp_create_nonce( 'wps-wpr-items-per-page-nonce' ) ); ?>">
+		<input type="submit" name="wps_wpr_save_items_per_page" class="button button-primary" id="wps_wpr_save_items_per_page" value="<?php esc_html_e( 'Apply', 'points-and-rewards-for-woocommerce' ); ?>">
+	</div>
+
 	<?php
 	$general_settings  = get_option( 'wps_wpr_settings_gallery', true );
 	$enable_wps_signup = isset( $general_settings['wps_wpr_signup'] ) ? intval( $general_settings['wps_wpr_signup'] ) : 0;
@@ -1482,10 +1807,11 @@ if ( isset( $_GET['action'] ) && isset( $_GET['user_id'] ) ) {
 			$user_data  = get_users( $args );
 			$guest_flag = false;
 			foreach ( $user_data as $key => $value ) {
+
 				$user_id      = $value->data->ID;
 				$guest_points = get_user_meta( $value->data->ID, 'wps_wpr_points', false );
-
 				if ( false == $guest_points ) {
+
 					$guest_flag = true;
 				}
 			}
