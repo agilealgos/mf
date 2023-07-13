@@ -6,6 +6,7 @@
 	var searchTimer;
 	var sizeChartScripts = {
 		init: function() {
+			sizeChartScripts.sizeChartTableCellValidation();
 			sizeChartScripts.loadSizeChartMenuScript();
 			sizeChartScripts.loadChartCategorySelect2();
 			sizeChartScripts.loadProductChartSelect2();
@@ -17,12 +18,34 @@
 			sizeChartScripts.closeSizeChartModal();
 			sizeChartScripts.requiredSizeChartTitle();
 			sizeChartScripts.deleteAssignedProducts();
+            sizeChartScripts.multiRowColumnModule();
+            sizeChartScripts.sizeChartImportExportModule();
+		},
+		sizeChartTableCellValidation: function() {
+		    $('#post').submit(function(e){
+		        var isValid = true;
+
+		        $('#size-chart-meta-fields .inputtable input').each(function(){
+		            let tableFieldVal = $(this).val();
+		            let regexPattern = /^[^"\u201C\u201D\\]*$/;
+					if(regexPattern.test(tableFieldVal) === false ) {
+						isValid = false;
+						$(this).parent().css('border', '2px solid red');
+					}
+		        });
+
+		        if(!isValid) {
+		            e.preventDefault();
+		            alert(sizeChartScriptObject.size_chart_field_validation);
+		        }
+		    });
 		},
 		loadSizeChartMenuScript: function() {
 			var dotStoreMenu = $('#toplevel_page_dots_store');
 			if ((
 				'admin_page_size-chart-setting-page' === sizeChartScriptObject.size_chart_current_screen_id ||
-				'dotstore-plugins_page_size-chart-information' === sizeChartScriptObject.size_chart_current_screen_id
+				'dotstore-plugins_page_size-chart-information' === sizeChartScriptObject.size_chart_current_screen_id ||
+				'dotstore-plugins_page_size-chart-import-export' === sizeChartScriptObject.size_chart_current_screen_id
 			)) {
 				dotStoreMenu.addClass('wp-has-current-submenu wp-menu-open menu-top menu-top-first').removeClass('wp-not-current-submenu');
 				$('#toplevel_page_dots_store > a').addClass('wp-has-current-submenu current').removeClass('wp-not-current-submenu');
@@ -30,11 +53,10 @@
 				$('li.mine').css('display', 'none');
 				$('li.publish').css('display', 'none');
 				$('a[href="admin.php?page=' + sizeChartScriptObject.size_chart_get_started_page_slug + '"]').parent().addClass('current');
-				$('.page-title-action').remove();
 			}
 
 			if (
-				'edit-size-chart' === sizeChartScriptObject.size_chart_current_screen_id ||
+                'edit-size-chart' === sizeChartScriptObject.size_chart_current_screen_id ||
 				'size-chart' === sizeChartScriptObject.size_chart_current_screen_id
 			) {
 				dotStoreMenu.addClass('wp-has-current-submenu wp-menu-open menu-top menu-top-first').removeClass('wp-not-current-submenu');
@@ -43,7 +65,6 @@
 				$('li.mine').css('display', 'none');
 				$('li.publish').css('display', 'none');
 				$('a[href="admin.php?page=' + sizeChartScriptObject.size_chart_get_started_page_slug + '"]').parent().addClass('current');
-				$('.page-title-action').remove();
 			}
 
 			$('#toplevel_page_dots_store ul li').each(function() {
@@ -101,6 +122,17 @@
 			};
 			$('#chart-attributes').selectWoo(scaSelectWoo);
 
+            /**
+			 * Country select2.
+			 * @type {{escapeMarkup: (function(*): *), maximumSelectionLength: number}}
+			 */
+			 var sccSelectWoo2 = {
+				escapeMarkup: function(m) {
+					return m;
+				},
+				maximumSelectionLength: 100,
+			};
+			$('#chart-country').selectWoo(sccSelectWoo2);
 		},
 		loadProductChartSelect2: function() {
 
@@ -170,9 +202,18 @@
 				$('.size-chart-model').css('padding', '0');
 				$('#wait').show();
 				$('[data-remodal-id=modal]').html('');
+                var farr = [];
+                var chart_color = {};
+                var chart_border = {};
+                var popup_style = $('#table-style').val();
+                
 				dataObj = {
 					'action': 'size_chart_preview_post',
 					chartID: chartID,
+                    data: farr,
+                    chart_color:chart_color,
+                    chart_border:chart_border,
+                    popup_style: popup_style,
 					'security': sizeChartScriptObject.size_chart_nonce,
 				};
 
@@ -190,6 +231,8 @@
 							$('.size-chart-model').css('padding', '35px');
 							modal = document.getElementById('md-size-chart-modal');
 							modal.style.display = 'block';
+							$('#md-size-chart-modal').removeClass('md-size-chart-hide');
+							$('#md-size-chart-modal').addClass('md-size-chart-show');
 							$('#md-poup').append(response.html);
 							$('#' + cssSelector).text(response.css);
 						} else {
@@ -411,19 +454,26 @@
 			/**
 			 * Close popup.
 			 */
-			$(document).on('click', 'div#md-size-chart-modal .remodal-close', function() {
-				var modal = document.getElementById('md-size-chart-modal');
+			// $('div#md-size-chart-modal .remodal-close').click(function() {
+            $(document).on('click', 'div#md-size-chart-modal .remodal-close', function() {
+				// var modal = document.getElementById('md-size-chart-modal');
 				$('.chart-container').remove();
-				modal.style.display = 'none';
+				$('.md-size-chart-close').remove();
+				// modal.style.display = 'none';
+				$('#md-size-chart-modal').removeClass('md-size-chart-show');
+				$('#md-size-chart-modal').addClass('md-size-chart-hide');
 			});
 
 			/**
 			 * Close popup.
 			 */
 			$('div.md-size-chart-overlay').click(function() {
-				var modal = document.getElementById('md-size-chart-modal');
+				// var modal = document.getElementById('md-size-chart-modal');
 				$('.chart-container').remove();
-				modal.style.display = 'none';
+				$('.md-size-chart-close').remove();
+				// modal.style.display = 'none';
+				$('#md-size-chart-modal').removeClass('md-size-chart-show');
+				$('#md-size-chart-modal').addClass('md-size-chart-hide');
 			});
 		},
 		requiredSizeChartTitle: function() {
@@ -486,8 +536,8 @@
 					'chartID': chartID,
 					'security': sizeChartScriptObject.size_chart_nonce,
 				};
-
-				$.ajax({
+                
+                $.ajax({
 					type: 'POST',
 					url: sizeChartScriptObject.size_chart_admin_url,
 					data: data,
@@ -509,10 +559,284 @@
 					},
 				});
 			});
-		}
-	};
+		},
+        multiRowColumnModule: function(){
 
+            var stored_style =$('#table-style').val();
+            if( $('#table-style').length > 0 ) {
+                sync_setting(stored_style);
+                border_setting(stored_style);
+            }
+            if( 'advance-style' !== stored_style ){
+                jQuery('.multiple_action_wrap tbody tr').not('.row_wrap').not('.column_wrap').hide();
+            } else {
+                jQuery('.multiple_action_wrap tbody tr').not('.row_wrap').not('.column_wrap').show();
+            }
+            $('#table-style').change(function(){
+                var style_val = $(this).val();
+                if( 'advance-style' !== style_val ){
+                    jQuery('.multiple_action_wrap tbody tr').not('.row_wrap').not('.column_wrap').hide();
+                } else {
+                    jQuery('.multiple_action_wrap tbody tr').not('.row_wrap').not('.column_wrap').show();
+                }
+                sync_setting(style_val);
+                border_setting(style_val);
+            });
+
+            //Row action
+            $('#scfw_add_multi_row_action').click(function(){
+                var count = $('#scfw_add_multi_row').val();
+                for ( var i = 0; i < count; i++ ) {
+                    $('.addrow').last().trigger('click');
+                }
+                sync_setting();
+                border_setting();
+            });
+            $('#scfw_delete_multi_row_action').click(function(){
+                var count = $('#scfw_add_multi_row').val();
+                for ( var i = 0; i < count; i++ ) {
+                    $('.delrow').last().trigger('click');
+                }
+            });
+
+            //Column action
+            $('#scfw_add_multi_column_action').click(function(){
+                var count = $('#scfw_delete_multi_column').val();
+                for (var index = 0; index < count; index++) {
+                    $('.addcol').last().trigger('click');
+                }
+                sync_setting();
+                border_setting();
+            });
+            $('table').on('click', '.addcol, .addrow, .delrow, .delcol', function(){
+                setTimeout(function () {
+                    sync_setting();
+                    border_setting();
+                }, 20);
+            });
+            $('#scfw_delete_multi_column_action').click(function(){
+                var count = $('#scfw_delete_multi_column').val();
+                for ( var j = 0; j < count; j++ ) {
+                    $('.delcol').last().trigger('click');
+                }
+            });
+
+            $('#scfw_header_bg_color').wpColorPicker({
+                change: function (event, ui) {
+                    jQuery('table.inputtable tbody tr:first-child td:not(td:last-child)').css( 'background-color', ui.color.toString() );
+                }
+            });
+            $('#scfw_even_row_bg_color').wpColorPicker({
+                change: function (event, ui) {
+                    jQuery('table.inputtable tr:odd:not(:first-child) td:not(td:last-child)').css( 'background-color', ui.color.toString() );
+                }
+            });
+            $('#scfw_odd_row_bg_color').wpColorPicker({
+                change: function (event, ui) {
+                    jQuery('table.inputtable tr:even:not(:first-child) td:not(td:last-child)').css( 'background-color', ui.color.toString() );
+                }
+            });
+
+            $('#scfw_text_color').wpColorPicker({
+                change: function (event, ui) {
+                    jQuery('table.inputtable tbody tr:first-child td:not(td:last-child) input').css( 'color', ui.color.toString() );
+                }
+            });
+            $('#scfw_even_text_color').wpColorPicker({
+                change: function (event, ui) {
+                    jQuery('table.inputtable tr:odd:not(:first-child) td:not(td:last-child) input').css( 'color', ui.color.toString() );
+                }
+            });
+            $('#scfw_odd_text_color').wpColorPicker({
+                change: function (event, ui) {
+                    jQuery('table.inputtable tr:even:not(:first-child) td:not(td:last-child) input').css( 'color', ui.color.toString() );
+                }
+            });
+            //Border Color
+            $('#scfw_border_color').wpColorPicker({
+                change: function () {
+                    border_setting('advance-style');
+                }
+            });
+            $('#scfw_border_hb_style, #scfw_border_hw, #scfw_border_vb_style, #scfw_border_vw').on( 'input', function(){
+                border_setting('advance-style');
+            });
+            
+            function border_setting( ){
+                var table_style =$('#table-style').val(); 
+                var scfw_border_color, scfw_border_hb_style,scfw_border_hw,scfw_border_vb_style, scfw_border_vw;
+
+                if( 'advance-style' === table_style ){
+                    scfw_border_color = jQuery('#scfw_border_color').val();
+                    scfw_border_hb_style = jQuery('#scfw_border_hb_style').val();
+                    scfw_border_hw = jQuery('#scfw_border_hw').val();
+                    scfw_border_vb_style = jQuery('#scfw_border_vb_style').val();
+                    scfw_border_vw = jQuery('#scfw_border_vw').val();
+                } else {
+                    table_style = $('#table-style').val();
+                    var table_style_data = sizeChartScriptObject.size_chart_chart_table_style[table_style];
+                    scfw_border_color = table_style_data.border_color;
+                    scfw_border_hb_style = table_style_data.border_hb_style;
+                    scfw_border_hw = table_style_data.border_hw;
+                    scfw_border_vb_style = table_style_data.border_vb_style;
+                    scfw_border_vw = table_style_data.border_vw;
+                }
+
+                jQuery('table.inputtable tbody tr td:not(td:last-child)').css( 'border-top', scfw_border_hw + 'px ' + scfw_border_hb_style + ' ' +scfw_border_color );
+                jQuery('table.inputtable tbody tr td:not(td:last-child)').css( 'border-bottom', scfw_border_hw + 'px ' + scfw_border_hb_style + ' ' +scfw_border_color );
+
+                jQuery('table.inputtable tbody tr td:not(td:last-child)').css( 'border-left', scfw_border_vw + 'px ' + scfw_border_vb_style + ' ' +scfw_border_color );
+                jQuery('table.inputtable tbody tr td:not(td:last-child)').css( 'border-right', scfw_border_vw + 'px ' + scfw_border_vb_style + ' ' +scfw_border_color );
+            }
+
+            function sync_setting() {
+                var table_style =$('#table-style').val();
+                var scfw_header_bg_color, scfw_even_row_bg_color, scfw_odd_row_bg_color, scfw_text_color, scfw_even_text_color, scfw_odd_text_color;
+
+                if( 'advance-style' === table_style ){
+                    scfw_header_bg_color = jQuery('#scfw_header_bg_color').val();
+                    scfw_even_row_bg_color = jQuery('#scfw_even_row_bg_color').val();
+                    scfw_odd_row_bg_color = jQuery('#scfw_odd_row_bg_color').val();
+                    scfw_text_color = jQuery('#scfw_text_color').val();
+                    scfw_even_text_color = jQuery('#scfw_even_text_color').val();
+                    scfw_odd_text_color = jQuery('#scfw_odd_text_color').val();
+                } else {
+                    // table_style = $('#table-style').val();
+                    var table_style_data = sizeChartScriptObject.size_chart_chart_table_style[table_style];
+                    scfw_header_bg_color = table_style_data.header_bg_color;
+                    scfw_even_row_bg_color = table_style_data.even_row_bg_color;
+                    scfw_odd_row_bg_color = table_style_data.odd_row_bg_color;
+                    scfw_text_color = table_style_data.text_color;
+                    scfw_even_text_color = table_style_data.even_text_color;
+                    scfw_odd_text_color = table_style_data.odd_text_color;
+                }
+                
+                jQuery('table.inputtable tbody tr:first-child td:not(td:last-child)').css('background-color', scfw_header_bg_color);
+
+                //For our table even rows
+                jQuery('table.inputtable tr:odd:not(:first-child) td:not(td:last-child)').css('background-color', scfw_even_row_bg_color);
+
+                //For our table odd rows
+                jQuery('table.inputtable tr:even:not(:first-child) td:not(td:last-child)').css('background-color', scfw_odd_row_bg_color);
+ 
+                jQuery('table.inputtable tbody tr:first-child td:not(td:last-child) input').css('color', scfw_text_color);
+
+                //For our table even rows 
+                jQuery('table.inputtable tr:odd:not(:first-child) td:not(td:last-child) input').css('color', scfw_even_text_color);
+
+                //For our table odd rows 
+                jQuery('table.inputtable tr:even:not(:first-child) td:not(td:last-child) input').css('color', scfw_odd_text_color);
+            }
+        },
+        sizeChartImportExportModule: function(){
+            /**
+			 * Ajax for export size chart table data
+			 */
+			 $('.export_chart').click(function(e) {
+                e.preventDefault();
+				var prompt_ask = confirm('Are you sure want to export size chart data?');
+				if ( ! prompt_ask ) {
+					return false;
+				}
+                $('.inputtable').parent().parent().block({
+                    message: null,
+                    overlayCSS: {
+                        background: 'rgb(255, 255, 255)',
+                        opacity: 0.6,
+                    },
+                });
+				var chartID  = $(this).attr('id');
+				var data = {
+					'action': 'size_chart_export_data',
+					'chartID': chartID,
+					'security': sizeChartScriptObject.size_chart_nonce,
+				};
+                
+                $.ajax({
+					type: 'POST',
+					url: sizeChartScriptObject.size_chart_admin_url,
+					data: data,
+					success: function(response) {
+                        if( response.data.download_path ){
+                            var link = document.createElement('a');
+                            document.body.appendChild(link);
+                            link.href = response.data.download_path;
+                            link.download = '';
+                            link.click();
+                        }
+                        $('.inputtable').parent().parent().unblock();
+					},
+				});
+			});
+
+            /**
+			 * Ajax for import size chart table data
+			 */
+            $('.import_chart').click(function(e) {
+                e.preventDefault();
+                jQuery('.scfw_import_file').trigger('click');
+            });
+            $('.scfw_import_file').change(function(e) {
+                e.preventDefault();
+                //Get reference of FileUpload.
+                var fileUpload = $(this);
+                var p = $('<p>');
+                var msg = '';
+                //Check whether the file is valid Image.
+                var regex = new RegExp('([a-zA-Z0-9\s_\\.\-:])+(.json)$');
+                if (regex.test(fileUpload.val().toLowerCase())) {
+                    $('.thedotstore-main-table table').block({
+                        message: null,
+                        overlayCSS: {
+                            background: 'rgb(255, 255, 255)',
+                            opacity: 0.6,
+                        },
+                    });
+                    var chartID  = $('.import_chart').attr('id');
+                    var fd = new FormData();
+                    fd.append('import_file', fileUpload[0].files[0]);  
+                    fd.append('action', 'size_chart_import_data');
+                    fd.append('chartID', chartID);
+                    fd.append('security', sizeChartScriptObject.size_chart_nonce);
+                    
+                    $.ajax({
+                        type: 'POST',
+                        url: sizeChartScriptObject.size_chart_admin_url,
+                        data: fd,
+                        contentType: false,
+                        processData: false,
+                        success: function(response) {
+                            if(response.success){
+                                msg = response.data.message;
+                                p.css('color', 'green');
+                                setTimeout(function() {
+                                    window.location.reload();
+                                }, 4000);
+                            } else {
+                                msg = response.data.message;
+                                p.css('color', 'red');
+                            }
+                            
+                            $('.inputtable').parent().parent().unblock();
+                            p.text(msg);
+                            fileUpload.parent().append(p);
+                        },
+                    });
+                } else {
+                    msg = 'Please upload JSON file';
+                    p.css('color', 'red');
+                }
+                p.text(msg);
+                fileUpload.parent().append(p);
+            });
+
+            
+        }
+	};
 	$(document).ready(function(){
+		$('#scsf_user_role').select2({             
+			placeholder: 'Select a user role'
+	    });
 		function scfw_size_chart_position_options() {
 	        $('select#position').on('change', function () {
 	        	var optionSelected = $(this).val();
@@ -533,7 +857,62 @@
 			window.open( rurl, '_blank' );
 		});
 
+        //Default icon JS
+        jQuery('input[name="default-icons"]').change(function(){
+            var value = jQuery(this).val();
+            if( value !== 'dashicons-none' ){
+                jQuery('#chart-popup-icon').val(value); 
+            } else { 
+                jQuery('#chart-popup-icon').val('');
+            }
+        });
+        $('#chart-popup-icon').on('input', function(){
+            var value = $(this).val();
+            jQuery('input[name="default-icons"]').prop('checked', false);
+            if( '' !== value ){
+                jQuery('input[name="default-icons"]').each(function( e, val ){
+                    if( $(val).val() === value ){
+                        jQuery('input[name="default-icons"][value="'+value+'"]').prop('checked', true);
+                    }
+                });
+            } else {
+                jQuery('input[name="default-icons"][value="dashicons-none"]').prop('checked', true);
+            }
+        });
+
+        // Copy shortcode js
+        $('.scfw-copy-shortcode').click(function (e) {
+	        e.preventDefault();
+	        /* Get the text field */
+	        var copyText = $(this);
+	        /* Select the text field */
+	        copyText.select();
+	        document.execCommand('copy');
+	        jQuery('.scfw-after-copy-text').animate({
+	          opacity: 1,
+	          top: 36 + 'px'
+	        }, 300);
+	        setTimeout(function () {
+	          jQuery('.scfw-after-copy-text').animate({
+	            opacity: 0,
+	            top: -25 + 'px'
+	          }, 200);
+	        }, 2000);
+	    });
+
+        // Tablecell validation js
+	    $(document).on( 'change', '#size-chart-meta-fields .inputtable input', function () {
+            let tableFieldVal = $(this).val();
+			let regexPattern = /^[^"\u201C\u201D\\]*$/;
+			if(regexPattern.test(tableFieldVal) === false ) {
+				$(this).parent().addClass('invalid-character');
+			} else {
+				$(this).parent().removeClass('invalid-character');
+			}
+	    });
 	});
 
 	$(document).ready(sizeChartScripts.init);
+
+    
 })(jQuery, window, document);

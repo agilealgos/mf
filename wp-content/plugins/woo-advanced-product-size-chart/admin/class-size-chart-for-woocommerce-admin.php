@@ -1,6 +1,5 @@
 <?php
 
-// phpcs:ignore
 /**
  * The admin-specific functionality of the plugin.
  *
@@ -119,136 +118,83 @@ class SCFW_Size_Chart_For_Woocommerce_Admin
     public function scfw_enqueue_styles_scripts_callback( $hook_suffix )
     {
         global  $post, $typenow ;
-        $suffix = ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min' );
         /**
          * Register, Enqueue and Add inline styles.
          */
-        // Register styles.
-        wp_register_style(
-            $this->get_plugin_dash_name() . '-jquery-editable-style',
-            plugin_dir_url( __FILE__ ) . 'css/jquery.edittable.css',
-            array(),
-            $this->get_plugin_version(),
-            'all'
-        );
-        wp_register_style(
-            $this->get_plugin_dash_name() . '-select2-style',
-            plugin_dir_url( __FILE__ ) . 'css/select2.css',
-            array(),
-            $this->get_plugin_version(),
-            'all'
-        );
-        wp_register_style(
-            $this->get_plugin_dash_name(),
-            plugin_dir_url( __FILE__ ) . 'css/size-chart-for-woocommerce-admin.css',
-            array(),
-            $this->get_plugin_version(),
-            'all'
-        );
-        wp_register_style(
-            $this->get_plugin_dash_name() . '-main-style',
-            plugin_dir_url( __FILE__ ) . 'css/style.css',
-            array(),
-            $this->get_plugin_version(),
-            'all'
-        );
-        // Enqueue styles.
-        wp_enqueue_style( 'wp-color-picker' );
-        wp_enqueue_style( 'wp-jquery-ui-dialog' );
-        wp_enqueue_style( $this->get_plugin_dash_name() . '-jquery-editable-style' );
-        wp_enqueue_style( $this->get_plugin_dash_name() . '-select2-style' );
-        wp_enqueue_style( $this->get_plugin_dash_name() . '-main-style' );
-        wp_enqueue_style( $this->get_plugin_dash_name() );
-        // Add inline style.
-        wp_add_inline_style( $this->get_plugin_dash_name(), 'body{}' );
-        
-        if ( isset( $post ) ) {
-            $post_status = get_post_meta( $post->ID, 'post_status', true );
-            if ( $this->get_plugin_post_type_name() === $post->post_type && isset( $post_status ) && 'default' === $post_status ) {
-                // Add inline style.
-                wp_add_inline_style( 'wp-jquery-ui-dialog', "#delete-action, #duplicate-action, #misc-publishing-actions, #minor-publishing-actions{display:none;}" );
-            }
-        }
-        
-        /**
-         * Register, Enqueue and Add inline JavaScripts.
-         */
-        // Register scripts.
-        wp_register_script(
-            $this->get_plugin_dash_name() . '-jquery-editable-js',
-            plugin_dir_url( __FILE__ ) . 'js/jquery.edittable.js',
-            array( 'jquery' ),
-            $this->get_plugin_version(),
-            false
-        );
-        wp_register_script(
-            $this->get_plugin_dash_name(),
-            plugin_dir_url( __FILE__ ) . 'js/size-chart-for-woocommerce-admin' . $suffix . '.js',
-            array( 'jquery', 'wp-color-picker', 'selectWoo' ),
-            $this->get_plugin_version(),
-            false
-        );
         $screen = get_current_screen();
-        $chart_table_style = array(
-            'default-style' => array(
-            'header_bg_color'   => '#000',
-            'even_row_bg_color' => '#ebe9eb',
-            'odd_row_bg_color'  => '#fff',
-            'text_color'        => '#fff',
-            'even_text_color'   => '#000',
-            'odd_text_color'    => '#000',
-            'border_color'      => '#d1d1d1',
-            'border_hb_style'   => 'solid',
-            'border_hw'         => 1,
-            'border_vb_style'   => 'solid',
-            'border_vw'         => 1,
-        ),
-            'minimalistic'  => array(
-            'header_bg_color'   => '#fff',
-            'even_row_bg_color' => '#fff',
-            'odd_row_bg_color'  => '#fff',
-            'text_color'        => '#000',
-            'even_text_color'   => '#000',
-            'odd_text_color'    => '#000',
-            'border_color'      => '#d1d1d1',
-            'border_hb_style'   => 'solid',
-            'border_hw'         => 1,
-            'border_vb_style'   => 'solid',
-            'border_vw'         => 1,
-        ),
-            'classic'       => array(
-            'header_bg_color'   => '#000',
-            'even_row_bg_color' => '#fff',
-            'odd_row_bg_color'  => '#fff',
-            'text_color'        => '#fff',
-            'even_text_color'   => '#000',
-            'odd_text_color'    => '#000',
-            'border_color'      => '#d1d1d1',
-            'border_hb_style'   => 'solid',
-            'border_hw'         => 1,
-            'border_vb_style'   => 'solid',
-            'border_vw'         => 1,
-        ),
-            'modern'        => array(
-            'header_bg_color'   => '#ebe9eb',
-            'even_row_bg_color' => '#ebe9eb',
-            'odd_row_bg_color'  => '#fff',
-            'text_color'        => '#000',
-            'even_text_color'   => '#000',
-            'odd_text_color'    => '#000',
-            'border_color'      => 'transparent',
-            'border_hb_style'   => 'none',
-            'border_hw'         => 0,
-            'border_vb_style'   => 'none',
-            'border_vw'         => 0,
-        ),
-        );
-        if ( scfw_fs()->is__premium_only() & scfw_fs()->can_use_premium_code() ) {
-            $chart_table_style['custom-style'] = array(
-                'header_bg_color'   => scfw_size_chart_get_table_head_color(),
-                'even_row_bg_color' => scfw_size_chart_get_table_row_even_color(),
-                'odd_row_bg_color'  => scfw_size_chart_get_table_row_odd_color(),
-                'text_color'        => scfw_size_chart_get_table_head_font_color(),
+        
+        if ( false !== strpos( $hook_suffix, 'dotstore-plugins_page_size-chart' ) || 'size-chart' === $screen->post_type || 'product' === $screen->post_type ) {
+            // Register styles.
+            wp_register_style(
+                $this->get_plugin_dash_name() . '-jquery-editable-style',
+                plugin_dir_url( __FILE__ ) . 'css/jquery.edittable.css',
+                array(),
+                $this->get_plugin_version(),
+                'all'
+            );
+            wp_register_style(
+                $this->get_plugin_dash_name() . '-select2-style',
+                plugin_dir_url( __FILE__ ) . 'css/select2.css',
+                array(),
+                $this->get_plugin_version(),
+                'all'
+            );
+            wp_register_style(
+                $this->get_plugin_dash_name(),
+                plugin_dir_url( __FILE__ ) . 'css/size-chart-for-woocommerce-admin.css',
+                array(),
+                $this->get_plugin_version(),
+                'all'
+            );
+            wp_register_style(
+                $this->get_plugin_dash_name() . '-main-style',
+                plugin_dir_url( __FILE__ ) . 'css/style.css',
+                array(),
+                $this->get_plugin_version(),
+                'all'
+            );
+            // Enqueue styles.
+            wp_enqueue_style( 'wp-color-picker' );
+            wp_enqueue_style( 'wp-jquery-ui-dialog' );
+            wp_enqueue_style( $this->get_plugin_dash_name() . '-jquery-editable-style' );
+            wp_enqueue_style( $this->get_plugin_dash_name() . '-select2-style' );
+            wp_enqueue_style( $this->get_plugin_dash_name() . '-main-style' );
+            wp_enqueue_style( $this->get_plugin_dash_name() );
+            // Add inline style.
+            wp_add_inline_style( $this->get_plugin_dash_name(), 'body{}' );
+            
+            if ( isset( $post ) ) {
+                $post_status = get_post_meta( $post->ID, 'post_status', true );
+                if ( $this->get_plugin_post_type_name() === $post->post_type && isset( $post_status ) && 'default' === $post_status ) {
+                    // Add inline style.
+                    wp_add_inline_style( 'wp-jquery-ui-dialog', "#delete-action, #duplicate-action, #misc-publishing-actions, #minor-publishing-actions{display:none;}" );
+                }
+            }
+            
+            /**
+             * Register, Enqueue and Add inline JavaScripts.
+             */
+            // Register scripts.
+            wp_register_script(
+                $this->get_plugin_dash_name() . '-jquery-editable-js',
+                plugin_dir_url( __FILE__ ) . 'js/jquery.edittable.js',
+                array( 'jquery' ),
+                $this->get_plugin_version(),
+                false
+            );
+            wp_register_script(
+                $this->get_plugin_dash_name(),
+                plugin_dir_url( __FILE__ ) . 'js/size-chart-for-woocommerce-admin.js',
+                array( 'jquery', 'wp-color-picker', 'selectWoo' ),
+                $this->get_plugin_version(),
+                false
+            );
+            $chart_table_style = array(
+                'default-style' => array(
+                'header_bg_color'   => '#000',
+                'even_row_bg_color' => '#ebe9eb',
+                'odd_row_bg_color'  => '#fff',
+                'text_color'        => '#fff',
                 'even_text_color'   => '#000',
                 'odd_text_color'    => '#000',
                 'border_color'      => '#d1d1d1',
@@ -256,71 +202,104 @@ class SCFW_Size_Chart_For_Woocommerce_Admin
                 'border_hw'         => 1,
                 'border_vb_style'   => 'solid',
                 'border_vw'         => 1,
+            ),
+                'minimalistic'  => array(
+                'header_bg_color'   => '#fff',
+                'even_row_bg_color' => '#fff',
+                'odd_row_bg_color'  => '#fff',
+                'text_color'        => '#000',
+                'even_text_color'   => '#000',
+                'odd_text_color'    => '#000',
+                'border_color'      => '#d1d1d1',
+                'border_hb_style'   => 'solid',
+                'border_hw'         => 1,
+                'border_vb_style'   => 'solid',
+                'border_vw'         => 1,
+            ),
+                'classic'       => array(
+                'header_bg_color'   => '#000',
+                'even_row_bg_color' => '#fff',
+                'odd_row_bg_color'  => '#fff',
+                'text_color'        => '#fff',
+                'even_text_color'   => '#000',
+                'odd_text_color'    => '#000',
+                'border_color'      => '#d1d1d1',
+                'border_hb_style'   => 'solid',
+                'border_hw'         => 1,
+                'border_vb_style'   => 'solid',
+                'border_vw'         => 1,
+            ),
+                'modern'        => array(
+                'header_bg_color'   => '#ebe9eb',
+                'even_row_bg_color' => '#ebe9eb',
+                'odd_row_bg_color'  => '#fff',
+                'text_color'        => '#000',
+                'even_text_color'   => '#000',
+                'odd_text_color'    => '#000',
+                'border_color'      => 'transparent',
+                'border_hb_style'   => 'none',
+                'border_hw'         => 0,
+                'border_vb_style'   => 'none',
+                'border_vw'         => 0,
+            ),
             );
-        }
-        // Localize script.
-        $size_chart_localize_script_args = array(
-            'size_chart_admin_url'             => admin_url( 'admin-ajax.php' ),
-            'size_chart_nonce'                 => wp_create_nonce( 'size_chart_for_wooocmmerce_nonoce' ),
-            'size_chart_post_title_required'   => __( 'Title is required.', 'size-chart-for-woocommerce' ),
-            'size_chart_post_type_name'        => 'size-chart',
-            'size_chart_current_screen_id'     => ( isset( $screen->id ) ? $screen->id : '' ),
-            'size_chart_get_started_page_slug' => 'size-chart-get-started',
-            'size_chart_plugin_dash_name'      => $this->get_plugin_dash_name(),
-            'size_chart_plugin_name'           => $this->get_plugin_name(),
-            'size_chart_no_product_assigned'   => __( 'No product assigned', 'size-chart-for-woocommerce' ),
-            'size_chart_chart_table_style'     => $chart_table_style,
-        );
-        if ( scfw_fs()->is_plan( 'free', true ) ) {
-            $size_chart_localize_script_args['size_chart_plugin_menu_url'] = 'edit.php?post_type=' . $this->get_plugin_post_type_name();
-        }
-        wp_localize_script( $this->get_plugin_dash_name(), 'sizeChartScriptObject', $size_chart_localize_script_args );
-        // Enqueue scripts.
-        wp_enqueue_script( 'jquery-ui-dialog' );
-        wp_enqueue_script( 'jquery-blockui' );
-        wp_enqueue_script( $this->get_plugin_dash_name() . '-jquery-editable-js' );
-        wp_enqueue_script( $this->get_plugin_dash_name() );
-        wp_enqueue_script(
-            $this->get_plugin_dash_name() . '-select2_js',
-            plugin_dir_url( __FILE__ ) . 'js/select2.full.min.js?ver=4.0.3',
-            array( 'jquery' ),
-            '4.0.3',
-            false
-        );
-        // Loads the image iframe.
-        
-        if ( $this->get_plugin_post_type_name() === $typenow ) {
-            wp_enqueue_media();
-            // Registers and enqueues the required javascript.
-            wp_register_script( $this->get_plugin_dash_name() . '-meta-box-image', plugin_dir_url( __FILE__ ) . 'js/images-frame' . $suffix . '.js', array( 'jquery' ) );
-            wp_localize_script( $this->get_plugin_dash_name() . '-meta-box-image', 'meta_image', array(
-                'title'  => __( 'Upload an Image', 'size-chart-for-woocommerce' ),
-                'button' => __( 'Use this image', 'size-chart-for-woocommerce' ),
-            ) );
-            wp_enqueue_script( $this->get_plugin_dash_name() . '-meta-box-image' );
-        }
-        
-        // Disable the publish button on size chart.
-        
-        if ( 'post.php' === $hook_suffix ) {
-            $post_status = get_post_meta( $post->ID, 'post_status', true );
-            if ( $this->get_plugin_post_type_name() === $post->post_type && isset( $post_status ) && 'default' === $post_status ) {
-                // Add inline script.
-                wp_add_inline_script( $this->get_plugin_dash_name(), "window.onload = function() {jQuery('#title').prop('disabled', true);};" );
+            if ( scfw_fs()->is__premium_only() & scfw_fs()->can_use_premium_code() ) {
+                $chart_table_style['custom-style'] = array(
+                    'header_bg_color'   => scfw_size_chart_get_table_head_color(),
+                    'even_row_bg_color' => scfw_size_chart_get_table_row_even_color(),
+                    'odd_row_bg_color'  => scfw_size_chart_get_table_row_odd_color(),
+                    'text_color'        => scfw_size_chart_get_table_head_font_color(),
+                    'even_text_color'   => '#000',
+                    'odd_text_color'    => '#000',
+                    'border_color'      => '#d1d1d1',
+                    'border_hb_style'   => 'solid',
+                    'border_hw'         => 1,
+                    'border_vb_style'   => 'solid',
+                    'border_vw'         => 1,
+                );
             }
-        }
+            // Localize script.
+            $size_chart_localize_script_args = array(
+                'size_chart_admin_url'             => admin_url( 'admin-ajax.php' ),
+                'size_chart_nonce'                 => wp_create_nonce( 'size_chart_for_wooocmmerce_nonoce' ),
+                'size_chart_post_title_required'   => __( 'Title is required.', 'size-chart-for-woocommerce' ),
+                'size_chart_post_type_name'        => 'size-chart',
+                'size_chart_current_screen_id'     => ( isset( $screen->id ) ? $screen->id : '' ),
+                'size_chart_get_started_page_slug' => 'size-chart-get-started',
+                'size_chart_plugin_dash_name'      => $this->get_plugin_dash_name(),
+                'size_chart_plugin_name'           => $this->get_plugin_name(),
+                'size_chart_no_product_assigned'   => __( 'No product assigned', 'size-chart-for-woocommerce' ),
+                'size_chart_chart_table_style'     => $chart_table_style,
+                'size_chart_field_validation'      => __( 'Invalid character "Quotation mark ( " ) or Backslash ( \\ )" detected. Please remove and use "INCH" or "IN" instead and try again.', 'size-chart-for-woocommerce' ),
+            );
+            if ( scfw_fs()->is_plan( 'free', true ) ) {
+                $size_chart_localize_script_args['size_chart_plugin_menu_url'] = 'edit.php?post_type=' . $this->get_plugin_post_type_name();
+            }
+            wp_localize_script( $this->get_plugin_dash_name(), 'sizeChartScriptObject', $size_chart_localize_script_args );
+            // Enqueue scripts.
+            wp_enqueue_script( 'jquery-ui-dialog' );
+            wp_enqueue_script( 'jquery-blockui' );
+            wp_enqueue_script( $this->get_plugin_dash_name() . '-jquery-editable-js' );
+            wp_enqueue_script( $this->get_plugin_dash_name() );
+            wp_enqueue_script(
+                $this->get_plugin_dash_name() . '-select2_js',
+                plugin_dir_url( __FILE__ ) . 'js/select2.full.min.js?ver=4.0.3',
+                array( 'jquery' ),
+                '4.0.3',
+                false
+            );
+            // Disable the publish button on size chart.
+            
+            if ( 'post.php' === $hook_suffix ) {
+                $post_status = get_post_meta( $post->ID, 'post_status', true );
+                if ( $this->get_plugin_post_type_name() === $post->post_type && isset( $post_status ) && 'default' === $post_status ) {
+                    // Add inline script.
+                    wp_add_inline_script( $this->get_plugin_dash_name(), "window.onload = function() {jQuery('#title').prop('disabled', true);};" );
+                }
+            }
         
-        // if ( $this->get_plugin_post_type_name() === $typenow && 'edit.php' === $hook_suffix ) {
-        // 	$default_size_chart_ids = scfw_size_chart_get_default_post_ids();
-        // 	if ( isset( $default_size_chart_ids ) && ! empty( $default_size_chart_ids ) && array_filter( $default_size_chart_ids ) ) {
-        // 		$default_size_chart_ids_jquery = implode( ',', $default_size_chart_ids );
-        // 		// Add inline script.
-        // 		wp_add_inline_script(
-        // 			$this->get_plugin_dash_name(),
-        // 			'window.onload = function() {jQuery.each([ ' . $default_size_chart_ids_jquery . ' ], function( index, value ) {jQuery("input#cb-select-"+value).remove();});};'
-        // 		);
-        // 	}
-        // }
+        }
+    
     }
     
     /**
@@ -367,8 +346,10 @@ class SCFW_Size_Chart_For_Woocommerce_Admin
     
     /**
      * This function call for welcome screen in size chart plugin and Default size chart create hook.
+     * 
+     * @since      1.0.0
      */
-    public function scfw_size_chart_pro_welcome_screen_and_default_posts_callback()
+    public function scfw_size_chart_welcome_screen_and_default_posts_callback()
     {
         /**
          * Remove Default Template.
@@ -422,7 +403,7 @@ class SCFW_Size_Chart_For_Woocommerce_Admin
         delete_transient( '_welcome_screen_activation_redirect_size_chart' );
         // If activating from network, or bulk.
         // Sanitize user input.
-        $activate_multi = filter_input( INPUT_GET, 'activate-multi', FILTER_SANITIZE_STRING );
+        $activate_multi = filter_input( INPUT_GET, 'activate-multi', FILTER_SANITIZE_SPECIAL_CHARS );
         if ( is_network_admin() || isset( $activate_multi ) ) {
             return;
         }
@@ -433,9 +414,10 @@ class SCFW_Size_Chart_For_Woocommerce_Admin
     
     /**
      * Register admin menu and add size chart dashboard page for the plugin.
+     * 
      * @since      1.0.0
      */
-    public function scfw_size_chart_pro_welcome_page_screen_and_menu_callback()
+    public function scfw_size_chart_welcome_page_screen_and_menu_callback()
     {
         global  $GLOBALS ;
         $size_chart_setting = get_option( 'size_chart_settings' );
@@ -517,9 +499,13 @@ class SCFW_Size_Chart_For_Woocommerce_Admin
             array( $this, 'scfw_size_chart_settings_form_callback' )
         );
         add_action( "load-{$settings}", array( $this, 'scfw_size_chart_settings_page_callback' ) );
-        add_action( "load-{$settings}", array( $this, 'scfw_size_chart_settings_page_callback' ) );
     }
     
+    /**
+     * Size chart get started page.
+     * 
+     * @since      1.0.0
+     */
     public function scfw_size_chart_get_started_page()
     {
         $file_dir_path = 'partials/size-chart-get-started-page.php';
@@ -528,6 +514,11 @@ class SCFW_Size_Chart_For_Woocommerce_Admin
         }
     }
     
+    /**
+     * Size chart information page.
+     * 
+     * @since      1.0.0
+     */
     public function scfw_size_chart_information_page()
     {
         $file_dir_path = 'partials/size-chart-information-page.php';
@@ -536,6 +527,11 @@ class SCFW_Size_Chart_For_Woocommerce_Admin
         }
     }
     
+    /**
+     * Size chart import/export page.
+     * 
+     * @since      1.0.0
+     */
     public function scfw_size_chart_import_export_page()
     {
         $file_dir_path = 'partials/size-chart-import-export-page.php';
@@ -552,16 +548,16 @@ class SCFW_Size_Chart_For_Woocommerce_Admin
     public function scfw_size_chart_settings_page_callback()
     {
         // Sanitize user input.
-        $size_chart_submit = filter_input( INPUT_POST, 'size_chart_submit', FILTER_SANITIZE_STRING );
-        $get_page_name = filter_input( INPUT_GET, 'page', FILTER_SANITIZE_STRING );
+        $size_chart_submit = filter_input( INPUT_POST, 'size_chart_submit', FILTER_SANITIZE_SPECIAL_CHARS );
+        $get_page_name = filter_input( INPUT_GET, 'page', FILTER_SANITIZE_SPECIAL_CHARS );
         
         if ( isset( $size_chart_submit ) && isset( $get_page_name ) && 'size-chart-setting-page' === $get_page_name ) {
             $this->size_chart_settings = array();
             // Sanitize user input. (Free)
-            $size_chart_tab_label = filter_input( INPUT_POST, 'size-chart-tab-label', FILTER_SANITIZE_STRING );
-            $size_chart_popup_label = filter_input( INPUT_POST, 'size-chart-popup-label', FILTER_SANITIZE_STRING );
-            $size_chart_popup_type = filter_input( INPUT_POST, 'size-chart-popup-type', FILTER_SANITIZE_STRING );
-            $size_chart_sub_title_text = filter_input( INPUT_POST, 'size-chart-sub-title-text', FILTER_SANITIZE_STRING );
+            $size_chart_tab_label = filter_input( INPUT_POST, 'size-chart-tab-label', FILTER_SANITIZE_SPECIAL_CHARS );
+            $size_chart_popup_label = filter_input( INPUT_POST, 'size-chart-popup-label', FILTER_SANITIZE_SPECIAL_CHARS );
+            $size_chart_popup_type = filter_input( INPUT_POST, 'size-chart-popup-type', FILTER_SANITIZE_SPECIAL_CHARS );
+            $size_chart_sub_title_text = filter_input( INPUT_POST, 'size-chart-sub-title-text', FILTER_SANITIZE_SPECIAL_CHARS );
             // Assign the user input data in size chart settings object.
             $this->size_chart_settings['size-chart-tab-label'] = $size_chart_tab_label;
             $this->size_chart_settings['size-chart-popup-label'] = $size_chart_popup_label;
@@ -572,13 +568,9 @@ class SCFW_Size_Chart_For_Woocommerce_Admin
             update_option( "size_chart_settings", $size_chart_settings_json_encode );
             ?>
             <div class="updated">
-                <p>
-                    <strong>
-						<?php 
+                <p><strong><?php 
             esc_html_e( 'Settings saved.', 'size-chart-for-woocommerce' );
-            ?>
-                    </strong>
-                </p>
+            ?></strong></p>
             </div>
 			<?php 
         }
@@ -586,11 +578,13 @@ class SCFW_Size_Chart_For_Woocommerce_Admin
     }
     
     /**
-     * Removed the index.php in submenu page.
+     * Removed the submenu page.
+     * 
+     * @since      1.0.0
      */
     public function scfw_welcome_screen_remove_menus_callback()
     {
-        remove_submenu_page( 'index.php', 'size-chart-about' );
+        remove_submenu_page( 'dots_store', 'dots_store' );
         remove_submenu_page( 'dots_store', 'size-chart-information' );
         remove_submenu_page( 'dots_store', 'size-chart-get-started-page' );
         remove_submenu_page( 'dots_store', 'size-chart-import-export' );
@@ -603,7 +597,7 @@ class SCFW_Size_Chart_For_Woocommerce_Admin
      *
      * @return bool
      */
-    public function scfw_size_chart_pro_product_and_size_chart_save_callback( $post_id )
+    public function scfw_size_chart_product_and_size_chart_save_callback( $post_id )
     {
         // If this is an autosave, our form has not been submitted,
         // so we don't want to do anything.
@@ -611,7 +605,7 @@ class SCFW_Size_Chart_For_Woocommerce_Admin
             return $post_id;
         }
         // Sanitize user input.
-        $post_type_name = filter_input( INPUT_POST, 'post_type', FILTER_SANITIZE_STRING );
+        $post_type_name = filter_input( INPUT_POST, 'post_type', FILTER_SANITIZE_SPECIAL_CHARS );
         // Check the user's permissions.
         
         if ( 'product' === $post_type_name || $this->get_plugin_post_type_name() === $post_type_name ) {
@@ -657,22 +651,22 @@ class SCFW_Size_Chart_For_Woocommerce_Admin
         
         if ( isset( $size_chart_inner_nonce ) && wp_verify_nonce( $size_chart_inner_nonce, 'size_chart_inner_custom_box' ) ) {
             // Sanitize the user input.
-            $chart_label = filter_input( INPUT_POST, 'label', FILTER_SANITIZE_STRING );
-            $chart_sub_title = filter_input( INPUT_POST, 'size-chart-sub-title', FILTER_SANITIZE_STRING );
-            $chart_tab_label = filter_input( INPUT_POST, 'chart-tab-label', FILTER_SANITIZE_STRING );
-            $chart_popup_label = filter_input( INPUT_POST, 'chart-popup-label', FILTER_SANITIZE_STRING );
-            $chart_popup_type = filter_input( INPUT_POST, 'chart-popup-type', FILTER_SANITIZE_STRING );
-            $chart_popup_icon = filter_input( INPUT_POST, 'chart-popup-icon', FILTER_SANITIZE_STRING );
-            $chart_img = filter_input( INPUT_POST, 'primary-chart-image', FILTER_SANITIZE_STRING );
-            $chart_position = filter_input( INPUT_POST, 'position', FILTER_SANITIZE_STRING );
+            $chart_label = filter_input( INPUT_POST, 'label', FILTER_SANITIZE_SPECIAL_CHARS );
+            $chart_sub_title = filter_input( INPUT_POST, 'size-chart-sub-title', FILTER_SANITIZE_SPECIAL_CHARS );
+            $chart_tab_label = filter_input( INPUT_POST, 'chart-tab-label', FILTER_SANITIZE_SPECIAL_CHARS );
+            $chart_popup_label = filter_input( INPUT_POST, 'chart-popup-label', FILTER_SANITIZE_SPECIAL_CHARS );
+            $chart_popup_type = filter_input( INPUT_POST, 'chart-popup-type', FILTER_SANITIZE_SPECIAL_CHARS );
+            $chart_popup_icon = filter_input( INPUT_POST, 'chart-popup-icon', FILTER_SANITIZE_SPECIAL_CHARS );
+            $chart_img = filter_input( INPUT_POST, 'primary-chart-image', FILTER_SANITIZE_SPECIAL_CHARS );
+            $chart_position = filter_input( INPUT_POST, 'position', FILTER_SANITIZE_SPECIAL_CHARS );
             $chart_table = filter_input(
                 INPUT_POST,
                 'chart-table',
-                FILTER_SANITIZE_STRING,
+                FILTER_SANITIZE_FULL_SPECIAL_CHARS,
                 FILTER_FLAG_NO_ENCODE_QUOTES
             );
-            $table_style = filter_input( INPUT_POST, 'table-style', FILTER_SANITIZE_STRING );
-            $chart_popup_note = filter_input( INPUT_POST, 'chart-popup-note', FILTER_SANITIZE_STRING );
+            $table_style = filter_input( INPUT_POST, 'table-style', FILTER_SANITIZE_SPECIAL_CHARS );
+            $chart_popup_note = filter_input( INPUT_POST, 'chart-popup-note', FILTER_SANITIZE_SPECIAL_CHARS );
             // Sanitize the user input array values.
             $args = array(
                 'chart-categories' => array(
@@ -706,12 +700,12 @@ class SCFW_Size_Chart_For_Woocommerce_Admin
             // Sanitize Color Data
             
             if ( scfw_fs()->is__premium_only() & scfw_fs()->can_use_premium_code() ) {
-                $scfw_header_bg_color = filter_input( INPUT_POST, 'scfw_header_bg_color', FILTER_SANITIZE_STRING );
-                $scfw_even_row_bg_color = filter_input( INPUT_POST, 'scfw_even_row_bg_color', FILTER_SANITIZE_STRING );
-                $scfw_odd_row_bg_color = filter_input( INPUT_POST, 'scfw_odd_row_bg_color', FILTER_SANITIZE_STRING );
-                $scfw_text_color = filter_input( INPUT_POST, 'scfw_text_color', FILTER_SANITIZE_STRING );
-                $scfw_even_text_color = filter_input( INPUT_POST, 'scfw_even_text_color', FILTER_SANITIZE_STRING );
-                $scfw_odd_text_color = filter_input( INPUT_POST, 'scfw_odd_text_color', FILTER_SANITIZE_STRING );
+                $scfw_header_bg_color = filter_input( INPUT_POST, 'scfw_header_bg_color', FILTER_SANITIZE_SPECIAL_CHARS );
+                $scfw_even_row_bg_color = filter_input( INPUT_POST, 'scfw_even_row_bg_color', FILTER_SANITIZE_SPECIAL_CHARS );
+                $scfw_odd_row_bg_color = filter_input( INPUT_POST, 'scfw_odd_row_bg_color', FILTER_SANITIZE_SPECIAL_CHARS );
+                $scfw_text_color = filter_input( INPUT_POST, 'scfw_text_color', FILTER_SANITIZE_SPECIAL_CHARS );
+                $scfw_even_text_color = filter_input( INPUT_POST, 'scfw_even_text_color', FILTER_SANITIZE_SPECIAL_CHARS );
+                $scfw_odd_text_color = filter_input( INPUT_POST, 'scfw_odd_text_color', FILTER_SANITIZE_SPECIAL_CHARS );
             } else {
                 $scfw_header_bg_color = '';
                 $scfw_even_row_bg_color = '';
@@ -724,11 +718,11 @@ class SCFW_Size_Chart_For_Woocommerce_Admin
             //Sanitize Border Data
             
             if ( scfw_fs()->is__premium_only() & scfw_fs()->can_use_premium_code() ) {
-                $scfw_border_hb_style = filter_input( INPUT_POST, 'scfw_border_hb_style', FILTER_SANITIZE_STRING );
-                $scfw_border_hw = filter_input( INPUT_POST, 'scfw_border_hw', FILTER_SANITIZE_STRING );
-                $scfw_border_vb_style = filter_input( INPUT_POST, 'scfw_border_vb_style', FILTER_SANITIZE_STRING );
-                $scfw_border_vw = filter_input( INPUT_POST, 'scfw_border_vw', FILTER_SANITIZE_STRING );
-                $scfw_border_color = filter_input( INPUT_POST, 'scfw_border_color', FILTER_SANITIZE_STRING );
+                $scfw_border_hb_style = filter_input( INPUT_POST, 'scfw_border_hb_style', FILTER_SANITIZE_SPECIAL_CHARS );
+                $scfw_border_hw = filter_input( INPUT_POST, 'scfw_border_hw', FILTER_SANITIZE_SPECIAL_CHARS );
+                $scfw_border_vb_style = filter_input( INPUT_POST, 'scfw_border_vb_style', FILTER_SANITIZE_SPECIAL_CHARS );
+                $scfw_border_vw = filter_input( INPUT_POST, 'scfw_border_vw', FILTER_SANITIZE_SPECIAL_CHARS );
+                $scfw_border_color = filter_input( INPUT_POST, 'scfw_border_color', FILTER_SANITIZE_SPECIAL_CHARS );
             } else {
                 $scfw_border_hb_style = '';
                 $scfw_border_hw = '';
@@ -742,13 +736,12 @@ class SCFW_Size_Chart_For_Woocommerce_Admin
             if ( scfw_fs()->is__premium_only() & scfw_fs()->can_use_premium_code() ) {
                 $args = array(
                     'chart-country' => array(
-                    'filter' => FILTER_SANITIZE_STRING,
+                    'filter' => FILTER_SANITIZE_SPECIAL_CHARS,
                     'flags'  => FILTER_REQUIRE_ARRAY,
                 ),
                 );
                 $post_chart_country = filter_input_array( INPUT_POST, $args );
                 $chart_country = ( isset( $post_chart_country['chart-country'] ) && array_filter( $post_chart_country['chart-country'] ) ? $post_chart_country['chart-country'] : array() );
-                // $chart_country      = wp_json_encode( $chart_country );
             } else {
                 $chart_country = array();
             }
@@ -800,9 +793,9 @@ class SCFW_Size_Chart_For_Woocommerce_Admin
                     $assigned_chart_ids = json_decode( get_post_meta( $product_id, 'prod-chart', true ) );
                     //If already assinged size charts previously then merge the ids
                     
-                    if ( is_array( $assigned_chart_ids ) && !in_array( $post_id, $assigned_chart_ids ) ) {
+                    if ( is_array( $assigned_chart_ids ) && !in_array( $post_id, $assigned_chart_ids, true ) ) {
                         $assigned_chart_ids[] = $post_id;
-                        update_post_meta( $product_id, 'prod-chart', json_encode( $assigned_chart_ids ) );
+                        update_post_meta( $product_id, 'prod-chart', wp_json_encode( $assigned_chart_ids ) );
                     } else {
                         //Check if no size chart assigned then add the size chart ID
                         if ( !is_array( $assigned_chart_ids ) ) {
@@ -818,6 +811,24 @@ class SCFW_Size_Chart_For_Woocommerce_Admin
     }
     
     /**
+     * Size chart post update messages.
+     *
+     * See /wp-admin/edit-form-advanced.php
+     *
+     * @param array $messages Existing post update messages.
+     *
+     * @return array Amended post update messages with new CPT update messages.
+     */
+    public function scfw_post_updated_messages( $messages )
+    {
+        $size_chart_post = $this->get_plugin_post_type_name();
+        $messages[$size_chart_post][1] = __( 'Size chart updated successfully.', 'size-chart-for-woocommerce' );
+        $messages[$size_chart_post][6] = __( 'Size chart published successfully.', 'size-chart-for-woocommerce' );
+        //return the new messages
+        return $messages;
+    }
+    
+    /**
      * Adds the meta box container.
      *
      * @param string $post_type The post type name.
@@ -830,6 +841,17 @@ class SCFW_Size_Chart_For_Woocommerce_Admin
         $post_types_chart = array( $this->get_plugin_post_type_name(), 'product' );
         
         if ( in_array( $post_type, $post_types_chart, true ) ) {
+            if ( scfw_fs()->is__premium_only() && scfw_fs()->can_use_premium_code() ) {
+                // Meta box for size chart shortcode
+                add_meta_box(
+                    'size-chart-shortcode',
+                    __( 'Shortcode', 'size-chart-for-woocommerce' ),
+                    array( $this, 'scfw_size_chart_shortcode_callback__premium_only' ),
+                    $this->get_plugin_post_type_name(),
+                    'side',
+                    'default'
+                );
+            }
             // Chart setting meta box.
             add_meta_box(
                 'chart-settings',
@@ -981,11 +1003,13 @@ class SCFW_Size_Chart_For_Woocommerce_Admin
     
     /**
      * Duplicate post create as a draft and redirects then to the edit post screen.
+     * 
+     * @since      1.0.0
      */
     public function scfw_size_chart_duplicate_post_callback()
     {
         // Sanitize user input.
-        $get_request_get = filter_input( INPUT_GET, 'post', FILTER_SANITIZE_STRING );
+        $get_request_get = filter_input( INPUT_GET, 'post', FILTER_SANITIZE_SPECIAL_CHARS );
         $size_chart_id = ( isset( $get_request_get ) ? absint( $get_request_get ) : 0 );
         
         if ( isset( $get_request_get ) && !empty($get_request_get) ) {
@@ -1000,6 +1024,8 @@ class SCFW_Size_Chart_For_Woocommerce_Admin
     
     /**
      * Creates size chart post preview.
+     * 
+     * @since      1.0.0
      */
     public function scfw_size_chart_preview_post_callback()
     {
@@ -1018,20 +1044,20 @@ class SCFW_Size_Chart_For_Woocommerce_Admin
         
         // Sanitize user input.
         $chart_id = filter_input( INPUT_GET, 'chartID', FILTER_SANITIZE_NUMBER_INT );
-        $table_style = filter_input( INPUT_GET, 'popup_style', FILTER_SANITIZE_STRING );
+        $table_style = filter_input( INPUT_GET, 'popup_style', FILTER_SANITIZE_SPECIAL_CHARS );
         
         if ( scfw_fs()->is__premium_only() && scfw_fs()->can_use_premium_code() ) {
             $filter = array(
                 'data'         => array(
-                'filter' => array( FILTER_VALIDATE_INT, FILTER_SANITIZE_STRING ),
+                'filter' => array( FILTER_VALIDATE_INT, FILTER_SANITIZE_SPECIAL_CHARS ),
                 'flags'  => FILTER_REQUIRE_ARRAY,
             ),
                 'chart_color'  => array(
-                'filter' => array( FILTER_VALIDATE_INT, FILTER_SANITIZE_STRING ),
+                'filter' => array( FILTER_VALIDATE_INT, FILTER_SANITIZE_SPECIAL_CHARS ),
                 'flags'  => FILTER_REQUIRE_ARRAY,
             ),
                 'chart_border' => array(
-                'filter' => array( FILTER_VALIDATE_INT, FILTER_SANITIZE_STRING ),
+                'filter' => array( FILTER_VALIDATE_INT, FILTER_SANITIZE_SPECIAL_CHARS ),
                 'flags'  => FILTER_REQUIRE_ARRAY,
             ),
             );
@@ -1050,12 +1076,11 @@ class SCFW_Size_Chart_For_Woocommerce_Admin
             if ( isset( $chart_label ) && !empty($chart_label) ) {
                 
                 if ( scfw_fs()->is__premium_only() && scfw_fs()->can_use_premium_code() ) {
-                    // $table_style = scfw_size_chart_get_chart_table_style_by_chart_id( $post_id );
                     
                     if ( 'advance-style' !== $table_style ) {
                         $result['css'] = scfw_size_chart_get_inline_styles_by_post_id( $chart_id, $table_style );
                     } else {
-                        $result['css'] = "table#size-chart.advance-style tr th {background: {$chart_color['scfw_header_bg_color']};color: {$chart_color['scfw_text_color']};} \n                            #size-chart.advance-style tr:nth-child(even) {background: {$chart_color['scfw_odd_row_bg_color']};color: {$chart_color['scfw_odd_text_color']};}\n                            #size-chart.advance-style td:nth-child(even) {background: transparent;}\n\n                            #size-chart.advance-style tr:nth-child(odd) {background: {$chart_color['scfw_even_row_bg_color']};color: {$chart_color['scfw_even_text_color']};}\n                            #size-chart.advance-style td:nth-child(odd) {background: transparent;}\n\n                            table#size-chart.advance-style tr td, #size-chart.advance-style tr th { \n                                border-top:{$chart_border['scfw_border_hw']}px {$chart_border['scfw_border_hb_style']} {$chart_border['scfw_border_color']};\n                                border-bottom:{$chart_border['scfw_border_hw']}px {$chart_border['scfw_border_hb_style']} {$chart_border['scfw_border_color']};\n                                border-left:{$chart_border['scfw_border_vw']}px {$chart_border['scfw_border_vb_style']} {$chart_border['scfw_border_color']};\n                                border-right:{$chart_border['scfw_border_vw']}px {$chart_border['scfw_border_vb_style']} {$chart_border['scfw_border_color']};\n                            }\n\n                            .button-wrapper #chart-button, .button-wrapper .md-size-chart-btn {color: {$size_chart_title_color}}";
+                        $result['css'] = "table#size-chart.advance-style tr th {background: {$chart_color['scfw_header_bg_color']};color: {$chart_color['scfw_text_color']};} \n                            #size-chart.advance-style tr:nth-child(even) {background: {$chart_color['scfw_odd_row_bg_color']};color: {$chart_color['scfw_odd_text_color']};}\n                            #size-chart.advance-style td:nth-child(even) {background: transparent;}\n\n                            #size-chart.advance-style tr:nth-child(odd) {background: {$chart_color['scfw_even_row_bg_color']};color: {$chart_color['scfw_even_text_color']};}\n                            #size-chart.advance-style td:nth-child(odd) {background: transparent;}\n\n                            table#size-chart.advance-style tr td, #size-chart.advance-style tr th { \n                                border-top:{$chart_border['scfw_border_hw']}px {$chart_border['scfw_border_hb_style']} {$chart_border['scfw_border_color']};\n                                border-bottom:{$chart_border['scfw_border_hw']}px {$chart_border['scfw_border_hb_style']} {$chart_border['scfw_border_color']};\n                                border-left:{$chart_border['scfw_border_vw']}px {$chart_border['scfw_border_vb_style']} {$chart_border['scfw_border_color']};\n                                border-right:{$chart_border['scfw_border_vw']}px {$chart_border['scfw_border_vb_style']} {$chart_border['scfw_border_color']};\n                            }";
                     }
                 
                 } else {
@@ -1063,6 +1088,7 @@ class SCFW_Size_Chart_For_Woocommerce_Admin
                 }
                 
                 ob_start();
+                $admin_post_type = get_post_type( $chart_id );
                 $file_dir_path = 'includes/common-files/size-chart-contents.php';
                 if ( file_exists( plugin_dir_path( dirname( __FILE__ ) ) . $file_dir_path ) ) {
                     require_once plugin_dir_path( dirname( __FILE__ ) ) . $file_dir_path;
@@ -1084,6 +1110,8 @@ class SCFW_Size_Chart_For_Woocommerce_Admin
     
     /**
      * Size chart preview dialog box html.
+     * 
+     * @since      1.0.0
      */
     public function scfw_size_chart_preview_dialog_box_callback()
     {
@@ -1125,10 +1153,12 @@ class SCFW_Size_Chart_For_Woocommerce_Admin
         $new_columns = ( is_array( $columns ) ? $columns : array() );
         unset( $new_columns['date'] );
         $new_columns['size-chart-type'] = __( 'Size Chart Type', 'size-chart-for-woocommerce' );
-        // $new_columns['action']          = __( 'Action', 'size-chart-for-woocommerce' );
         $new_columns['product_assign'] = __( 'Product assign', 'size-chart-for-woocommerce' );
         $new_columns['category_assign'] = __( 'Category assign', 'size-chart-for-woocommerce' );
         $new_columns['tag_assign'] = __( 'Tag assign', 'size-chart-for-woocommerce' );
+        if ( scfw_fs()->is__premium_only() && scfw_fs()->can_use_premium_code() ) {
+            $new_columns['size_chart_shortcode'] = __( 'Shortcode', 'size-chart-for-woocommerce' );
+        }
         return $new_columns;
     }
     
@@ -1142,19 +1172,35 @@ class SCFW_Size_Chart_For_Woocommerce_Admin
         global  $post, $wpdb ;
         switch ( $column ) {
             case 'product_assign':
-                $variables_app_data = $wpdb->get_results( $wpdb->prepare( "SELECT post_id\n\t\t\t\t\t    FROM {$wpdb->prefix}postmeta \n\t\t\t\t\t    WHERE `meta_value` LIKE '%s' AND `meta_key` LIKE %s", '%' . $wpdb->esc_like( $post->ID ) . '%', 'prod-chart' ) );
+                $meta_query_args = $this->scfw_size_chart_product_meta_query_argument();
+                $wp_posts_query = new WP_Query( $meta_query_args );
+                $assigned_product_ids = array();
                 
-                if ( !empty($variables_app_data) ) {
-                    $size_chart_product_ids = wp_list_pluck( $variables_app_data, 'post_id' );
-                    
-                    if ( !empty($size_chart_product_ids) && is_array( $size_chart_product_ids ) ) {
-                        $sep = '';
-                        foreach ( $size_chart_product_ids as $size_chart_product_id ) {
-                            echo  $sep . get_the_title( $size_chart_product_id ) ;
-                            $sep = ', ';
+                if ( !empty($wp_posts_query->posts) ) {
+                    foreach ( $wp_posts_query->posts as $product_id ) {
+                        $data_size_chart = json_decode( get_post_meta( $product_id, 'prod-chart', true ) );
+                        $valid_product = false;
+                        
+                        if ( is_array( $data_size_chart ) ) {
+                            $valid_product = in_array( $post->ID, $data_size_chart, true );
+                        } else {
+                            $valid_product = ( $post->ID === $data_size_chart ? true : false );
+                        }
+                        
+                        if ( true === $valid_product ) {
+                            $assigned_product_ids[] = $product_id;
                         }
                     }
+                    wp_reset_postdata();
+                }
                 
+                $sep = '';
+                
+                if ( isset( $assigned_product_ids ) && !empty($assigned_product_ids) ) {
+                    foreach ( $assigned_product_ids as $assigned_product_id ) {
+                        printf( "{$sep}<a href='%s'>%s</a>", esc_url( get_edit_post_link( $assigned_product_id ) ), wp_kses_post( get_the_title( $assigned_product_id ) ) );
+                        $sep = ', ';
+                    }
                 } else {
                     esc_html_e( 'No product assign', 'size-chart-for-woocommerce' );
                 }
@@ -1167,7 +1213,7 @@ class SCFW_Size_Chart_For_Woocommerce_Admin
                     $sep = '';
                     foreach ( $size_chart_cat_id as $size_chart_cat ) {
                         $data = get_term_by( 'id', $size_chart_cat, 'product_cat' );
-                        echo  $sep . esc_html( $data->name ) ;
+                        echo  wp_kses_post( $sep . esc_html( $data->name ) ) ;
                         $sep = ', ';
                     }
                 } else {
@@ -1182,7 +1228,7 @@ class SCFW_Size_Chart_For_Woocommerce_Admin
                     $sep = '';
                     foreach ( $size_chart_tag_id as $size_chart_tag ) {
                         $data = get_term_by( 'id', $size_chart_tag, 'product_tag' );
-                        echo  $sep . esc_html( $data->name ) ;
+                        echo  wp_kses_post( $sep . esc_html( $data->name ) ) ;
                         $sep = ', ';
                     }
                 } else {
@@ -1216,11 +1262,25 @@ class SCFW_Size_Chart_For_Woocommerce_Admin
                     }
                 }
                 break;
+            case 'size_chart_shortcode':
+                ?>
+				<input type="text" class="scfw-copy-shortcode" value='[scfw_size_chart id="<?php 
+                echo  esc_attr( $post->ID ) ;
+                ?>"]' readonly="readonly">
+				<div class="scfw-after-copy-text">
+					<span class="dashicons dashicons-yes-alt"></span><?php 
+                esc_html_e( 'Shortcode  Copied to Clipboard!', 'size-chart-for-woocommerce' );
+                ?>
+				</div>
+				<?php 
+                break;
         }
     }
     
     /**
      * Delete size chart image.
+     * 
+     * @since      1.0.0
      */
     public function scfw_size_chart_delete_image_callback()
     {
@@ -1312,12 +1372,9 @@ class SCFW_Size_Chart_For_Woocommerce_Admin
         
         if ( $this->get_plugin_post_type_name() === $post->post_type ) {
             $post_status = get_post_meta( $post->ID, 'post_status', true );
-            
             if ( isset( $post_status ) && 'default' === $post_status ) {
                 unset( $actions['inline hide-if-no-js'] );
-                // $actions = array();
             }
-            
             $actions['previewing'] = sprintf( '<a id="%s" href="javascript:void(0);" class="preview_chart" rel="permalink">%s</a>', esc_attr( $post->ID ), esc_attr__( 'Preview', 'size-chart-for-woocommerce' ) );
             $actions['clone'] = sprintf( '<a href="%s" rel="permalink">%s</a>', esc_url( wp_nonce_url( add_query_arg( array(
                 'action' => 'size_chart_duplicate_post',
@@ -1329,7 +1386,6 @@ class SCFW_Size_Chart_For_Woocommerce_Admin
                 unset( $actions['inline hide-if-no-js'] );
                 unset( $actions['previewing'] );
                 unset( $actions['clone'] );
-                // $actions = array();
             }
         
         }
@@ -1339,12 +1395,14 @@ class SCFW_Size_Chart_For_Woocommerce_Admin
     
     /**
      * Size chart default template.
+     * 
+     * @since      1.0.0
      */
     public function scfw_size_chart_filter_default_template_callback()
     {
         global  $typenow ;
         // Sanitize user input.
-        $current = filter_input( INPUT_GET, 'default_template', FILTER_SANITIZE_STRING );
+        $current = filter_input( INPUT_GET, 'default_template', FILTER_SANITIZE_SPECIAL_CHARS );
         
         if ( $this->get_plugin_post_type_name() === $typenow ) {
             ?>
@@ -1372,8 +1430,8 @@ class SCFW_Size_Chart_For_Woocommerce_Admin
     {
         global  $pagenow ;
         // Sanitize user input.
-        $default_template = filter_input( INPUT_GET, 'default_template', FILTER_SANITIZE_STRING );
-        $post_type = filter_input( INPUT_GET, 'post_type', FILTER_SANITIZE_STRING );
+        $default_template = filter_input( INPUT_GET, 'default_template', FILTER_SANITIZE_SPECIAL_CHARS );
+        $post_type = filter_input( INPUT_GET, 'post_type', FILTER_SANITIZE_SPECIAL_CHARS );
         $show_default_template = apply_filters( 'show_default_template', true );
         if ( is_admin() && 'edit.php' === $pagenow && isset( $post_type ) && $this->get_plugin_post_type_name() === $post_type && isset( $default_template ) && !empty($default_template) || false === $show_default_template ) {
             set_query_var( 'meta_query', array( array(
@@ -1418,7 +1476,10 @@ class SCFW_Size_Chart_For_Woocommerce_Admin
         $meta_object = wp_cache_get( $cache_key );
         
         if ( false === $meta_object ) {
+            // Ignore custom query warnings in phpcs. If convert this query to WP_Query then we can face a slow meta query issue.
+            // phpcs:disable
             $meta_object = $wpdb->get_col( $wpdb->prepare( "SELECT post_id FROM {$wpdb->postmeta} WHERE meta_key=%s AND meta_value=%s", $key, $value ) );
+            // phpcs:enable
             wp_cache_set( $cache_key, $meta_object );
         }
         
@@ -1432,35 +1493,14 @@ class SCFW_Size_Chart_For_Woocommerce_Admin
     }
     
     /**
-     * Size chart pro review admin notice html.
-     *
-     * @param string $tag_id html tag id.
-     * @param string $tag_class html tag class.
-     */
-    public function scfw_size_chart_pro_review_html_callback( $tag_id = '', $tag_class = '' )
-    {
-        printf(
-            "<p id='%s' class='%s'>%s <strong>%s</strong> %s <a href='%s' target='_blank'> %s </a> %s <a href='%s' target='_blank'>%s</a></p>",
-            esc_attr__( $tag_id, 'size-chart-for-woocommerce' ),
-            esc_attr__( $tag_class, 'size-chart-for-woocommerce' ),
-            esc_html__( 'Hello! If you are happy with the', 'size-chart-for-woocommerce' ),
-            esc_html__( 'WooCommerce Advanced Product Size Chart', 'size-chart-for-woocommerce' ),
-            esc_html__( ', we would really appreciate if you could give', 'size-chart-for-woocommerce' ),
-            esc_url( 'https://www.thedotstore.com/woocommerce-advanced-product-size-charts/' ),
-            esc_html__( '★★★★★ rating and post your review on DotStore', 'size-chart-for-woocommerce' ),
-            esc_html__( 'or', 'size-chart-for-woocommerce' ),
-            esc_url( 'https://codecanyon.net/item/advanced-product-size-chart-for-woocommerce/reviews/17465337' ),
-            esc_html__( 'CodeCanyon', 'size-chart-for-woocommerce' )
-        );
-    }
-    
-    /**
      * Size chart pro plugin admin review notice.
+     * 
+     * @since      1.0.0
      */
-    public function scfw_size_chart_pro_admin_notice_review_callback()
+    public function scfw_size_chart_admin_notice_review_callback()
     {
         global  $typenow ;
-        $get_post_type = filter_input( INPUT_GET, 'post_type', FILTER_SANITIZE_STRING );
+        $get_post_type = filter_input( INPUT_GET, 'post_type', FILTER_SANITIZE_SPECIAL_CHARS );
         if ( isset( $get_post_type ) && $get_post_type === 'size-chart' || $this->get_plugin_post_type_name() === $typenow ) {
             include_once plugin_dir_path( __FILE__ ) . 'partials/header/plugin-header.php';
         }
@@ -1468,13 +1508,15 @@ class SCFW_Size_Chart_For_Woocommerce_Admin
     
     /**
      * Ajax search the size chart form product meta search box in product page.
+     * 
+     * @since      1.0.0
      */
     public function scfw_size_chart_search_chart_callback()
     {
         ob_start();
         check_ajax_referer( 'size_chart_search_nonce', 'security' );
         // Sanitized user input.
-        $search_query_parameter = filter_input( INPUT_GET, 'searchQueryParameter', FILTER_SANITIZE_STRING );
+        $search_query_parameter = filter_input( INPUT_GET, 'searchQueryParameter', FILTER_SANITIZE_SPECIAL_CHARS );
         $searched_term = ( isset( $search_query_parameter ) ? (string) wc_clean( wp_unslash( $search_query_parameter ) ) : '' );
         if ( empty($searched_term) ) {
             wp_die( -1 );
@@ -1502,6 +1544,8 @@ class SCFW_Size_Chart_For_Woocommerce_Admin
     
     /**
      * Size chart product assign ajax callback function.
+     * 
+     * @since      1.0.0
      */
     public function scfw_size_chart_product_assign_callback()
     {
@@ -1520,17 +1564,19 @@ class SCFW_Size_Chart_For_Woocommerce_Admin
             'found_products' => array(),
         );
         // Meta_query argument.
-        $meta_query_args = $this->scfw_size_chart_product_meta_query_argument( $post_id, $page_number, $post_per_page );
+        $meta_query_args = $this->scfw_size_chart_product_meta_query_argument();
         $wp_posts_query = new WP_Query( $meta_query_args );
-        if ( $wp_posts_query->have_posts() ) {
-            while ( $wp_posts_query->have_posts() ) {
-                $wp_posts_query->the_post();
-                $response_array['found_products'][get_the_ID()] = array(
-                    'href'  => esc_url( get_edit_post_link( get_the_ID() ) ),
-                    'title' => get_the_title( get_the_ID() ),
+        
+        if ( !empty($wp_posts_query->posts) ) {
+            foreach ( $wp_posts_query->posts as $product_id ) {
+                $response_array['found_products'][$product_id] = array(
+                    'href'  => esc_url( get_edit_post_link( $product_id ) ),
+                    'title' => get_the_title( $product_id ),
                 );
             }
+            wp_reset_postdata();
         }
+        
         
         if ( 0 !== count( $response_array['found_products'] ) ) {
             $response_array['success'] = true;
@@ -1550,62 +1596,27 @@ class SCFW_Size_Chart_For_Woocommerce_Admin
     /**
      * Size chart product meta query argument created.
      *
-     * @param int $size_chart_id pass the size chart id.
-     * @param int $page_number pass the current page number.
-     * @param int $post_per_page pass the per per post.
-     *
      * @return array return the array of argument.
      */
-    public function scfw_size_chart_product_meta_query_argument( $size_chart_id, $page_number = 1, $post_per_page = 10 )
+    public function scfw_size_chart_product_meta_query_argument()
     {
         // Meta_query argument.
-        //die('debu');
-        global  $wpdb ;
-        $size_chart_args = array(
-            'posts_per_page'         => $post_per_page,
-            'order'                  => 'DESC',
-            'post_type'              => 'product',
-            'paged'                  => $page_number,
-            'update_post_term_cache' => false,
-            'fields'                 => 'ids',
-            'orderby'                => 'meta_value',
-        );
-        $size_chart_args['meta_query']['relation'] = 'OR';
-        $size_chart_args['meta_query'][] = array(
+        $args = array(
+            'post_type'      => 'product',
+            'meta_query'     => array( array(
             'key'     => 'prod-chart',
-            'value'   => "{$size_chart_id}",
             'compare' => 'EXISTS',
+        ) ),
+            'fields'         => 'ids',
+            'posts_per_page' => -1,
         );
-        $size_chart_args['meta_query'][] = array(
-            'key'     => 'prod-chart',
-            'value'   => $size_chart_id,
-            'compare' => 'LIKE',
-        );
-        $size_chart_args['meta_query'][] = array(
-            'key'     => 'prod-chart',
-            'value'   => "[{$size_chart_id},",
-            'compare' => 'LIKE',
-        );
-        $size_chart_args['meta_query'][] = array(
-            'key'     => 'prod-chart',
-            'value'   => ",{$size_chart_id},",
-            'compare' => 'LIKE',
-        );
-        $size_chart_args['meta_query'][] = array(
-            'key'     => 'prod-chart',
-            'value'   => ",{$size_chart_id}]",
-            'compare' => 'LIKE',
-        );
-        $size_chart_args['meta_query'][] = array(
-            'key'     => 'prod-chart',
-            'value'   => "[{$size_chart_id}]",
-            'compare' => 'LIKE',
-        );
-        return $size_chart_args;
+        return $args;
     }
     
     /**
      * Quick search products ajax callback function.
+     * 
+     * @since      1.0.0
      */
     public function scfw_size_chart_quick_search_products_callback()
     {
@@ -1613,8 +1624,8 @@ class SCFW_Size_Chart_For_Woocommerce_Admin
         check_ajax_referer( 'size_chart_quick_search_nonoce', 'security' );
         // Sanitize user input.
         $quick_search_parameter = filter_input( INPUT_GET, 'searchQueryParameter', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
-        $quick_search_type = filter_input( INPUT_GET, 'type', FILTER_SANITIZE_STRING );
-        $quick_search_post_type = filter_input( INPUT_GET, 'postType', FILTER_SANITIZE_STRING );
+        $quick_search_type = filter_input( INPUT_GET, 'type', FILTER_SANITIZE_SPECIAL_CHARS );
+        $quick_search_post_type = filter_input( INPUT_GET, 'postType', FILTER_SANITIZE_SPECIAL_CHARS );
         if ( empty($quick_search_parameter) ) {
             wp_die( -1 );
         }
@@ -2124,7 +2135,7 @@ class SCFW_Size_Chart_For_Woocommerce_Admin
             'menu_url'   => esc_url( 'https://www.thedotstore.com/woocommerce-plugins/' ),
         ),
             'wordpress-plugins'   => array(
-            'menu_title' => __( 'Wordpress Plugins', 'size-chart-for-woocommerce' ),
+            'menu_title' => __( 'WordPress Plugins', 'size-chart-for-woocommerce' ),
             'menu_slug'  => 'wordpress-plugins',
             'menu_url'   => esc_url( 'https://www.thedotstore.com/wordpress-plugins/' ),
         ),
@@ -2148,6 +2159,7 @@ class SCFW_Size_Chart_For_Woocommerce_Admin
             ),
             );
         }
+        $val = array();
         
         if ( 'size-chart-post.php' === $typenow . '-' . $pagenow ) {
             $pos = 1;
@@ -2260,7 +2272,9 @@ class SCFW_Size_Chart_For_Woocommerce_Admin
     }
     
     /**
-     * unassign the product
+     * Unassign the product
+     * 
+     * @since      1.0.0
      */
     public function scfw_size_chart_unassign_product_callback()
     {
@@ -2289,7 +2303,7 @@ class SCFW_Size_Chart_For_Woocommerce_Admin
             if ( is_array( $saved_ids ) ) {
                 //remove the current product id
                 $array_without_product_id = array_diff( $saved_ids, array( $chart_id ) );
-                update_post_meta( $product_id, 'prod-chart', json_encode( $array_without_product_id ) );
+                update_post_meta( $product_id, 'prod-chart', wp_json_encode( $array_without_product_id ) );
             } else {
                 delete_post_meta( $product_id, 'prod-chart', $chart_id );
             }
@@ -2302,32 +2316,44 @@ class SCFW_Size_Chart_For_Woocommerce_Admin
         wp_die();
     }
     
+    /**
+     * Export size chart data.
+     * 
+     * @since 1.0.0
+     */
     public function scfw_size_chart_export_data_callback()
     {
         check_ajax_referer( 'size_chart_for_wooocmmerce_nonoce', 'security' );
         $chart_id = filter_input( INPUT_POST, 'chartID', FILTER_SANITIZE_NUMBER_INT );
         $json_data = get_post_meta( $chart_id, 'chart-table', true );
         $file_name = 'scfw_chart_data_export_' . time() . '.json';
-        $path_data = wp_upload_dir();
+        $path_data = wp_get_upload_dir();
         $save_path = $path_data['basedir'] . '/size-chart-for-woocommerce/';
         $download_path = $path_data['baseurl'] . '/size-chart-for-woocommerce/';
         //Create new directory for plugin JSON files store
-        if ( !file_exists( $save_path ) ) {
-            mkdir( $save_path, 0777, true );
+        if ( !is_dir( $save_path ) ) {
+            wp_mkdir_p( $save_path );
         }
         //Remove all previous files
         $files = glob( "{$save_path}/*.json" );
         foreach ( $files as $csv_file ) {
             unlink( $csv_file );
+            // phpcs:ignore
         }
         //Save new data to JSON file
         file_put_contents( $save_path . $file_name, $json_data );
+        // phpcs:ignore
         return wp_send_json_success( array(
             'message'       => esc_html__( 'Data has been Exported!', 'size-chart-for-woocommerce' ),
             'download_path' => $download_path . $file_name,
         ) );
     }
     
+    /**
+     * Import size chart data.
+     * 
+     * @since 1.0.0
+     */
     public function scfw_size_chart_import_data_callback()
     {
         check_ajax_referer( 'size_chart_for_wooocmmerce_nonoce', 'security' );

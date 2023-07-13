@@ -184,12 +184,13 @@ class SCFW_Size_Chart_For_Woocommerce {
 
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'scfw_enqueue_styles_scripts_callback' );
 		$this->loader->add_action( 'init', $plugin_admin, 'scfw_size_chart_register_post_type_chart_callback' );
-		$this->loader->add_action( 'admin_init', $plugin_admin, 'scfw_size_chart_pro_welcome_screen_and_default_posts_callback' );
-		$this->loader->add_action( 'admin_menu', $plugin_admin, 'scfw_size_chart_pro_welcome_page_screen_and_menu_callback' );
+		$this->loader->add_action( 'admin_init', $plugin_admin, 'scfw_size_chart_welcome_screen_and_default_posts_callback' );
+		$this->loader->add_action( 'admin_menu', $plugin_admin, 'scfw_size_chart_welcome_page_screen_and_menu_callback' );
 		$this->loader->add_action( 'admin_head', $plugin_admin, 'scfw_welcome_screen_remove_menus_callback' );
 		$this->loader->add_action( 'admin_footer', $plugin_admin, 'scfw_size_chart_preview_dialog_box_callback' );
 		$this->loader->add_action( 'add_meta_boxes', $plugin_admin, 'scfw_size_chart_add_meta_box_callback' );
-		$this->loader->add_action( 'save_post', $plugin_admin, 'scfw_size_chart_pro_product_and_size_chart_save_callback' );
+		$this->loader->add_action( 'save_post', $plugin_admin, 'scfw_size_chart_product_and_size_chart_save_callback' );
+		$this->loader->add_filter( 'post_updated_messages', $plugin_admin, 'scfw_post_updated_messages' );
 
 		$this->loader->add_action( 'admin_action_size_chart_duplicate_post', $plugin_admin, 'scfw_size_chart_duplicate_post_callback' );
 		$this->loader->add_action( 'admin_action_size_chart_preview_post', $plugin_admin, 'scfw_size_chart_preview_post_callback' );
@@ -213,7 +214,7 @@ class SCFW_Size_Chart_For_Woocommerce {
 		$this->loader->add_filter( 'parse_query', $plugin_admin, 'scfw_size_chart_filter_default_template_query_callback' );
 		$this->loader->add_action( 'trashed_post', $plugin_admin, 'scfw_size_chart_selected_chart_delete_callback' );
 
-		$this->loader->add_action( 'admin_notices', $plugin_admin, 'scfw_size_chart_pro_admin_notice_review_callback' );
+		$this->loader->add_action( 'admin_notices', $plugin_admin, 'scfw_size_chart_admin_notice_review_callback' );
 	}
 
 	/**

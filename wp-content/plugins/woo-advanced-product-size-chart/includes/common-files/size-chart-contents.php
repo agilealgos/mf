@@ -11,15 +11,16 @@
 if ( ! defined( 'WPINC' ) ) {
 	die;
 }
+
+$current_post_type = isset( $admin_post_type ) && !empty($admin_post_type) ? $admin_post_type : '';
 $chart_position    = scfw_size_chart_get_position_by_chart_id( $chart_id );
 $chart_label = scfw_size_chart_get_label_by_chart_id( $chart_id );
-if( ( !empty($chart_position) && 'popup' === $chart_position ) || is_admin() ) {
+
+if( ( !empty($chart_position) && 'popup' === $chart_position ) || $current_post_type === 'size-chart' ) {
 ?>
 <div class="md-size-chart-close">
-    <!-- <div class="md-modal-title"><?php //esc_attr_e( 'Popup Title', 'size-chart-for-woocommerce' ); ?></div> -->
     <?php
     if ( isset( $chart_label ) && ! empty( $chart_label ) ) {
-        // printf( '<p class="md-size-chart-label">%s</p>', esc_html( $chart_label ) );
         printf( '<div class="md-modal-title">%s</div>', esc_html( $chart_label ) );
     }
     ?>
@@ -82,19 +83,15 @@ if( isset($table_style) && !empty($table_style) ){
 $chart_note = scfw_size_chart_popup_note( $chart_id );
 
 if ( isset( $chart_table ) && array_filter( $chart_table ) ) {
-    
-    // if( false !== scfw_is_size_chart_table_empty($chart_table) ) {
-	    ?>
-        <div class="chart-table">
-		    <?php
-		    echo wp_kses_post( scfw_size_chart_get_chart_table( $chart_table, $chart_id, $table_style ) );
-            ?>
-        </div>
-        <?php if( !empty( $chart_note ) ) { ?>
-            <?php echo sprintf( wp_kses_post( '<p class="chart_note"><strong>Note: </strong>%s</p>', 'size-chart-for-woocommerce' ), wp_kses_post( $chart_note ) ); ?>
-        <?php } ?>
+    ?>
+    <div class="chart-table">
 	    <?php
-    // }
-}
-?>
+	    echo wp_kses_post( scfw_size_chart_get_chart_table( $chart_table, $chart_id, $table_style ) );
+        ?>
+    </div>
+    <?php 
+    if( !empty( $chart_note ) ) {
+         echo sprintf( wp_kses_post( '<p class="chart_note"><strong>Note: </strong>%s</p>', 'size-chart-for-woocommerce' ), wp_kses_post( $chart_note ) ); 
+     }
+} ?>
 </div>

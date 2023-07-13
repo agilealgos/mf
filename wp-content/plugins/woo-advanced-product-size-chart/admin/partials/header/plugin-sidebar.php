@@ -8,9 +8,7 @@ if ( !defined( 'ABSPATH' ) ) {
 <div class="dotstore_plugin_sidebar">
     <?php 
 $review_url = '';
-$plugin_at = '';
 $review_url = esc_url( 'https://wordpress.org/plugins/woo-advanced-product-size-chart/#reviews' );
-$plugin_at = 'WP.org';
 ?>
         <div class="dotstore-sidebar-section dotstore-upgrade-to-pro">
             <div class="dotstore-important-link-heading">

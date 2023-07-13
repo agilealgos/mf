@@ -3,9 +3,10 @@ Contributors: dots
 Donate link: 
 Tags: popup,chart,guideecommerce,size guide, size table, table size, chart size guide, chart size product category, chart size single product, custom size guide, default template,  product size chart, product size guide, size chart template, Woocommerce chart tables
 Requires at least: 4.0
-Tested up to: 6.0.2
-Stable tag: 2.4.1
-WC tested up to: 7.0.0
+Requires PHP: 7.2
+Tested up to: 6.2
+Stable tag: 2.4.2.1
+WC tested up to: 7.7.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -209,10 +210,36 @@ Automatic updates should work great for you.  As always, though, we recommend ba
 
 == Screenshots ==
 
-1. Size Chart Template List/Preview/Clone
-2. Size Chart Setting page.
+1.
+2.
+3.
+4.
+5.
+6.
+7.
+8.
+9.
 
 == Changelog ==
+= 2.4.2.1 =
+* [Bug Fix] Minor fixes related to the size chart validation with various languages (e.g., Greek, Chinese).
+* [Bug Fix] Minor fixes related to the size chart popup design.
+* [Bug Fix] Minor fixes related to the plugin script & styles loading.
+* [Bug Fix] Minor fixes related to the attributes specific size chart.
+* [Bug Fix] Minor fixes related to the size chart data loading.
+* [Enhancement] Display product name with product edit link on size chart listing page.
+* [Enhancement] Compatible with WooCommerce 7.7.x
+* [Enhancement] Compatible with WordPress 6.2.x
+
+= 2.4.2 =
+* [Bug Fix] Minor fixes related to the size chart icon design
+* [Bug Fix] Minor fixes related to the multisite activation
+* [Enhancement] Security patch
+* [Enhancement] Plugin compatibility with PHP 8.1.x
+* [Enhancement] Added special character validation in size chart table cell
+* [Enhancement] Compatible with WooCommerce 7.4.x
+* [Enhancement] Compatible with WordPress 6.1.x
+
 = 2.4.1 =
 * Fixed — Minor issue fixed related to size chart slug on multi-language environment
 * Update – Compatible with Woocommece 7.0.x
