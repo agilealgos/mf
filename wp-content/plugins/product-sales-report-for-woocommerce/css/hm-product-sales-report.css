@@ -264,7 +264,6 @@ This file (or the corresponding source CSS file) has been modified by Dominika R
   @media (min-width: 767px) {
     .ags-psrf-settings-box {
       padding-right: 35px; } }
-
 /* Floating notifications */
 .ags-psrf-notification {
   margin-bottom: 15px;
@@ -487,6 +486,7 @@ This file (or the corresponding source CSS file) has been modified by Dominika R
   font-style: italic; }
   .ags-psrf-settings-tooltip .ags-psrf-settings-tooltiptext span {
     display: none; }
+
 @media (min-width: 767px) {
   .ags-psrf-settings-tooltip {
     width: 30px;
@@ -564,8 +564,10 @@ This file (or the corresponding source CSS file) has been modified by Dominika R
   max-width: 80px;
   text-align: center;
   margin: 0 5px; }
+
 #ags-psrf-settings #hm_sbp_field_orderby, #ags-psrf-settings #hm_sbp_field_orderdir {
   width: auto; }
+
 #ags-psrf-settings .ags-psrf-pro-feature {
   color: #BBB; }
   #ags-psrf-settings .ags-psrf-pro-feature sup {
@@ -606,11 +608,11 @@ This file (or the corresponding source CSS file) has been modified by Dominika R
     float: left;
     width: 72%;
     padding-right: 3%; }
-
   .ags-psrf-settings-sidebar {
     float: left;
     width: 25%;
     margin-top: 0; } }
+
 #hm_sbp_table {
   border-width: 1px 1px 4px 1px;
   border-style: solid;
