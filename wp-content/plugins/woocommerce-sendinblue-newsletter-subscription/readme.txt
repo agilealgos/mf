@@ -169,6 +169,9 @@ If you need some assistance, you can post an issue in the Support tab, or send u
 
 == Changelog ==
 
+= 3.0.9 =
+* Plugin code enhancements to handle the deleted email templates case
+
 = 3.0.8 =
 * Plugin made compatible with WooCommerce HPOS
 * Improved the “Reply To” of WooCommerce mails sent through the plugin
