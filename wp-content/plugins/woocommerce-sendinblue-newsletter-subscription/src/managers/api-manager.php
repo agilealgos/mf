@@ -315,6 +315,7 @@ class ApiManager
         $data['orderPrice'] = $order->get_total();
         $data['orderDate'] = $order->get_date_created()->date("Y-m-d H:i:s");
         $data['recipient'] = $order->get_billing_phone();
+        $data['country_code'] = $order->get_billing_country();
 
         $client = new SendinblueClient();
         $client->eventsSync($event, $data);
@@ -588,7 +589,7 @@ class ApiManager
         if (isset($settings[SendinblueClient::IS_NEW_ACCOUNT_EMAIL_ENABLED]) && $settings[SendinblueClient::IS_NEW_ACCOUNT_EMAIL_ENABLED]) {
             $tags = "New Account";
             $reply_to =  $this->get_admin_details()['email']; //Admin email address
-            if ($settings[SendinblueClient::IS_NEW_ACCOUNT_TEMPLATE_ENABLED]) {
+            if ($settings[SendinblueClient::IS_NEW_ACCOUNT_TEMPLATE_ENABLED] && !empty($settings[SendinblueClient::NEW_ACCOUNT_TEMPLATE_ID])) {
                 $data['USER_LOGIN'] = $new_customer_data['user_login'];
                 $data['USER_PASSWORD'] = $new_customer_data['user_pass'];
                 $this->trigger_event_email_sib($new_customer_data['user_email'], $data, $settings[SendinblueClient::NEW_ACCOUNT_TEMPLATE_ID], self::EVENT_GROUP_SIB, $attachment_path, $tags, $reply_to);
@@ -625,7 +626,7 @@ class ApiManager
             $tags = "Customer Note";
             $reply_to =  $this->get_admin_details()['email']; //Admin email address
 
-            if ($settings[SendinblueClient::IS_CUSTOMER_NOTE_TEMPLATE_ENABLED]) {
+            if ($settings[SendinblueClient::IS_CUSTOMER_NOTE_TEMPLATE_ENABLED] && !empty($settings[SendinblueClient::CUSTOMER_NOTE_TEMPLATE_ID])) {
                 $this->trigger_event_email_sib($order_details['BILLING_EMAIL'], $order_details, $settings[SendinblueClient::CUSTOMER_NOTE_TEMPLATE_ID],  self::EVENT_GROUP_SIB, $attachment_path, $tags, $reply_to);
             } else {
                 $order = $this->wc_get_order($order->get_order_number());
@@ -651,7 +652,7 @@ class ApiManager
             $attachment_path = $this->get_email_attachments_path($email);
             $tags = "Completed Order";
             $reply_to =  $this->get_admin_details()['email']; //Admin email address
-            if ($settings[SendinblueClient::IS_COMPLETED_ORDER_TEMPLATE_ENABLED]) {
+            if ($settings[SendinblueClient::IS_COMPLETED_ORDER_TEMPLATE_ENABLED] && !empty($settings[SendinblueClient::COMPLETED_ORDER_TEMPLATE_ID])) {
                 $this->trigger_event_email_sib($order_details['BILLING_EMAIL'], $order_details, $settings[SendinblueClient::COMPLETED_ORDER_TEMPLATE_ID], self::EVENT_GROUP_SIB, $attachment_path, $tags, $reply_to);
             } else {
                 
@@ -675,7 +676,7 @@ class ApiManager
             $tags = "Failed Order";
             $reply_to = $order->get_billing_email(); //Customer's email address
             if (isset($settings[SendinblueClient::IS_FAILED_ORDER_EMAIL_ENABLED]) && $settings[SendinblueClient::IS_FAILED_ORDER_EMAIL_ENABLED]) {
-                if ($settings[SendinblueClient::IS_FAILED_ORDER_TEMPLATE_ENABLED]) {
+                if ($settings[SendinblueClient::IS_FAILED_ORDER_TEMPLATE_ENABLED] && !empty($settings[SendinblueClient::FAILED_ORDER_TEMPLATE_ID])) {
                     $order_details = $this->prepare_order_data($order);
                     $this->trigger_event_email_sib($admin_email, $order_details, $settings[SendinblueClient::FAILED_ORDER_TEMPLATE_ID], self::EVENT_GROUP_SIB, $attachment_path, $tags, $reply_to);
                 } else {
@@ -699,7 +700,7 @@ class ApiManager
             $tags = "Cancelled Order";
             $reply_to = $order->get_billing_email(); //Customer's email address
             if (isset($settings[SendinblueClient::IS_CANCELLED_ORDER_EMAIL_ENABLED]) && $settings[SendinblueClient::IS_CANCELLED_ORDER_EMAIL_ENABLED]) {
-                if ($settings[SendinblueClient::IS_CANCELLED_ORDER_TEMPLATE_ENABLED]) {
+                if ($settings[SendinblueClient::IS_CANCELLED_ORDER_TEMPLATE_ENABLED] && !empty($settings[SendinblueClient::CANCELLED_ORDER_TEMPLATE_ID])) {
                     $order_details = $this->prepare_order_data($order);
                     $this->trigger_event_email_sib($admin_email, $order_details, $settings[SendinblueClient::CANCELLED_ORDER_TEMPLATE_ID], self::EVENT_GROUP_SIB, $attachment_path, $tags, $reply_to);
                 } else {
@@ -725,7 +726,7 @@ class ApiManager
             $attachment_path = $this->get_email_attachments_path($email);
             $tags = "Order On-Hold";
             $reply_to =  $this->get_admin_details()['email']; //Admin email address
-            if ($settings[SendinblueClient::IS_ON_HOLD_ORDER_TEMPLATE_ENABLED]) {
+            if ($settings[SendinblueClient::IS_ON_HOLD_ORDER_TEMPLATE_ENABLED] && !empty($settings[SendinblueClient::ON_HOLD_ORDER_TEMPLATE_ID])) {
                 $this->trigger_event_email_sib($order_details['BILLING_EMAIL'], $order_details, $settings[SendinblueClient::ON_HOLD_ORDER_TEMPLATE_ID], self::EVENT_GROUP_SIB, $attachment_path, $tags, $reply_to);
             } else {
                 $order = $this->wc_get_order($order_id);
@@ -750,7 +751,7 @@ class ApiManager
             $attachment_path = $this->get_email_attachments_path($email);
             $tags = "Refunded Order";
             $reply_to =  $this->get_admin_details()['email']; //Admin email address
-            if ($settings[SendinblueClient::IS_REFUNDED_ORDER_TEMPLATE_ENABLED]) {
+            if ($settings[SendinblueClient::IS_REFUNDED_ORDER_TEMPLATE_ENABLED] && !empty($settings[SendinblueClient::REFUNDED_ORDER_TEMPLATE_ID])) {
                 $this->trigger_event_email_sib($order_details['BILLING_EMAIL'], $order_details, $settings[SendinblueClient::REFUNDED_ORDER_TEMPLATE_ID], self::EVENT_GROUP_SIB, $attachment_path, $tags, $reply_to);
             } else {
                 $order = $this->wc_get_order($order_id);
@@ -775,7 +776,7 @@ class ApiManager
             $attachment_path = $this->get_email_attachments_path($email);
             $tags = "Processing Order";
             $reply_to =  $this->get_admin_details()['email']; //Admin email address
-            if ($settings[SendinblueClient::IS_PROCESSING_ORDER_TEMPLATE_ENABLED]) {
+            if ($settings[SendinblueClient::IS_PROCESSING_ORDER_TEMPLATE_ENABLED] && !empty($settings[SendinblueClient::PROCESSING_ORDER_TEMPLATE_ID])) {
                 $this->trigger_event_email_sib($order_details['BILLING_EMAIL'], $order_details, $settings[SendinblueClient::PROCESSING_ORDER_TEMPLATE_ID], self::EVENT_GROUP_SIB, $attachment_path, $tags, $reply_to);
             } else {
                 $order = $this->wc_get_order($order_id);
@@ -799,7 +800,7 @@ class ApiManager
             $tags = "New Order";
             $reply_to = $order->get_billing_email(); //Customer's email address
             if (isset($settings[SendinblueClient::IS_NEW_ORDER_EMAIL_ENABLED]) && $settings[SendinblueClient::IS_NEW_ORDER_EMAIL_ENABLED]) {
-                if ($settings[SendinblueClient::IS_NEW_ORDER_TEMPLATE_ENABLED]) {
+                if ($settings[SendinblueClient::IS_NEW_ORDER_TEMPLATE_ENABLED] && !empty($settings[SendinblueClient::NEW_ORDER_TEMPLATE_ID])) {
                     $order_details = $this->prepare_order_data($order);
                     $this->trigger_event_email_sib($admin_email, $order_details, $settings[SendinblueClient::NEW_ORDER_TEMPLATE_ID], self::EVENT_GROUP_SIB, $attachment_path, $tags, $reply_to);
                 } else {
