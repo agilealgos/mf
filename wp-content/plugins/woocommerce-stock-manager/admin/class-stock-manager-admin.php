@@ -3,7 +3,7 @@
  * Main class for Stock Manager.
  *
  * @package  woocommerce-stock-manager/admin/
- * @version  2.8.4
+ * @version  2.9.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -91,7 +91,7 @@ class Stock_Manager_Admin {
 		if ( ( 'stock-manager' === $this->page || 'stock-manager-import-export' === $this->page || 'stock-manager-log' === $this->page ) ) {
 			wp_enqueue_style( 'woocommerce-stock-manager-admin-styles', plugins_url( 'assets/css/admin.css', __FILE__ ), array(), WSM_PLUGIN_VERSION );
 
-			$old_styles = get_option( 'woocommerce_stock_old_styles' );
+			$old_styles = get_option( 'woocommerce_stock_old_styles', 'no' );
 			if ( ! empty( $old_styles ) && 'ok' === $old_styles ) {
 				wp_enqueue_style( 'woocommerce-stock-manager-old-styles', plugins_url( 'assets/css/old.css', __FILE__ ), array(), WSM_PLUGIN_VERSION );
 			}
@@ -262,14 +262,6 @@ class Stock_Manager_Admin {
 		);
 		add_submenu_page(
 			'stock-manager',
-			__( 'Stock Manager Setting', 'woocommerce-stock-manager' ),
-			__( 'Setting', 'woocommerce-stock-manager' ),
-			$manage,
-			'stock-manager-setting',
-			array( $this, 'display_setting_page' )
-		);
-		add_submenu_page(
-			'stock-manager',
 			__( 'StoreApps Plugins', 'woocommerce-stock-manager' ),
 			__( 'StoreApps Plugins', 'woocommerce-stock-manager' ),
 			$manage,
@@ -280,24 +272,17 @@ class Stock_Manager_Admin {
 	}
 
 	/**
-	 * Render the settings page for this plugin.
+	 * Render the admin page for this plugin.
 	 */
 	public function display_plugin_admin_page() {
 		include_once 'views/admin.php';
 	}
 
 	/**
-	 * Render the impoer export page for this plugin.
+	 * Render the import export page for this plugin.
 	 */
 	public function display_import_export_page() {
 		include_once 'views/import-export.php';
-	}
-
-	/**
-	 * Render the setting page for this plugin.
-	 */
-	public function display_setting_page() {
-		include_once 'views/setting.php';
 	}
 
 	/**
