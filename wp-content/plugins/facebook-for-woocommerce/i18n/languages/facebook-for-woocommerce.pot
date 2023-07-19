@@ -2,14 +2,14 @@
 # This file is distributed under the same license as the Facebook for WooCommerce plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Facebook for WooCommerce 3.0.28\n"
+"Project-Id-Version: Facebook for WooCommerce 3.0.29\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/facebook-for-woocommerce\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2023-07-13T12:37:09+00:00\n"
+"POT-Creation-Date: 2023-07-18T15:16:33+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.7.1\n"
 "X-Domain: facebook-for-woocommerce\n"
@@ -63,23 +63,27 @@ msgid "Add new %s"
 msgstr ""
 
 #. translators: No items found text
-#: class-wc-facebookcommerce.php:373
+#: class-wc-facebookcommerce.php:372
 msgid "No %s found."
 msgstr ""
 
 #. translators: Search label
-#: class-wc-facebookcommerce.php:375
+#: class-wc-facebookcommerce.php:374
 msgid "Search %s."
 msgstr ""
 
 #. translators: Text label
-#: class-wc-facebookcommerce.php:377
+#: class-wc-facebookcommerce.php:376
 msgid "Separate %s with commas"
 msgstr ""
 
 #. translators: Text label
-#: class-wc-facebookcommerce.php:379
+#: class-wc-facebookcommerce.php:378
 msgid "Choose from the most used %s"
+msgstr ""
+
+#: class-wc-facebookcommerce.php:379
+msgid "Go to %s"
 msgstr ""
 
 #: class-wc-facebookcommerce.php:514
