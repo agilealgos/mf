@@ -4,7 +4,7 @@ Tags: woocommerce, google analytics, google ads, facebook, conversion tracking, 
 Requires at least: 3.7
 Tested up to: 6.2
 Requires PHP: 7.3
-Stable tag: 1.32.4
+Stable tag: 1.32.5
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -160,6 +160,7 @@ It works with the following Cookie Consent Management plugins out of the box:
 * [Usercentrics](https://usercentrics.com/)
 * [CookiePro by OneTrust](https://wordpress.org/plugins/cookiepro/)
 * [Termly](https://wordpress.org/plugins/uk-cookie-consent/)
+* [Iubenda](https://wordpress.org/plugins/iubenda-cookie-law-solution/)
 
 Please read the following for additional [setup information](https://sweetcode.com/docs/wpm/consent-management/platforms?utm_source=wordpress.org&utm_medium=wpm-plugin-page&utm_campaign=pixel-manager-for-woocommerce-docs&utm_content=cookie-consent-plugins)
 
@@ -240,6 +241,17 @@ We are committed to ensuring the security of our customers and their data. If yo
 1. Settings page
 
 == Changelog ==
+
+= 1.32.5 = 19.07.2023
+
+* Tweak: Support for the Iubenda CMP.
+* Tweak: Also flush cache on the first option save.
+* Tweak: Added cache purge for Nginx Helper (Nginx or Redis) if the Nginx Helper plugin is active.
+* Tweak: Added cache purge for Nginx Helper.
+* Tweak: Added cache purge for Proxy Cache Purge.
+* Tweak: Bumped up WooCommerce compatibility to 7.9
+* Fix: Fixed a user data retrieval bug when the main administrator views an order confirmation page.
+* Fix: Fixed a PMW Lazy Load activation bug.
 
 = 1.32.4 = 11.07.2023
 

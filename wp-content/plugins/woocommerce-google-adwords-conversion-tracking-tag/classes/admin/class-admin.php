@@ -249,6 +249,7 @@ class Admin
         );
         $this->add_section_main_subsection_statistics( $section_ids );
         $this->add_section_main_subsection_marketing( $section_ids );
+        $this->add_section_main_subsection_optimization( $section_ids );
     }
     
     public static function add_subsection_div( $section_ids, $sub_section_ids )
@@ -296,13 +297,6 @@ class Admin
                 $section_ids['settings_name']
             );
         }
-        add_settings_field(
-            'wpm_plugin_google_optimize_container_id',
-            esc_html__( 'Google Optimize', 'woocommerce-google-adwords-conversion-tracking-tag' ),
-            [ $this, 'option_html_google_optimize_container_id' ],
-            'wpm_plugin_options_page',
-            $section_ids['settings_name']
-        );
         // add the field for the Hotjar pixel
         add_settings_field(
             'wpm_plugin_hotjar_site_id',
@@ -412,6 +406,55 @@ class Admin
                 'wpm_plugin_twitter_pixel_id',
                 esc_html__( 'Twitter pixel ID', 'woocommerce-google-adwords-conversion-tracking-tag' ),
                 [ $this, 'option_html_twitter_pixel_id' ],
+                'wpm_plugin_options_page',
+                $section_ids['settings_name']
+            );
+        }
+    
+    }
+    
+    public function add_section_main_subsection_optimization( $section_ids )
+    {
+        /**
+         * Set up the subsection
+         */
+        // configuration
+        $sub_section_ids = [
+            'title' => esc_html__( 'Optimization', 'woocommerce-google-adwords-conversion-tracking-tag' ),
+            'slug'  => 'optimization',
+        ];
+        // add the subsection div
+        self::add_subsection_div( $section_ids, $sub_section_ids );
+        /**
+         * Add the settings fields
+         */
+        add_settings_field(
+            'wpm_plugin_google_optimize_container_id',
+            esc_html__( 'Google Optimize', 'woocommerce-google-adwords-conversion-tracking-tag' ),
+            [ $this, 'option_html_google_optimize_container_id' ],
+            'wpm_plugin_options_page',
+            $section_ids['settings_name']
+        );
+        
+        if ( defined( 'EXPERIMENTAL_PMW' ) && EXPERIMENTAL_PMW ) {
+            add_settings_field(
+                'pmw_plugin_ab_tasty_account_id',
+                esc_html__( 'AB Tasty Account ID', 'woocommerce-google-adwords-conversion-tracking-tag' ) . $this->html_beta(),
+                [ $this, 'option_html_ab_tasty_account_id' ],
+                'wpm_plugin_options_page',
+                $section_ids['settings_name']
+            );
+            add_settings_field(
+                'pmw_plugin_optimizely_project_id',
+                esc_html__( 'Optimizely Project ID', 'woocommerce-google-adwords-conversion-tracking-tag' ) . $this->html_beta(),
+                [ $this, 'option_html_optimizely_project_id' ],
+                'wpm_plugin_options_page',
+                $section_ids['settings_name']
+            );
+            add_settings_field(
+                'pmw_plugin_vwo_account_id',
+                esc_html__( 'VWO Account ID', 'woocommerce-google-adwords-conversion-tracking-tag' ) . $this->html_beta(),
+                [ $this, 'option_html_vwo_account_id' ],
                 'wpm_plugin_options_page',
                 $section_ids['settings_name']
             );
@@ -1974,6 +2017,66 @@ class Admin
         echo  '&nbsp;<i>OPT-WMAB1BM</i>' ;
     }
     
+    public function option_html_vwo_account_id()
+    {
+        ?>
+		<input class="pmw mono"
+			   id='pmw_plugin_vwo_account_id'
+			   name='wgact_plugin_options[pixels][vwo][account_id]'
+			   size='40'
+			   type='text'
+			   value='<?php 
+        esc_html_e( $this->options['pixels']['vwo']['account_id'] );
+        ?>'
+		/>
+		<?php 
+        $this->display_status_icon( $this->options['pixels']['vwo']['account_id'], true, true );
+        $this->get_documentation_html_by_key( 'vwo_account_id' );
+        echo  '<br><br>' ;
+        esc_html_e( 'The VWO account ID looks like this:', 'woocommerce-google-adwords-conversion-tracking-tag' );
+        echo  '&nbsp;<i>737312</i>&nbsp;' ;
+    }
+    
+    public function option_html_optimizely_project_id()
+    {
+        ?>
+		<input class="pmw mono"
+			   id='pmw_plugin_optimizely_project_id'
+			   name='wgact_plugin_options[pixels][optimizely][project_id]'
+			   size='40'
+			   type='text'
+			   value='<?php 
+        esc_html_e( $this->options['pixels']['optimizely']['project_id'] );
+        ?>'
+		/>
+		<?php 
+        $this->display_status_icon( $this->options['pixels']['optimizely']['project_id'], true, true );
+        $this->get_documentation_html_by_key( 'optimizely_project_id' );
+        echo  '<br><br>' ;
+        esc_html_e( 'The Optimizely project ID looks like this:', 'woocommerce-google-adwords-conversion-tracking-tag' );
+        echo  '&nbsp;<i>20297535627</i>&nbsp;' ;
+    }
+    
+    public function option_html_ab_tasty_account_id()
+    {
+        ?>
+		<input class="pmw mono"
+			   id='pmw_plugin_ab_tasty_account_id'
+			   name='wgact_plugin_options[pixels][ab_tasty][account_id]'
+			   size='40'
+			   type='text'
+			   value='<?php 
+        esc_html_e( $this->options['pixels']['ab_tasty']['account_id'] );
+        ?>'
+		/>
+		<?php 
+        $this->display_status_icon( $this->options['pixels']['ab_tasty']['account_id'], true, true );
+        $this->get_documentation_html_by_key( 'ab_tasty_account_id' );
+        echo  '<br><br>' ;
+        esc_html_e( 'The AB Tasty account ID looks like this:', 'woocommerce-google-adwords-conversion-tracking-tag' );
+        echo  '&nbsp;<i>3d09baddc21a365b7da5ae4d0aa5cb95</i>&nbsp;' ;
+    }
+    
     public function option_html_facebook_pixel_id()
     {
         ?>
@@ -3144,7 +3247,7 @@ class Admin
         ?>
 			/>
 			<?php 
-        esc_html_e( 'Google Optimize anti-flicker snippet', 'woocommerce-google-adwords-conversion-tracking-tag' );
+        esc_html_e( 'Google Optimize Anti-Flicker Snippet', 'woocommerce-google-adwords-conversion-tracking-tag' );
         ?>
 		</label>
 		<?php 
@@ -3159,7 +3262,7 @@ class Admin
             ?>
 				<span class="dashicons dashicons-info" style="padding-right: 10px"></span>
 				<?php 
-            esc_html_e( 'Enabling the Google Optimize anti-flicker snippet requires Google Optimize to be active.', 'woocommerce-google-adwords-conversion-tracking-tag' );
+            esc_html_e( 'Enabling the Google Optimize Anti-Flicker Snippet requires Google Optimize to be active.', 'woocommerce-google-adwords-conversion-tracking-tag' );
             ?>
 			<?php 
         }
@@ -3188,7 +3291,6 @@ class Admin
         $this->display_status_icon( $this->options['google']['optimize']['anti_flicker'], true, true );
         $this->get_documentation_html_by_key( 'google_optimize_anti_flicker_timeout' );
         $this->html_pro_feature();
-        echo  '<br><br>' ;
         //        esc_html_e('The Google Ads phone conversion label must be in the same format as on the website.', 'woocommerce-google-adwords-conversion-tracking-tag');
     }
     
@@ -4734,6 +4836,45 @@ class Admin
             if ( !Validations::is_reddit_advertiser_id( $input['pixels']['reddit']['advertiser_id'] ) ) {
                 $input['pixels']['reddit']['advertiser_id'] = ( Options::get_reddit_advertiser_id() ? Options::get_reddit_advertiser_id() : '' );
                 add_settings_error( 'wgact_plugin_options', 'invalid-reddit-advertiser-id', esc_html__( 'You have entered an invalid Reddit advertiser ID.', 'woocommerce-google-adwords-conversion-tracking-tag' ) );
+            }
+        
+        }
+        
+        // Validate the VWO account ID
+        
+        if ( isset( $input['pixels']['vwo']['account_id'] ) ) {
+            // Trim space, newlines and quotes
+            $input['pixels']['vwo']['account_id'] = Helpers::trim_string( $input['pixels']['vwo']['account_id'] );
+            
+            if ( !Validations::is_vwo_account_id( $input['pixels']['vwo']['account_id'] ) ) {
+                $input['pixels']['vwo']['account_id'] = ( isset( $this->options['pixels']['vwo']['account_id'] ) ? $this->options['pixels']['vwo']['account_id'] : '' );
+                add_settings_error( 'wgact_plugin_options', 'invalid-vwo-account-id', esc_html__( 'You have entered an invalid VWO account ID.', 'woocommerce-google-adwords-conversion-tracking-tag' ) );
+            }
+        
+        }
+        
+        // Validate the Optimizely project ID
+        
+        if ( isset( $input['pixels']['optimizely']['project_id'] ) ) {
+            // Trim space, newlines and quotes
+            $input['pixels']['optimizely']['project_id'] = Helpers::trim_string( $input['pixels']['optimizely']['project_id'] );
+            
+            if ( !Validations::is_optimizely_project_id( $input['pixels']['optimizely']['project_id'] ) ) {
+                $input['pixels']['optimizely']['project_id'] = ( isset( $this->options['pixels']['optimizely']['project_id'] ) ? $this->options['pixels']['optimizely']['project_id'] : '' );
+                add_settings_error( 'wgact_plugin_options', 'invalid-vwo-account-id', esc_html__( 'You have entered an invalid Optimizely project ID.', 'woocommerce-google-adwords-conversion-tracking-tag' ) );
+            }
+        
+        }
+        
+        // Validate the AB Tasty account ID
+        
+        if ( isset( $input['pixels']['ab_tasty']['account_id'] ) ) {
+            // Trim space, newlines and quotes
+            $input['pixels']['ab_tasty']['account_id'] = Helpers::trim_string( $input['pixels']['ab_tasty']['account_id'] );
+            
+            if ( !Validations::is_ab_tasty_account_id( $input['pixels']['ab_tasty']['account_id'] ) ) {
+                $input['pixels']['ab_tasty']['account_id'] = ( isset( $this->options['pixels']['ab_tasty']['account_id'] ) ? $this->options['pixels']['ab_tasty']['account_id'] : '' );
+                add_settings_error( 'wgact_plugin_options', 'invalid-vwo-account-id', esc_html__( 'You have entered an invalid AB Tasty account ID.', 'woocommerce-google-adwords-conversion-tracking-tag' ) );
             }
         
         }

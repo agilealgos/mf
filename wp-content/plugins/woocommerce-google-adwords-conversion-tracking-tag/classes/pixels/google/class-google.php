@@ -203,7 +203,7 @@ class Google extends Pixel
         
         }
         
-        return (double) $order_item->get_order()->get_item_total( $order_item, Product::pmw_output_product_prices_with_tax() );
+        return (double) $order_item->get_order()->get_item_total( $order_item, Product::output_product_prices_with_tax() );
         //		return (float) $product->get_price();
     }
     

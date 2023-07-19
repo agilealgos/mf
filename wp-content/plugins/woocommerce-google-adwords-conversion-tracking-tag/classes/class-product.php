@@ -108,7 +108,7 @@ class Product {
 
 		// Output the product prices with tax as default
 		// otherwise, output the prices without tax
-		$use_price_with_tax = self::pmw_output_product_prices_with_tax();
+		$use_price_with_tax = self::output_product_prices_with_tax();
 
 		if (Environment::is_wpml_woocommerce_multi_currency_active()) {
 			// https://github.com/wp-premium/woocommerce-multilingual/blob/134e1a789622341e8de7690b955b25ea8d8f7cfc/inc/currencies/class-wcml-multi-currency-prices.php#L158
@@ -169,11 +169,17 @@ class Product {
 		return $product_details;
 	}
 
-	public static function pmw_output_product_prices_with_tax() {
+	/**
+	 * Set if the product prices should be output with tax or without tax.
+	 * The default is to output the prices with tax.
+	 *
+	 * @return bool
+	 */
+	public static function output_product_prices_with_tax() {
 
 		// Output the product prices with tax as default
 		// otherwise, output the prices without tax
-		return apply_filters('pmw_output_product_prices_with_tax', true);
+		return (bool) apply_filters('pmw_output_product_prices_with_tax', true);
 	}
 
 	// https://stackoverflow.com/a/56278308/4688612

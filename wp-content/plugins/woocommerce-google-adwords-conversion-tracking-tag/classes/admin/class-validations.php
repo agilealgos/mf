@@ -148,6 +148,27 @@ class Validations {
 		return self::validate_with_regex($re, $string);
 	}
 
+	public static function is_vwo_account_id( $string ) {
+
+		$re = '/^\d{4,10}$/m';
+
+		return self::validate_with_regex($re, $string);
+	}
+
+	public static function is_optimizely_project_id( $string ) {
+
+		$re = '/^\d{8,14}$/m';
+
+		return self::validate_with_regex($re, $string);
+	}
+
+	public static function is_ab_tasty_account_id( $string ) {
+
+		$re = '/^[\da-z]{26,38}$/m';
+
+		return self::validate_with_regex($re, $string);
+	}
+
 	public static function is_scroll_tracker_thresholds( $string ) {
 
 		// https://regex101.com/r/4haInV/1

@@ -101,21 +101,22 @@ class Environment {
 		];
 	}
 
-	public static function flush_cache_on_plugin_changes() {
+	public static function purge_cache_on_plugin_changes() {
 
-		// Flush cache after saving the plugin options
+		// Purge cache after saving the plugin options
 		// update_option_ only runs if the option has changed
-		add_action('update_option_' . PMW_DB_OPTIONS_NAME, [__CLASS__, 'flush_cache_of_all_cache_plugins'], 10, 3);
+		add_action('update_option_' . PMW_DB_OPTIONS_NAME, [__CLASS__, 'purge_entire_cache'], 10, 3);
+		add_action('add_option_' . PMW_DB_OPTIONS_NAME, [__CLASS__, 'purge_entire_cache'], 10, 3);
 
-		// flush cache after install
-		// we don't need that because after first install the user needs to set new options anyway where the cache flush happens too
-//        add_filter('upgrader_post_install', [__CLASS__, 'flush_cache_of_all_cache_plugins'], 10, 3);
+		// Purge cache after install
+		// we don't need that because after first install the user needs to set new options anyway where the cache purge happens too
+//        add_filter('upgrader_post_install', [__CLASS__, 'purge_cache_of_all_cache_plugins'], 10, 3);
 
-		// flush cache after plugin update
-		add_action('upgrader_process_complete', [__CLASS__, 'upgrader_flush_cache_if_pmw_was_updated'], 10, 2);
+		// Purge cache after plugin update
+		add_action('upgrader_process_complete', [__CLASS__, 'upgrader_purge_cache_if_pmw_was_updated'], 10, 2);
 	}
 
-	public static function upgrader_flush_cache_if_pmw_was_updated( $upgrader_object, $options ) {
+	public static function upgrader_purge_cache_if_pmw_was_updated( $upgrader_object, $options ) {
 
 		if (
 			isset($options['type']) &&
@@ -124,71 +125,124 @@ class Environment {
 			is_array($options['plugins']) &&
 			in_array(PMW_PLUGIN_BASENAME, $options['plugins'], true)
 		) {
-			self::flush_cache_of_all_cache_plugins();
+			self::purge_entire_cache();
 		}
 	}
 
-	public static function flush_cache_of_all_cache_plugins() {
+	/**
+	 * Tries to purge all cache layers.
+	 * The order is relevant, so we must make sure that the content is purged like a waterfall
+	 * from the closest layer to the farthest.
+	 *
+	 * @return void
+	 */
+	public static function purge_entire_cache() {
 
-//        error_log('flush cache of all cache plugins');
+		/**
+		 * Purge the first cache layer.
+		 * WordPress cache plugins.
+		 * If a plugin does both first and second layer caching, then put it here.
+		 */
+		self::purge_first_layer_cache();
+
+		/**
+		 * Purge the second cache layer.
+		 * Hosts like WP Engine that have their own cache layer.
+		 */
+		self::purge_second_layer_cache();
+
+		/**
+		 * Purge the third cache layer.
+		 * External cache like Cloudflare.
+		 */
+		self::purge_third_layer_cache();
+	}
+
+	private static function purge_first_layer_cache() {
 
 		if (self::is_wp_rocket_active()) {
-			self::flush_wp_rocket_cache();
+			self::purge_wp_rocket_cache();
 		}                                                                              // works
 		if (self::is_litespeed_active()) {
-			self::flush_litespeed_cache();
+			self::purge_litespeed_cache();
 		}                                                                              // works
 		if (self::is_autoptimize_active()) {
-			self::flush_autoptimize_cache();
+			self::purge_autoptimize_cache();
 		}                                                                              // works
 		if (self::is_hummingbird_active()) {
-			self::flush_hummingbird_cache();
+			self::purge_hummingbird_cache();
 		}                                                                              // works
 		if (self::is_nitropack_active()) {
-			self::flush_nitropack_cache();
-		}                                                                              // works
-		if (self::is_sg_optimizer_active()) {
-			self::flush_sg_optimizer_cache();
-		}                                                                              // works
+			self::purge_nitropack_cache();
+		}                                                                                // works
 		if (self::is_w3_total_cache_active()) {
-			self::flush_w3_total_cache();
+			self::purge_w3_total_cache();
 		}                                                                              // works
 		if (self::is_wp_optimize_active()) {
-			self::flush_wp_optimize_cache();
+			self::purge_wp_optimize_cache();
 		}                                                                              // works
 		if (self::is_wp_super_cache_active()) {
-			self::flush_wp_super_cache();
+			self::purge_wp_super_cache();
 		}                                                                              // works
 		if (self::is_wp_fastest_cache_active()) {
-			self::flush_wp_fastest_cache();
-		}                                                                              // works
-		if (self::is_cloudflare_active()) {
-			self::flush_cloudflare_cache();
+			self::purge_wp_fastest_cache();
 		}                                                                              // works
 		if (self::is_flying_press_active()) {
-			self::flush_flying_press_cache();
+			self::purge_flying_press_cache();
 		}
-
 		// Delete the Real Cookie Banner cache if it exists
 		if (function_exists('wp_rcb_invalidate_templates_cache')) {
 			wp_rcb_invalidate_templates_cache();
 		}
+	}
 
+	/**
+	 * Purge the second layer cache.
+	 * These are hosts that have their own caching layer.
+	 *
+	 * @return void
+	 */
+	private static function purge_second_layer_cache() {
+
+		if (self::is_sg_optimizer_active()) {
+			self::purge_sg_optimizer_cache();
+		}                                                                           // works
 
 		if (self::is_hosting_wp_engine()) {
-			self::flush_wp_engine_cache();
-		}         // works
-//        if (self::is_hosting_pagely()) $this->flush_pagely_cache();               // TODO test
+			self::purge_wp_engine_cache();
+		}                                                                           // works
+
 		if (self::is_hosting_kinsta()) {
-			self::flush_kinsta_cache();
-		}                                                                          // TODO test
-//
-//        if ($this->is_nginx_helper_active()) $this->flush_nginx_cache();           // TODO test
+			self::purge_kinsta_cache();
+		}                                                                           // TODO test
+
+		if (self::is_nginx_helper_active()) {
+			self::purge_nginx_helper_cache();
+		}                                                                           // TODO test
+
+		if (self::is_proxy_cache_purge_active()) {
+			self::purge_proxy_cache_purge_cache();
+		}                                                                           // TODO test
+
+		//        if (self::is_hosting_pagely()) $this->purge_pagely_cache();		// TODO test
 
 		// TODO add generic varnish purge
 	}
 
-	private static function flush_kinsta_cache() {
+	/**
+	 * Purge the third layer cache.
+	 * These are external services like Cloudflare.
+	 *
+	 * @return void
+	 */
+	private static function purge_third_layer_cache() {
+
+		if (self::is_cloudflare_active()) {
+			self::purge_cloudflare_cache();
+		}                                                                              // works
+	}
+
+	private static function purge_kinsta_cache() {
 		try {
 			wp_remote_get('https://localhost/kinsta-clear-cache-all', [
 				'sslverify' => !Geolocation::is_localhost(),
@@ -204,15 +258,46 @@ class Environment {
 		return defined('NGINX_HELPER_BASEPATH');
 	}
 
-	private static function flush_nginx_cache() {
-		global $nginx_purger;
-		if ($nginx_purger) {
-			$nginx_purger->purge_all();
-		}
-		return true;
+	private static function is_proxy_cache_purge_active() {
+		return defined('VHP_VARNISH_IP');
 	}
 
-	public static function flush_cloudflare_cache() {
+	/**
+	 * Purge the Nginx Helper cache.
+	 * Can be Nginx or Redis.
+	 *
+	 * @return void
+	 */
+	private static function purge_nginx_helper_cache() {
+
+		global $nginx_purger;
+
+		if (
+			$nginx_purger
+			&& method_exists($nginx_purger, 'purge_all')
+		) {
+			$nginx_purger->purge_all();
+		}
+	}
+
+	/**
+	 * Purge the Proxy Cache Purge cache.
+	 *
+	 * @return void
+	 */
+	private static function purge_proxy_cache_purge_cache() {
+		try {
+			if (
+				class_exists('\VarnishPurger')
+				&& method_exists('\VarnishPurger', 'execute_purge')) {
+				\VarnishPurger::execute_purge();
+			}
+		} catch (\Exception $e) {
+			error_log($e);
+		}
+	}
+
+	public static function purge_cloudflare_cache() {
 		try {
 			if (class_exists('\CF\WordPress\Hooks')) {
 				( new \CF\WordPress\Hooks() )->purgeCacheEverything();
@@ -222,7 +307,7 @@ class Environment {
 		}
 	}
 
-	public static function flush_flying_press_cache() {
+	public static function purge_flying_press_cache() {
 		try {
 			if (class_exists('\FlyingPress\Purge') && method_exists('\FlyingPress\Purge', 'purge_cached_pages')) {
 				\FlyingPress\Purge::purge_cached_pages();
@@ -232,7 +317,7 @@ class Environment {
 		}
 	}
 
-	public static function flush_wp_engine_cache() {
+	public static function purge_wp_engine_cache() {
 		try {
 			if (class_exists('WpeCommon')) {
 				\WpeCommon::purge_varnish_cache_all();
@@ -242,7 +327,7 @@ class Environment {
 		}
 	}
 
-	private static function flush_pagely_cache() {
+	private static function purge_pagely_cache() {
 		try {
 			if (class_exists('PagelyCachePurge')) { // We need to have this check for clients that switch hosts
 				$pagely = new \PagelyCachePurge();
@@ -253,38 +338,38 @@ class Environment {
 		}
 	}
 
-	public static function flush_wp_fastest_cache() {
+	public static function purge_wp_fastest_cache() {
 		if (function_exists('wpfc_clear_all_cache')) {
 			wpfc_clear_all_cache(true);
 		}
 	}
 
-	public static function flush_wp_super_cache() {
+	public static function purge_wp_super_cache() {
 		if (function_exists('wp_cache_clean_cache')) {
 			global $file_prefix;
 			wp_cache_clean_cache($file_prefix, true);
 		}
 	}
 
-	public static function flush_wp_optimize_cache() {
+	public static function purge_wp_optimize_cache() {
 		if (function_exists('wpo_cache_flush')) {
 			wpo_cache_flush();
 		}
 	}
 
-	public static function flush_w3_total_cache() {
+	public static function purge_w3_total_cache() {
 		if (function_exists('w3tc_flush_all')) {
 			w3tc_flush_all();
 		}
 	}
 
-	public static function flush_sg_optimizer_cache() {
+	public static function purge_sg_optimizer_cache() {
 		if (function_exists('sg_cachepress_purge_everything')) {
 			sg_cachepress_purge_everything();
 		}
 	}
 
-	public static function flush_nitropack_cache() {
+	public static function purge_nitropack_cache() {
 		try {
 			if (class_exists('\NitroPack\SDK\Api\Cache')) {
 				$siteId     = get_option('nitropack-siteId');
@@ -299,11 +384,11 @@ class Environment {
 //        do_action('nitropack_integration_purge_all');
 	}
 
-	public static function flush_hummingbird_cache() {
+	public static function purge_hummingbird_cache() {
 		do_action('wphb_clear_page_cache');
 	}
 
-	public static function flush_autoptimize_cache() {
+	public static function purge_autoptimize_cache() {
 		if (class_exists('autoptimizeCache')) {
 			// we need the backslash because autoptimizeCache is in the global namespace
 			// and otherwise our plugin would search in its own namespace and throw an error
@@ -311,12 +396,12 @@ class Environment {
 		}
 	}
 
-	public static function flush_litespeed_cache() {
+	public static function purge_litespeed_cache() {
 		do_action('litespeed_purge_all');
 	}
 
-	protected static function flush_wp_rocket_cache() {
-		// flush WP Rocket cache
+	protected static function purge_wp_rocket_cache() {
+		// Purge WP Rocket cache
 		if (function_exists('rocket_clean_domain')) {
 			rocket_clean_domain();
 		}
@@ -416,7 +501,7 @@ class Environment {
 		return is_plugin_active('complianz-gdpr/complianz-gpdr.php') || is_plugin_active('complianz-gdpr-premium/complianz-gpdr-premium.php');
 	}
 
-	// Cookie Notice by hu-manity.co
+// Cookie Notice by hu-manity.co
 	public static function is_cookie_notice_active() {
 		return is_plugin_active('cookie-notice/cookie-notice.php');
 	}
@@ -427,6 +512,10 @@ class Environment {
 
 	public static function is_freemius_active() {
 		return function_exists('wpm_fs');
+	}
+
+	public static function is_iubenda_active() {
+		return is_plugin_active('iubenda-cookie-law-solution/iubenda_cookie_solution.php');
 	}
 
 	public static function is_moove_gdpr_active() {
@@ -451,14 +540,14 @@ class Environment {
 			|| is_plugin_active('uk-cookie-consent-premium/uk-cookie-consent-premium.php');
 	}
 
-	// WooCommerce Cost of Goods
-	// https://woocommerce.com/products/woocommerce-cost-of-goods/
+// WooCommerce Cost of Goods
+// https://woocommerce.com/products/woocommerce-cost-of-goods/
 	public static function is_woocommerce_cog_active() {
 		return class_exists('WC_COG') || is_plugin_active('woocommerce-cost-of-goods/woocommerce-cost-of-goods.php');
 	}
 
-	// Cost of Good for WooCommerce
-	// https://wordpress.org/plugins/cost-of-goods-for-woocommerce/
+// Cost of Good for WooCommerce
+// https://wordpress.org/plugins/cost-of-goods-for-woocommerce/
 	public static function is_cog_for_woocommerce_active() {
 		return class_exists('Alg_WC_Cost_of_Goods') || is_plugin_active('cost-of-goods-for-woocommerce/cost-of-goods-for-woocommerce.php');
 	}
@@ -847,6 +936,11 @@ class Environment {
 		}
 	}
 
+	/**
+	 * Third party plugin tweaks
+	 *
+	 * @return void
+	 */
 	public static function third_party_plugin_tweaks() {
 
 		/**
@@ -859,6 +953,23 @@ class Environment {
 				$tags[] = 'wpmDataLayer';
 				$tags[] = 'pmwDataLayer';
 				return $tags;
+			});
+		}
+
+		/**
+		 * Iubenda
+		 *
+		 * Iubenda automatically blocks all scripts, including the Pixel Manager scripts. We need to disable this.
+		 * Iubenda doesn't offer a filter for this, so we need to use a workaround. We have to disable all
+		 * script blocking by Iubenda by overriding their settings.
+		 */
+
+		if (self::is_iubenda_active()) {
+
+			// Use the WP filter to override the iubenda_cookie_law_solution option to disable script blocking
+			add_filter('option_iubenda_cookie_law_solution', function ( $value ) {
+				$value['parse'] = false;
+				return $value;
 			});
 		}
 
@@ -1410,7 +1521,7 @@ class Environment {
 		return ( $response_code >= 300 && $response_code < 400 );
 	}
 
-	// https://stackoverflow.com/questions/8429342/php-get-headers-set-temporary-stream-context
+// https://stackoverflow.com/questions/8429342/php-get-headers-set-temporary-stream-context
 	protected static function get_headers_with_stream_context( $url, $context, $assoc = 0 ) {
 
 		$fp = @fopen($url, 'r', null, $context);
