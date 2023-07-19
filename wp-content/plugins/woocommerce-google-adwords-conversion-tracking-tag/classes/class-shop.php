@@ -138,7 +138,6 @@ class Shop
 				More info on testing: <?php 
         esc_html_e( Documentation::get_link( 'test_order' ) );
         ?>
-
 				----------------------------------------------------------------------------------------------------
 		-->
 		<?php 
@@ -610,6 +609,17 @@ class Shop
         return $list_suffix;
     }
     
+    /**
+     * Calculate and return the order fees.
+     *
+     * First, add the fees that have been saved to the order using the WooCommerce fees API.
+     * Then add the fees that have been saved by popular payment gateways to the order
+     * using the WooCommerce order meta.
+     * Then provide a filter to allow shop managers to calculate and add their own fees.
+     *
+     * @param $order
+     * @return float
+     */
     public static function get_order_fees( $order )
     {
         $order_fees = 0;
@@ -637,15 +647,29 @@ class Shop
         return (double) apply_filters( 'pmw_order_fees', $order_fees, $order );
     }
     
+    /**
+     * Get the fee from the order meta.
+     *
+     * @param $order
+     * @param $postmeta_key
+     * @return float
+     */
     private static function get_fee_by_postmeta_key( $order, $postmeta_key )
     {
         $fee = $order->get_meta( $postmeta_key, true );
         if ( empty($fee) ) {
             return 0;
         }
-        return $fee;
+        return (double) $fee;
     }
     
+    /**
+     * Get the order from the order received page.
+     *
+     * Cache the order in a static variable to avoid multiple database queries.
+     *
+     * @return WC_Order|bool
+     */
     public static function pmw_get_current_order()
     {
         if ( self::$order ) {

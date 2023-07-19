@@ -65,6 +65,22 @@ class Pixel_Manager
         $this->google = new Google( $this->options );
         $this->google_active = $this->google->google_active();
         /**
+         * Inject optimization scripts
+         */
+        add_action( 'wp_head', function () {
+            if ( Options::is_vwo_active() ) {
+                VWO::inject_script();
+            }
+            if ( Options::is_ab_tasty_active() ) {
+                AB_Tasty::inject_script();
+            }
+        }, 1 );
+        add_action( 'wp_enqueue_scripts', function () {
+            if ( Options::is_optimizely_active() ) {
+                Optimizely::enqueue_scripts();
+            }
+        }, 10 );
+        /**
          * Inject PMW snippets in head
          */
         add_action( 'wp_head', function () {

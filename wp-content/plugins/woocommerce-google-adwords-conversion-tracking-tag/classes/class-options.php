@@ -175,6 +175,15 @@ class Options {
 					'advertiser_id'     => '',
 					'advanced_matching' => false,
 				],
+				'ab_tasty' => [
+					'account_id' => '',
+				],
+				'optimizely' => [
+					'project_id' => '',
+				],
+				'vwo' => [
+					'account_id' => '',
+				],
 			],
 			'shop'       => [
 				'order_total_logic'             => 0,
@@ -485,5 +494,37 @@ class Options {
 			|| self::is_snapchat_enabled()
 			|| self::is_tiktok_enabled()
 			|| self::is_twitter_enabled();
+	}
+
+	public static function get_vwo_account_id() {
+		return self::get_options_obj()->pixels->vwo->account_id;
+	}
+
+	public static function is_vwo_active() {
+		return self::get_options_obj()->pixels->vwo->account_id;
+	}
+
+	public static function get_optimizely_project_id() {
+		return self::get_options_obj()->pixels->optimizely->project_id;
+	}
+
+	public static function is_optimizely_active() {
+		return self::get_options_obj()->pixels->optimizely->project_id;
+	}
+
+	public static function get_ab_tasty_account_id() {
+		return self::get_options_obj()->pixels->ab_tasty->account_id;
+	}
+
+	public static function is_ab_tasty_active() {
+		return self::get_options_obj()->pixels->ab_tasty->account_id;
+	}
+
+	public static function is_maximum_compatiblity_mode_active() {
+		return self::get_options_obj()->general->maximum_compatibility_mode;
+	}
+
+	public static function is_shop_order_list_info_enabled() {
+		return self::get_options_obj()->shop->order_list_info;
 	}
 }

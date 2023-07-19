@@ -303,7 +303,7 @@ class Helpers
         $order = ( Environment::is_woocommerce_active() && !$order && Shop::pmw_is_order_received_page() && Shop::pmw_get_current_order() ? Shop::pmw_get_current_order() : $order );
         // If the order is not null get the $current_user from the order
         
-        if ( $order ) {
+        if ( $order && $order->get_user() ) {
             $current_user = $order->get_user();
         } else {
             $current_user = ( is_user_logged_in() ? wp_get_current_user() : null );
@@ -318,6 +318,7 @@ class Helpers
         
         /**
          * Determine the details.
+         *
          * If logged in use the logged-in user data.
          * On the order page, override the logged-in user data with the order data.
          */
@@ -475,7 +476,7 @@ class Helpers
             if ( !is_float( $number ) ) {
                 return false;
             }
-            if ( $dp !== false ) {
+            if ( false !== $dp ) {
                 $number = round( $number, $dp );
             }
             $number = (string) $number;

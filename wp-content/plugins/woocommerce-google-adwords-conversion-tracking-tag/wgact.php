@@ -10,16 +10,16 @@
  * Developer URI:        https://sweetcode.com
  * Text Domain:          woocommerce-google-adwords-conversion-tracking-tag
  * Domain path:          /languages
- * * Version:              1.32.4
+ * * Version:              1.32.5
  *
  * WC requires at least: 3.7
- * WC tested up to:      7.8
+ * WC tested up to:      7.9
  *
  * License:              GNU General Public License v3.0
  * License URI:          http://www.gnu.org/licenses/gpl-3.0.html
  *
  **/
-const  PMW_CURRENT_VERSION = '1.32.4' ;
+const  PMW_CURRENT_VERSION = '1.32.5' ;
 // TODO add option checkbox on uninstall and ask if user wants to delete options from db
 
 if ( !defined( 'ABSPATH' ) ) {
@@ -141,15 +141,13 @@ if ( function_exists( 'wpm_fs' ) ) {
                 require __DIR__ . '/vendor/autoload.php';
             }
             $this->setup_freemius_environment();
-            // load the options
-            $this->options = Options::get_options();
             // run environment workflows
             add_action( 'admin_notices', [ $this, 'show_admin_notifications' ] );
             Environment::third_party_plugin_tweaks();
-            if ( $this->options['general']['maximum_compatibility_mode'] ) {
+            if ( Options::is_maximum_compatiblity_mode_active() ) {
                 Environment::enable_compatibility_mode();
             }
-            Environment::flush_cache_on_plugin_changes();
+            Environment::purge_cache_on_plugin_changes();
             register_activation_hook( __FILE__, [ $this, 'plugin_activated' ] );
             register_deactivation_hook( __FILE__, [ $this, 'plugin_deactivated' ] );
             register_deactivation_hook( __FILE__, function () {
@@ -331,12 +329,12 @@ if ( function_exists( 'wpm_fs' ) ) {
         
         public function plugin_activated()
         {
-            Environment::flush_cache_of_all_cache_plugins();
+            Environment::purge_entire_cache();
         }
         
         public function plugin_deactivated()
         {
-            Environment::flush_cache_of_all_cache_plugins();
+            Environment::purge_entire_cache();
         }
         
         public function environment_check_admin_notices()
@@ -364,7 +362,8 @@ if ( function_exists( 'wpm_fs' ) ) {
                 // Load admin notification handlers
                 Notifications::get_instance();
                 // Show PMW information on the order list page
-                if ( Environment::is_woocommerce_active() && $this->options['shop']['order_list_info'] ) {
+                // TODO: Check if we need to only load this on the order list page
+                if ( Environment::is_woocommerce_active() && Options::is_shop_order_list_info_enabled() ) {
                     Order_Columns::get_instance();
                 }
                 // add a settings link on the plugins page
