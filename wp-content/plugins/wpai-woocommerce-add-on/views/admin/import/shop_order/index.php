@@ -13,3 +13,5 @@
 <!-- Order Notes Section -->
 
 <?php include( 'order_notes_section.php' ); ?>
+
+<input type="hidden" name="woo_add_on_version" value="<?php echo PMWI_VERSION; ?>"/>

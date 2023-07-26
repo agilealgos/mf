@@ -31,9 +31,9 @@
 												?>
 												<select name="multiple_product_type" id="product-type">
 													<optgroup label="Product Type">
-														<?php foreach ($product_type_selector as $product_type => $product_type_title):?>														
+														<?php foreach ($product_type_selector as $product_type => $product_type_title):?>
 														<option value="<?php echo $product_type; ?>" <?php echo $product_type == $post['multiple_product_type'] ? 'selected="selected"': '' ?>><?php echo $product_type_title;?></option>
-														<?php endforeach; ?>														
+														<?php endforeach; ?>
 													</optgroup>
 												</select>
 											</div>
@@ -47,12 +47,12 @@
 												<input type="text" class="smaller-text" name="single_product_type" style="width:300px;" value="<?php echo esc_attr($post['single_product_type']) ?>"/>
 												<a href="#help" class="wpallimport-help" style="top: -1px;" title="<?php _e('The value of presented XPath should be one of the following: (\'simple\', \'grouped\', \'external\', \'variable\').', PMWI_Plugin::TEXT_DOMAIN) ?>">?</a>
 											</div>
-										</div>										
+										</div>
 									</span>
 								</h3>
 								<div class="clear"></div>
 								<div class="inside">
-									<div class="panel-wrap product_data">										
+									<div class="panel-wrap product_data">
 
 										<ul style="" class="product_data_tabs wc-tabs">
 
@@ -82,27 +82,27 @@
 
 										<!-- INVENTORY -->
 
-										<?php include( '_tabs/_inventory.php' ); ?>										
+										<?php include( '_tabs/_inventory.php' ); ?>
 
 										<!-- SHIPPING -->
 
-										<?php include( '_tabs/_shipping.php' ); ?>										
+										<?php include( '_tabs/_shipping.php' ); ?>
 
 										<!-- LINKED PRODUCT -->
 
-										<?php include( '_tabs/_linked_product.php' ); ?>										
+										<?php include( '_tabs/_linked_product.php' ); ?>
 
 										<!-- ATTRIBUTES -->
 
-										<?php include( '_tabs/_attributes.php' ); ?>																				
+										<?php include( '_tabs/_attributes.php' ); ?>
 
 										<!-- ADVANCED -->
 
-										<?php include( '_tabs/_advanced.php' ); ?>											
+										<?php include( '_tabs/_advanced.php' ); ?>
 
 										<!-- VARIATIONS -->
 
-										<?php include( '_tabs/_variations.php' ); ?>																					
+										<?php include( '_tabs/_variations.php' ); ?>
 
 										<!-- ADDITIONAL TABS -->
 
@@ -110,8 +110,10 @@
 
 										<!-- OPTIONS -->
 
-										<?php include( '_tabs/_options.php' ); ?>																					
-										
+										<?php include( '_tabs/_options.php' ); ?>
+
+                                        <input type="hidden" name="woo_add_on_version" value="<?php echo PMWI_VERSION; ?>"/>
+
 									</div>
 								</div>
 							</div>
