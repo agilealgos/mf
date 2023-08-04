@@ -42,8 +42,7 @@ class BroadTargetingCategoriesFields extends AbstractEnum {
   const NAME = 'name';
   const PARENT_CATEGORY = 'parent_category';
   const PATH = 'path';
-  const SIZE_LOWER_BOUND = 'size_lower_bound';
-  const SIZE_UPPER_BOUND = 'size_upper_bound';
+  const SIZE = 'size';
   const SOURCE = 'source';
   const TYPE = 'type';
   const TYPE_NAME = 'type_name';
@@ -57,8 +56,7 @@ class BroadTargetingCategoriesFields extends AbstractEnum {
       'name' => 'string',
       'parent_category' => 'string',
       'path' => 'list<string>',
-      'size_lower_bound' => 'int',
-      'size_upper_bound' => 'int',
+      'size' => 'int',
       'source' => 'string',
       'type' => 'int',
       'type_name' => 'string',

@@ -1,17 +1,17 @@
-# Copyright (C) 2023 StoreApps
-# This file is distributed under the GNU General Public License v2.0.
+# Copyright (C) 2022 StoreApps
+# This file is distributed under the GNU General Public License v3.0.
 msgid ""
 msgstr ""
-"Project-Id-Version: Stock Manager for WooCommerce 2.11.0\n"
+"Project-Id-Version: Stock Manager for WooCommerce 2.10.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/woocommerce-stock-manager\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2023-06-14T13:20:04+05:30\n"
+"POT-Creation-Date: 2022-11-10T18:39:02+05:30\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"X-Generator: WP-CLI 2.7.1\n"
+"X-Generator: WP-CLI 2.6.0\n"
 "X-Domain: woocommerce-stock-manager\n"
 
 #. Plugin Name of the plugin
@@ -63,28 +63,36 @@ msgstr ""
 msgid "Yes"
 msgstr ""
 
-#: admin/class-stock-manager-admin.php:225
 #: admin/class-stock-manager-admin.php:226
+#: admin/class-stock-manager-admin.php:227
 msgid "Stock Manager"
 msgstr ""
 
-#: admin/class-stock-manager-admin.php:249
 #: admin/class-stock-manager-admin.php:250
+#: admin/class-stock-manager-admin.php:251
 msgid "Import/Export"
 msgstr ""
 
-#: admin/class-stock-manager-admin.php:257
 #: admin/class-stock-manager-admin.php:258
+#: admin/class-stock-manager-admin.php:259
 msgid "Stock log"
 msgstr ""
 
-#: admin/class-stock-manager-admin.php:265
 #: admin/class-stock-manager-admin.php:266
+msgid "Stock Manager Setting"
+msgstr ""
+
+#: admin/class-stock-manager-admin.php:267
+msgid "Setting"
+msgstr ""
+
+#: admin/class-stock-manager-admin.php:274
+#: admin/class-stock-manager-admin.php:275
 msgid "StoreApps Plugins"
 msgstr ""
 
 #. translators: %1$s & %2$s: Opening & closing strong tag. %3$s: link to Stock Manager for WooCommerce on WordPress.org
-#: admin/class-stock-manager-admin.php:408
+#: admin/class-stock-manager-admin.php:424
 msgid "If you are liking %1$sStock Manager for WooCommerce%2$s, please rate us %3$s. A huge thanks from StoreApps in advance!"
 msgstr ""
 
@@ -262,6 +270,10 @@ msgstr ""
 #: admin/views/log.php:60
 #: admin/views/log.php:94
 msgid "History"
+msgstr ""
+
+#: admin/views/setting.php:34
+msgid "Active old styles"
 msgstr ""
 
 #: sa-includes/class-sa-wsm-in-app-offer.php:126

@@ -3,8 +3,8 @@ Contributors:      aspengrovestudios, annaqq
 Tags:              woocommerce, sales report, woocommerce sales, reporting, analytics, csv, excel, spreadsheets
 Requires at least: 3.5
 Requires PHP:      7.0
-Tested up to:      6.2.0
-Stable tag:        1.5.6
+Tested up to:      6.1.1
+Stable tag:        1.5.2
 License:           GPLv3 or later
 License URI:       https://www.gnu.org/licenses/gpl-3.0.en.html
 
@@ -105,10 +105,6 @@ Enjoy!
 
 == Frequently Asked Questions ==
 
-= Why I see additional decimal places in some fields?
-
-In some cases output may be affected by the limited precision of PHP's floating point numbers (see the warning in the PHP manual: https://www.php.net/manual/en/language.types.float.php). This may occur retrieving values from the database, when the plugin does calculations after retrieving values from the database, such as when a report field consists of two database fields added together, or when calculating the totals row. When this occurs, a tiny fractional error may be introduced each time a calculation is performed, typically less than 0.000000000000001 per calculation or retrieval. This is not likely to affect the accuracy of the output in normal usage where only a few decimal places are used, even if a value has been derived from many calculations such as the totals row in a very long report. However, if output rounding is not in effect, you may see unexpected additional decimal places in some fields in your output. In this case we recommend rounding the output values as needed.
-
 = What’s the difference between Product Sales Report and Export Order Items? =
 
 Product Sales Report is for creating a report about all your products or a group of products for comparison and sales performance. [Export Order Items](https://wordpress.org/plugins/export-order-items-for-woocommerce/) generates a report with the items from an individual order, specific purchase, or specific customer for order fulfillment or accounting.
@@ -145,25 +141,8 @@ Alternatively, you can manually upload the plugin to your wp-content/plugins dir
 
 == Changelog ==
 
-= 1.5.6 =
-* Revert: "Limit Gross Sales and Gross Sales (After Discounts) fields to 10 decimal places (amounts are rounded if more than 10 decimal places)"
-
-= 1.5.5 =
-April 26, 2023
-* Add High Performance Order Tables support (beta)
-
-= 1.5.4 =
-April 17, 2023
-* Security update
-* Limit Gross Sales and Gross Sales (After Discounts) fields to 10 decimal places (amounts are rounded if more than 10 decimal places)
-
-= 1.5.3 =
-March 12, 2023
-* Fix: The option to use the report preset's date range settings wasn't working in Scheduled Email Reports
-
 = 1.5.2 =
 September 23, 2022
-* Display reporting presets list in alphabetical order
 
 = 1.5.1 =
 * Fix: Removed incorrect/outdated note regarding line item refund creation when the order status is changed to Refunded (WooCommerce 2.4+ should automatically create line-item refunds when the status of an order is set to Refunded)

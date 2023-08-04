@@ -4,7 +4,7 @@ Tags: cache,caching, performance, wp-cache, cdn, combine, compress, speed plugin
 Requires at least: 6.0
 Tested up to: 6.2
 Requires PHP: 7.4
-Stable tag: 2.0.27
+Stable tag: 2.0.24
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -145,24 +145,11 @@ Using Gzip, Breeze compresses the request files, further reducing the size of th
 
 == Changelog ==
 
-= 2.0.27=
-
-* Add: Installing and activating Breeze using WP CLI will now automatically add GZIP compression and browser cache rules to the .htaccess file. Similarly, deactivating and deleting Breeze using WP CLI will remove these rules from the .htaccess file.
-
-= 2.0.26=
-
-* Fix: The issue caused by CLI plugin update, resolving error related to WP_Upgrader_Skin class requirement removal.
-
-= 2.0.25=
-
-* Fix: Purging the cache from Breeze for WordPress Multisite applications will not purge the OCP cache.
-
-
-= 2.0.24=
+= 2.0.24 =
 
 * Fix: Handling of the 'WP_Upgrader_Skin' class for seamless update functionality via wp-cli.
 
-= 2.0.23=
+= 2.0.23 =
 
 * Add: Smart Cache Purge Configuration for Cloudflare is now available for Flexible Platform for Cloudways users.
 * Add: Environment detection is now available for Cloudways users to automatically detect the platform, e.g., Flexible or Autoscale.

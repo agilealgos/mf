@@ -188,7 +188,7 @@ if ( $wps_wpr_mem_enable ) {
 						if ( ! is_plugin_active( 'ultimate-woocommerce-points-and-rewards/ultimate-woocommerce-points-and-rewards.php' ) ) {
 							?>
 							<th class="wps-wpr-points-expiry">
-								<span class="wps_wpr_nobr"><?php echo esc_html__( 'Membership Expiry', 'points-and-rewards-for-woocommerce' ); ?></span>
+								<span class="wps_wpr_nobr"><?php echo esc_html__( 'Membership Expiry', 'ultimate-woocommerce-points-and-rewards' ); ?></span>
 							</th>
 							<?php
 						}
@@ -328,8 +328,8 @@ if ( isset( $enable_drop ) && $enable_drop ) {
 	}
 	if ( ! empty( $wps_wpr_membership_roles ) && is_array( $wps_wpr_membership_roles ) ) {
 		?>
-			<p class="wps_wpr_heading wps_wpr_membrship_update_heading"><?php echo esc_html_e( 'Upgrade User Level', 'points-and-rewards-for-woocommerce' ); ?></p>
-			<fieldset class="wps_wpr_each_section wps_wpr_membership_listing_class">	
+			<p class="wps_wpr_heading"><?php echo esc_html_e( 'Upgrade User Level', 'points-and-rewards-for-woocommerce' ); ?></p>
+			<fieldset class="wps_wpr_each_section">	
 				<span class="wps_wpr_membership_message"><?php echo esc_html_e( 'Upgrade Your User Level: ', 'points-and-rewards-for-woocommerce' ); ?></span>
 				<form action="" method="post" id="wps_wpr_membership">
 					<?php wp_nonce_field( 'membership-save-level', 'membership-save-level' ); ?>

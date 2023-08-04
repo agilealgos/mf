@@ -257,15 +257,10 @@ class RemoteFilesystem {
 					$curl     = curl_init();
 					$filename = $destination . '/' . basename( $this->options['dir'] );
 					$file     = fopen( $destination . '/' . basename( $this->options['dir'] ), 'w' );
-                    curl_setopt( $curl, CURLOPT_URL, 'ftp://' . str_replace(array('ftps://', 'ftp://'), '', $this->options['ftp_host']) . '/' . $this->options['dir'] ); #input
+					curl_setopt( $curl, CURLOPT_URL, $this->options['ftp_host'] . '/' . $this->options['dir'] ); #input
 					curl_setopt( $curl, CURLOPT_RETURNTRANSFER, 1 );
 					curl_setopt( $curl, CURLOPT_FILE, $file ); #output
 					curl_setopt( $curl, CURLOPT_USERPWD, $this->options['ftp_username'] . ':' . $this->options['ftp_password'] );
-                    curl_setopt($curl, CURLOPT_FTP_SSL, CURLFTPSSL_TRY);
-                    curl_setopt($curl, CURLOPT_FTPSSLAUTH, CURLFTPAUTH_DEFAULT);
-                    curl_setopt($curl, CURLOPT_PORT, $this->options['port']);
-                    curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
-                    curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
 					curl_exec( $curl );
 					curl_close( $curl );
 					fclose( $file );
@@ -324,7 +319,7 @@ class RemoteFilesystem {
 			// Check if a relative file reference was provided.
 			preg_match( '#{(.*)\.(.{0,4})}#', $this->options['dir'], $matches );
 
-			// Ensure all the expected pieces were found or do nothing.
+			// Ensure all of the expected pieces were found or do nothing.
 			if ( isset( $matches[0] ) && isset( $matches[1] ) && isset( $matches[2] ) ) {
 				$relative       = $matches[1]; // Relative reference such as oldest.
 				$this->rel_type = $matches[2]; // The file extension to find.
@@ -384,13 +379,6 @@ class RemoteFilesystem {
 						$file = array_pop( $contents );
 						isset( $file['path'] ) && $this->options['dir'] = $file['path'];
 						break;
-
-					case ( 'custom' ):
-
-						// Pass the current dir, found files, and target extension back to the user via filter.
-						// The full directory pointing to a single file must be returned.
-						$this->options['dir'] = apply_filters('wpai_ftp_custom_target_file_filter', $this->options['dir'], $contents, $this->rel_type);
-						break;
 				}
 			}
 		} catch ( \Exception $e ) {
@@ -426,10 +414,6 @@ class RemoteFilesystem {
 			$filter = '@' . implode( '|', $filters ) . '@';
 
 			$this->contents = array_filter( $this->contents, function ( $var ) use ( $filter ) {
-
-				// Ensure that $var has an extension element in all cases.
-				if( !isset($var['extension']))
-					$var['extension'] = '';
 
 				return ( preg_match( $filter, $var['basename'] ) !== 1 && ( $var['type'] === 'dir' || in_array( strtolower($var['extension']), $this->allowed_file_extensions ) ) );
 

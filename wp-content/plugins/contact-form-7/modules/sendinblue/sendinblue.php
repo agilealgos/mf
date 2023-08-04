@@ -1,6 +1,6 @@
 <?php
 /**
- * Brevo (formerly Sendinblue) module main file
+ * Sendinblue module main file
  *
  * @link https://contactform7.com/sendinblue-integration/
  */

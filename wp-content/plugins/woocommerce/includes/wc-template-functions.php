@@ -3229,7 +3229,6 @@ if ( ! function_exists( 'woocommerce_account_orders' ) ) {
 				)
 			)
 		);
-
 		$customer_orders = wc_get_orders(
 			['customer' => get_current_user_id(),
 			'page'     => $current_page,

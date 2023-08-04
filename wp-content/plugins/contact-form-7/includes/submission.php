@@ -371,7 +371,7 @@ class WPCF7_Submission {
 	 * Constructs posted data property based on user input values.
 	 */
 	private function setup_posted_data() {
-		$posted_data = array_filter( (array) $_POST, static function ( $key ) {
+		$posted_data = array_filter( (array) $_POST, function( $key ) {
 			return '_' !== substr( $key, 0, 1 );
 		}, ARRAY_FILTER_USE_KEY );
 
@@ -388,6 +388,11 @@ class WPCF7_Submission {
 			$type = $tag->type;
 			$name = $tag->name;
 			$pipes = $tag->pipes;
+
+			if ( wpcf7_form_tag_supports( $type, 'do-not-store' ) ) {
+				unset( $posted_data[$name] );
+				continue;
+			}
 
 			$value_orig = $value = '';
 
@@ -422,7 +427,7 @@ class WPCF7_Submission {
 					);
 
 					list( $last_val, $tied_item ) = array_map(
-						static function ( $item ) {
+						function ( $item ) {
 							return wpcf7_canonicalize( $item, array(
 								'strto' => 'as-is',
 							) );

@@ -41,7 +41,6 @@ class EventSourceGroupFields extends AbstractEnum {
   const EVENT_SOURCES = 'event_sources';
   const ID = 'id';
   const NAME = 'name';
-  const OWNER_BUSINESS = 'owner_business';
 
   public function getFieldTypes() {
     return array(
@@ -49,7 +48,6 @@ class EventSourceGroupFields extends AbstractEnum {
       'event_sources' => 'list<ExternalEventSource>',
       'id' => 'string',
       'name' => 'string',
-      'owner_business' => 'Business',
     );
   }
 }

@@ -1,25 +1,6 @@
 <?php
-add_action( 'in_plugin_update_message-wp-store-locator/wp-store-locator.php', 'wpsl_plugin_update_message', 10, 2 );
 add_action( 'admin_init', 'wpsl_check_upgrade' );
 add_action( 'admin_init', 'wpsl_cpt_update_state' );
-
-/**
- * Make sure to notify users who have the WPSL Widget installed
- * that they need to upgrade to the latest version.
- *
- * If they don't do this, and they have the autocomplete
- * function enabled the widget will break.
- *
- * @since  3.0.0
- * @return void
- */
-function wpsl_plugin_update_message() {
-
-    if ( class_exists( 'WPSL_Widgets' ) && version_compare( WPSL_WIDGET_VERSION_NUM, '1.2.1' , '<' ) ) {
-        echo '<br><br>';
-        echo sprintf( __( 'Please make sure to also upgrade the %sWP Store Locator - Widget%s plugin to the latest version.', 'wpsl' ), '<strong>', '</strong>' );
-    }
-}
 
 /**
  * If the db doesn't hold the current version, run the upgrade procedure
@@ -32,7 +13,7 @@ function wpsl_check_upgrade() {
     global $wpsl_settings;
 
     $current_version = get_option( 'wpsl_version' );
-
+   
     if ( version_compare( $current_version, WPSL_VERSION_NUM, '==' ) )
         return;
 

@@ -1,6 +1,6 @@
 ===  Abandoned Checkout Recovery & Order Notifications for WooCommerce ===
-Tags: whatsapp, abandoned cart, whatsapp api, whatsapp business, whatsapp chat
-Stable tag: 1.0.1
+Tags: Woo, social, whatsapp
+Stable tag: 1.0
 Requires at least: 6.0.1
 Tested up to: 6.1
 Requires PHP: 7.4
@@ -211,7 +211,4 @@ Steps to send bulk campaign to customers who have placed order in the last 60 da
 == Changelog ==
 = 1.0 =
 * Plugin released.
-
-= 1.0.1 =
-* FIX: Abandon cart Location warning.
 

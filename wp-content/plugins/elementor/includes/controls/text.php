@@ -72,10 +72,6 @@ class Control_Text extends Base_Data_Control {
 			'input_type' => 'text',
 			'placeholder' => '',
 			'title' => '',
-			'ai' => [
-				'active' => true,
-				'type' => 'text',
-			],
 			'dynamic' => [
 				'categories' => [
 					TagsModule::TEXT_CATEGORY,

@@ -272,11 +272,12 @@ class Base extends \ReyCore\Modules\ModuleBase {
 				$content = $args['label_start'];
 				$content .= sprintf( $args['percentage_format'], $args['discount'], $args['percentage_text'] );
 				$content .= $args['label_end'];
+				
 				if ($args['discount'] == 50) {
 					$content .= '<div class="noRetAndExc">- No Returns and No Exchange.</div>';
 					$content .= '<style>.noRetAndExc{display: block;width: 100%;color: #abaeb1;font-size: 80%;font-weight: 400;}ul.products .noRetAndExc {display: none;}</style>';
-					
 				}
+				
 			}
 		}
 

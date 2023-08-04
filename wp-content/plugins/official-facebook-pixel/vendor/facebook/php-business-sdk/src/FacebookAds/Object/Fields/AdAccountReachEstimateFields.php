@@ -38,14 +38,12 @@ use FacebookAds\Enum\AbstractEnum;
 class AdAccountReachEstimateFields extends AbstractEnum {
 
   const ESTIMATE_READY = 'estimate_ready';
-  const USERS_LOWER_BOUND = 'users_lower_bound';
-  const USERS_UPPER_BOUND = 'users_upper_bound';
+  const USERS = 'users';
 
   public function getFieldTypes() {
     return array(
       'estimate_ready' => 'bool',
-      'users_lower_bound' => 'int',
-      'users_upper_bound' => 'int',
+      'users' => 'int',
     );
   }
 }

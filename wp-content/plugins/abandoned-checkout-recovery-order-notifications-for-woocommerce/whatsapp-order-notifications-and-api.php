@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Abandoned Checkout Recovery & Order Notifications for WooCommerce
  * Description: Send WhatsApp notifications for recovering abandoned carts, double confirming CoD orders and for other order & shipment updates! Also, send out your Woocommerce catalog via bulk WhatsApp campaigns and create chat automations to engage & convert more customers.
- * Version: 1.0.1
+ * Version: 1.0
  * Author: Interakt
  * Author URI: https://www.interakt.shop/
  * Text Domain: abandoned-checkout-recovery-order-notifications-woocommerce

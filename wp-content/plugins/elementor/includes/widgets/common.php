@@ -192,7 +192,7 @@ class Widget_Common extends Widget_Base {
 			[
 				'label' => esc_html__( 'Margin', 'elementor' ),
 				'type' => Controls_Manager::DIMENSIONS,
-				'size_units' => [ 'px', '%', 'em', 'rem', 'vw', 'custom' ],
+				'size_units' => [ 'px', 'em', '%', 'rem', 'custom' ],
 				'selectors' => [
 					'{{WRAPPER}} > .elementor-widget-container' => 'margin: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
 				],
@@ -204,7 +204,7 @@ class Widget_Common extends Widget_Base {
 			[
 				'label' => esc_html__( 'Padding', 'elementor' ),
 				'type' => Controls_Manager::DIMENSIONS,
-				'size_units' => [ 'px', '%', 'em', 'rem', 'vw', 'custom' ],
+				'size_units' => [ 'px', 'em', '%', 'rem', 'custom' ],
 				'selectors' => [
 					'{{WRAPPER}} > .elementor-widget-container' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
 				],
@@ -254,7 +254,7 @@ class Widget_Common extends Widget_Base {
 						'step' => 1,
 					],
 				],
-				'size_units' => [ 'px', '%', 'em', 'rem', 'vw', 'custom' ],
+				'size_units' => [ 'px', '%', 'vw', 'custom' ],
 				'selectors' => [
 					'{{WRAPPER}}' => '--container-widget-width: {{SIZE}}{{UNIT}}; --container-widget-flex-grow: 0; width: var( --container-widget-width, {{SIZE}}{{UNIT}} ); max-width: {{SIZE}}{{UNIT}}',
 				],
@@ -409,7 +409,7 @@ class Widget_Common extends Widget_Base {
 				'default' => [
 					'size' => '0',
 				],
-				'size_units' => [ 'px', '%', 'em', 'rem', 'vw', 'vh', 'custom' ],
+				'size_units' => [ 'px', '%', 'vw', 'vh', 'custom' ],
 				'selectors' => [
 					'body:not(.rtl) {{WRAPPER}}' => 'left: {{SIZE}}{{UNIT}}',
 					'body.rtl {{WRAPPER}}' => 'right: {{SIZE}}{{UNIT}}',
@@ -448,7 +448,7 @@ class Widget_Common extends Widget_Base {
 				'default' => [
 					'size' => '0',
 				],
-				'size_units' => [ 'px', '%', 'em', 'rem', 'vw', 'vh', 'custom' ],
+				'size_units' => [ 'px', '%', 'vw', 'vh', 'custom' ],
 				'selectors' => [
 					'body:not(.rtl) {{WRAPPER}}' => 'right: {{SIZE}}{{UNIT}}',
 					'body.rtl {{WRAPPER}}' => 'left: {{SIZE}}{{UNIT}}',
@@ -508,7 +508,7 @@ class Widget_Common extends Widget_Base {
 						'max' => 200,
 					],
 				],
-				'size_units' => [ 'px', '%', 'em', 'rem', 'vh', 'vw', 'custom' ],
+				'size_units' => [ 'px', '%', 'vh', 'vw', 'custom' ],
 				'default' => [
 					'size' => '0',
 				],
@@ -546,7 +546,7 @@ class Widget_Common extends Widget_Base {
 						'max' => 200,
 					],
 				],
-				'size_units' => [ 'px', '%', 'em', 'rem', 'vh', 'vw', 'custom' ],
+				'size_units' => [ 'px', '%', 'vh', 'vw', 'custom' ],
 				'default' => [
 					'size' => '0',
 				],
@@ -579,9 +579,6 @@ class Widget_Common extends Widget_Base {
 				'dynamic' => [
 					'active' => true,
 				],
-				'ai' => [
-					'active' => false,
-				],
 				'default' => '',
 				'title' => esc_html__( 'Add your custom id WITHOUT the Pound key. e.g: my-id', 'elementor' ),
 				'style_transfer' => false,
@@ -594,9 +591,6 @@ class Widget_Common extends Widget_Base {
 			[
 				'label' => esc_html__( 'CSS Classes', 'elementor' ),
 				'type' => Controls_Manager::TEXT,
-				'ai' => [
-					'active' => false,
-				],
 				'dynamic' => [
 					'active' => true,
 				],
@@ -787,7 +781,7 @@ class Widget_Common extends Widget_Base {
 			[
 				'label' => esc_html__( 'Border Radius', 'elementor' ),
 				'type' => Controls_Manager::DIMENSIONS,
-				'size_units' => [ 'px', '%', 'em', 'rem', 'custom' ],
+				'size_units' => [ 'px', '%', 'em', 'custom' ],
 				'selectors' => [
 					'{{WRAPPER}} > .elementor-widget-container' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
 				],
@@ -824,7 +818,7 @@ class Widget_Common extends Widget_Base {
 			[
 				'label' => esc_html__( 'Border Radius', 'elementor' ),
 				'type' => Controls_Manager::DIMENSIONS,
-				'size_units' => [ 'px', '%', 'em', 'rem', 'custom' ],
+				'size_units' => [ 'px', '%', 'em', 'custom' ],
 				'selectors' => [
 					'{{WRAPPER}}:hover > .elementor-widget-container' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
 				],
@@ -909,7 +903,7 @@ class Widget_Common extends Widget_Base {
 			[
 				'label' => esc_html__( 'Image', 'elementor' ),
 				'type' => Controls_Manager::MEDIA,
-				'media_types' => [ 'image' ],
+				'media_type' => 'image',
 				'should_include_svg_inline_option' => true,
 				'library_type' => 'image/svg+xml',
 				'dynamic' => [
@@ -965,7 +959,7 @@ class Widget_Common extends Widget_Base {
 			[
 				'label' => esc_html__( 'Scale', 'elementor' ),
 				'type' => Controls_Manager::SLIDER,
-				'size_units' => [ 'px', '%', 'em', 'rem', 'vw', 'custom' ],
+				'size_units' => [ 'px', 'em', '%', 'vw', 'custom' ],
 				'range' => [
 					'px' => [
 						'min' => 0,
@@ -1026,7 +1020,7 @@ class Widget_Common extends Widget_Base {
 			[
 				'label' => esc_html__( 'X Position', 'elementor' ),
 				'type' => Controls_Manager::SLIDER,
-				'size_units' => [ 'px', '%', 'em', 'rem', 'vw', 'custom' ],
+				'size_units' => [ 'px', 'em', '%', 'vw', 'custom' ],
 				'range' => [
 					'px' => [
 						'min' => -500,
@@ -1062,7 +1056,7 @@ class Widget_Common extends Widget_Base {
 			[
 				'label' => esc_html__( 'Y Position', 'elementor' ),
 				'type' => Controls_Manager::SLIDER,
-				'size_units' => [ 'px', '%', 'em', 'rem', 'vw', 'custom' ],
+				'size_units' => [ 'px', 'em', '%', 'vw', 'custom' ],
 				'range' => [
 					'px' => [
 						'min' => -500,
@@ -1136,12 +1130,7 @@ class Widget_Common extends Widget_Base {
 		$this->add_control(
 			'responsive_description',
 			[
-				'raw' => sprintf(
-					/* translators: 1: Link open tag, 2: Link close tag. */
-					esc_html__( 'Responsive visibility will take effect only on %1$s preview mode %2$s or live page, and not while editing in Elementor.', 'elementor' ),
-					'<a href="javascript: $e.run( \'panel/close\' )">',
-					'</a>'
-				),
+				'raw' => esc_html__( 'Responsive visibility will take effect only on preview or live page, and not while editing in Elementor.', 'elementor' ),
 				'type' => Controls_Manager::RAW_HTML,
 				'content_classes' => 'elementor-descriptor',
 			]

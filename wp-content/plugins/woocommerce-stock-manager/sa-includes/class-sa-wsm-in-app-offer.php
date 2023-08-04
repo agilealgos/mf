@@ -5,7 +5,7 @@
  * @category    Class
  * @author      StoreApps
  * @package     StoreApps
- * @version     1.1.1
+ * @version     1.1.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -124,7 +124,7 @@ class SA_WSM_In_App_Offer {
 	public function is_show() {
 
 		$timezone_format = _x( 'Y-m-d H:i:s', 'timezone date format', 'woocommerce-stock-manager' );
-		$current_date    = strtotime( date_i18n( $timezone_format, false, true ) );
+		$current_date    = strtotime( date_i18n( $timezone_format ) );
 		$start           = strtotime( $this->start );
 		$end             = strtotime( $this->end );
 		if ( ( $current_date >= $start ) && ( $current_date <= $end ) ) {

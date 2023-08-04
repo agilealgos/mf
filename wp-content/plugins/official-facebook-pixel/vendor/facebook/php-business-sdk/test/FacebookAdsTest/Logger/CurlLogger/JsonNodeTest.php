@@ -38,8 +38,10 @@ class JsonNodeTest extends AbstractUnitTestCase {
     JsonNode::factory($param_data)->encode();
   }
 
+  /**
+   * @expectedException \InvalidArgumentException
+   */
   public function testInvalidType() {
-    $this->expectException(\InvalidArgumentException::class);
     JsonNode::factory(fopen('php://memory', 'r'))->encode();
   }
 

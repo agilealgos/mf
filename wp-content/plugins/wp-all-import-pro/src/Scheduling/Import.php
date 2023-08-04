@@ -92,7 +92,6 @@ class Import
             'updated' => 0,
             'skipped' => 0,
             'deleted' => 0,
-            'changed_missing' => 0,
             'queue_chunk_number' => 0,
             'last_activity' => date('Y-m-d H:i:s')
         ))->update();

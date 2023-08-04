@@ -30,7 +30,6 @@ use FacebookAds\Http\RequestInterface;
 use FacebookAds\TypeChecker;
 use FacebookAds\Object\Fields\DestinationFields;
 use FacebookAds\Object\Values\DestinationImageFetchStatusValues;
-use FacebookAds\Object\Values\DestinationVisibilityValues;
 
 /**
  * This class is auto-generated.
@@ -53,7 +52,6 @@ class Destination extends AbstractCrudObject {
   protected static function getReferencedEnums() {
     $ref_enums = array();
     $ref_enums['ImageFetchStatus'] = DestinationImageFetchStatusValues::getInstance()->getValues();
-    $ref_enums['Visibility'] = DestinationVisibilityValues::getInstance()->getValues();
     return $ref_enums;
   }
 

@@ -1,26 +1,19 @@
 <?php
 namespace Elementor;
 
-use Elementor\Core\Editor\Editor;
-
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
-
-$is_editor_v2_active = Plugin::$instance->experiments->is_feature_active( Editor::EDITOR_V2_EXPERIMENT_NAME );
 ?>
 <script type="text/template" id="tmpl-elementor-hotkeys">
-	<# var ctrlLabel = environment.mac ? '&#8984;' : 'Ctrl'; #>
+	<# var ctrlLabel = environment.mac ? 'Cmd' : 'Ctrl'; #>
 	<div id="elementor-hotkeys__content">
-
-		<div class="elementor-hotkeys__col">
+		<div id="elementor-hotkeys__actions" class="elementor-hotkeys__col">
 
 			<div class="elementor-hotkeys__header">
 				<h3><?php echo esc_html__( 'Actions', 'elementor' ); ?></h3>
 			</div>
-
 			<div class="elementor-hotkeys__list">
-
 				<div class="elementor-hotkeys__item">
 					<div class="elementor-hotkeys__item--label"><?php echo esc_html__( 'Undo', 'elementor' ); ?></div>
 					<div class="elementor-hotkeys__item--shortcut">
@@ -87,17 +80,14 @@ $is_editor_v2_active = Plugin::$instance->experiments->is_feature_active( Editor
 				</div>
 
 			</div>
-
 		</div>
 
-		<div class="elementor-hotkeys__col">
+		<div id="elementor-hotkeys__navigation" class="elementor-hotkeys__col">
 
 			<div class="elementor-hotkeys__header">
-				<h3><?php echo esc_html__( 'Panels', 'elementor' ); ?></h3>
+				<h3><?php echo esc_html__( 'Go To', 'elementor' ); ?></h3>
 			</div>
-
 			<div class="elementor-hotkeys__list">
-
 				<div class="elementor-hotkeys__item">
 					<div class="elementor-hotkeys__item--label"><?php echo esc_html__( 'Finder', 'elementor' ); ?></div>
 					<div class="elementor-hotkeys__item--shortcut">
@@ -115,31 +105,11 @@ $is_editor_v2_active = Plugin::$instance->experiments->is_feature_active( Editor
 				</div>
 
 				<div class="elementor-hotkeys__item">
-					<div class="elementor-hotkeys__item--label"><?php echo esc_html__( 'Site Settings', 'elementor' ); ?></div>
-					<div class="elementor-hotkeys__item--shortcut">
-						<span>{{{ ctrlLabel }}}</span>
-						<span>K</span>
-					</div>
-				</div>
-
-				<div class="elementor-hotkeys__item">
-					<div class="elementor-hotkeys__item--label"><?php
-						echo $is_editor_v2_active
-							? esc_html__( 'Structure', 'elementor' )
-							: esc_html__( 'Navigator', 'elementor' );
-					?></div>
-					<div class="elementor-hotkeys__item--shortcut">
-						<span>{{{ ctrlLabel }}}</span>
-						<span>I</span>
-					</div>
-				</div>
-
-				<div class="elementor-hotkeys__item">
-					<div class="elementor-hotkeys__item--label"><?php echo esc_html__( 'Page Settings', 'elementor' ); ?></div>
+					<div class="elementor-hotkeys__item--label"><?php echo esc_html__( 'Responsive Mode', 'elementor' ); ?></div>
 					<div class="elementor-hotkeys__item--shortcut">
 						<span>{{{ ctrlLabel }}}</span>
 						<span>Shift</span>
-						<span>Y</span>
+						<span>M</span>
 					</div>
 				</div>
 
@@ -153,32 +123,10 @@ $is_editor_v2_active = Plugin::$instance->experiments->is_feature_active( Editor
 				</div>
 
 				<div class="elementor-hotkeys__item">
-					<div class="elementor-hotkeys__item--label"><?php echo esc_html__( 'User Preferences', 'elementor' ); ?></div>
+					<div class="elementor-hotkeys__item--label"><?php echo esc_html__( 'Navigator', 'elementor' ); ?></div>
 					<div class="elementor-hotkeys__item--shortcut">
 						<span>{{{ ctrlLabel }}}</span>
-						<span>Shift</span>
-						<span>U</span>
-					</div>
-				</div>
-
-			</div>
-
-		</div>
-
-		<div class="elementor-hotkeys__col">
-
-			<div class="elementor-hotkeys__header">
-				<h3><?php echo esc_html__( 'Go To', 'elementor' ); ?></h3>
-			</div>
-
-			<div class="elementor-hotkeys__list">
-
-				<div class="elementor-hotkeys__item">
-					<div class="elementor-hotkeys__item--label"><?php echo esc_html__( 'Responsive Mode', 'elementor' ); ?></div>
-					<div class="elementor-hotkeys__item--shortcut">
-						<span>{{{ ctrlLabel }}}</span>
-						<span>Shift</span>
-						<span>M</span>
+						<span>I</span>
 					</div>
 				</div>
 
@@ -190,16 +138,6 @@ $is_editor_v2_active = Plugin::$instance->experiments->is_feature_active( Editor
 						<span>L</span>
 					</div>
 				</div>
-
-				<?php if ( Plugin::$instance->experiments->is_feature_active( 'notes' ) ) : ?>
-				<div class="elementor-hotkeys__item">
-					<div class="elementor-hotkeys__item--label"><?php echo esc_html__( 'Notes', 'elementor' ); ?></div>
-					<div class="elementor-hotkeys__item--shortcut">
-						<span>Shift</span>
-						<span>C</span>
-					</div>
-				</div>
-				<?php endif ?>
 
 				<div class="elementor-hotkeys__item">
 					<div class="elementor-hotkeys__item--label"><?php echo esc_html__( 'Keyboard Shortcuts', 'elementor' ); ?></div>
@@ -215,10 +153,7 @@ $is_editor_v2_active = Plugin::$instance->experiments->is_feature_active( Editor
 						<span>Esc</span>
 					</div>
 				</div>
-
 			</div>
-
 		</div>
-
 	</div>
 </script>

@@ -145,10 +145,7 @@ class PMXI_Model_Record extends PMXI_Model {
 	 */
 	public function __get($field) {
 		if ( ! $this->offsetExists($field)) {
-			// Retrieve calling function details.
-			$called_by = debug_backtrace(!DEBUG_BACKTRACE_PROVIDE_OBJECT|DEBUG_BACKTRACE_IGNORE_ARGS,2)[1];
-
-			throw new Exception("Undefined field '$field' requested by: [ " . $called_by['function'] .' in ' . $called_by['file'] . ' line ' . $called_by['line'] .' ]');
+			throw new Exception("Undefined field $field.");
 		}
 		return $this[$field];
 	}

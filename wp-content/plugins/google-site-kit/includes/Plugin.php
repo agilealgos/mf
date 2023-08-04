@@ -87,6 +87,29 @@ final class Plugin {
 			return;
 		}
 
+		// In the case of IDNs, ensure the ASCII and non-ASCII domains
+		// are treated as allowable origins.
+		add_filter(
+			'allowed_redirect_hosts',
+			function( $hosts ) {
+				$wpp = wp_parse_url( home_url() );
+
+				// If this host is already an ASCII-only string, it's either
+				// not an IDN or it's an ASCII-formatted IDN. Either way: we
+				// can return the existing `$hosts` array unmodified.
+				if ( mb_check_encoding( $wpp['host'], 'ASCII' ) ) {
+					return $hosts;
+				}
+
+				// If this host is an IDN in Unicode format, we need to add the
+				// urlencoded versions of the domain to the `$hosts` array,
+				// because this is what will be used for redirects.
+				$hosts[] = rawurlencode( $wpp['host'] );
+
+				return $hosts;
+			}
+		);
+
 		// REST route to set up a temporary tag to verify meta tag output works reliably.
 		add_filter(
 			'googlesitekit_rest_routes',
@@ -154,16 +177,7 @@ final class Plugin {
 				$user_options = new Core\Storage\User_Options( $this->context, get_current_user_id() );
 				$assets       = new Core\Assets\Assets( $this->context );
 
-				$survey_queue = new Core\User_Surveys\Survey_Queue( $user_options );
-				$survey_queue->register();
-
-				$user_input = new Core\User_Input\User_Input( $this->context, $options, $user_options, $survey_queue );
-
-				if ( Feature_Flags::enabled( 'userInput' ) ) {
-					$user_input->register();
-				}
-
-				$authentication = new Core\Authentication\Authentication( $this->context, $options, $user_options, $transients, $user_input );
+				$authentication = new Core\Authentication\Authentication( $this->context, $options, $user_options, $transients );
 				$authentication->register();
 
 				$modules = new Core\Modules\Modules( $this->context, $options, $user_options, $authentication, $assets );
@@ -186,7 +200,7 @@ final class Plugin {
 				$screens = new Core\Admin\Screens( $this->context, $assets, $modules, $authentication );
 				$screens->register();
 
-				$user_surveys = new Core\User_Surveys\User_Surveys( $authentication, $user_options, $survey_queue );
+				$user_surveys = new Core\User_Surveys\User_Surveys( $authentication, $user_options );
 				$user_surveys->register();
 
 				( new Core\Authentication\Setup( $this->context, $user_options, $authentication ) )->register();

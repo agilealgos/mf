@@ -1,14 +1,14 @@
 === Stock Manager for WooCommerce ===
-Contributors: storeapps, niravmehta, mansi shah, Tarun.Parswani, gomathip, Musilda
+Contributors: storeapps, niravmehta, mansi shah, Tarun.Parswani, Musilda
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=CPTHCDC382KVA
-Author URI: https://www.storeapps.org/woocommerce-plugins/?utm_source=wprepo&utm_medium=web&utm_campaign=wsm_readme
+Author URI: https://www.storeapps.org/
 Plugin URI: https://www.storeapps.org/woocommerce-plugins/?utm_source=wprepo&utm_medium=web&utm_campaign=wsm_readme
 Tags: woocommerce stock management, woocommerce stock manager, woocommerce product stock manager, woocommerce stock management free, woocommerce inventory management
 Requires at least: 5.0.0
-Tested up to: 6.2.2
+Tested up to: 6.1.0
 Requires PHP: 5.6
-Stable tag: 2.11.0
-License: GPLv2
+Stable tag: 2.10.0
+License: GPLv3
 
 Best WooCommerce stock management plugin to manage and edit product stock and their variables from a single dashboard. Stock log, import/export, filters and more...
 
@@ -150,15 +150,6 @@ Be sure, that you have active stock manager.
 4. Product stock as on date
 
 == Changelog ==
-
-= 2.11.0 (14.06.2023) =
-* New: WordPress 6.2.2 compatible
-* Fix: [In App Offer] Not respecting the UTC start and end dates
-* Fix: Strengthen security for CSRF vulnerability [Thanks to Patchstack team]
-* Update: Remove Settings sub-menu page
-* Update: License version
-* Update: POT file
-
 = 2.10.0 (10.11.2022) =
 * New: WooCommerce 7.0.1 compatible
 * New: WordPress 6.1.0 compatible
@@ -302,9 +293,6 @@ Be sure, that you have active stock manager.
 For the changelog of earlier versions, please refer to the separate [changelog.txt](https://plugins.svn.wordpress.org/woocommerce-stock-manager/trunk/changelog.txt) file.
 
 == Upgrade Notice ==
-
-= 2.11.0 =
-WordPress 6.2.2 compatible, [In App Offer] Not respecting the UTC start and end dates, Strengthen security for CSRF vulnerability [Thanks to Patchstack team], Remove Settings sub-menu page, License version, POT file. Recommended upgrade.
 
 = 2.10.0 =
 WooCommerce 7.0.1 compatible, WordPress 6.1.0 compatible, Fixes related to PHP Fatal Error: Call to undefined function wp_set_script_translations() along with other important fixes and updates. Recommended upgrade.

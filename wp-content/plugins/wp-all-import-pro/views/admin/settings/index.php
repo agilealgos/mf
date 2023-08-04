@@ -40,7 +40,7 @@
 							<p class="submit-buttons">
 								<?php wp_nonce_field('edit-license', '_wpnonce_edit-license') ?>
 								<input type="hidden" name="is_license_submitted" value="1" />
-								<input type="submit" class="button-primary" value="<?php _e('Save License', 'wp_all_import_plugin'); ?>" />
+								<input type="submit" class="button-primary" value="Save License" />
 							</p>
 						</td>
 					</tr>
@@ -83,7 +83,7 @@
 					<p class="submit-buttons">
 						<?php wp_nonce_field('edit-license', '_wpnonce_edit-scheduling-license') ?>
 						<input type="hidden" name="is_scheduling_license_submitted" value="1"/>
-						<input type="submit" class="button-primary" value="<?php _e('Save License', 'wp_all_import_plugin'); ?>"/>
+						<input type="submit" class="button-primary" value="Save License"/>
 					</p>
 				</td>
 			</tr>
@@ -149,7 +149,7 @@
 <form name="settings" method="post" action="" class="settings">
 
 	<h3><?php _e('Cron Imports', 'wp_all_import_plugin') ?></h3>
-
+	
 	<table class="form-table">
 		<tbody>
 			<tr>
@@ -174,12 +174,12 @@
 				</td>
 			</tr>
 		</tbody>
-	</table>
+	</table>	
 
 	<div class="clear"></div>
 
 	<h3><?php _e('Files', 'wp_all_import_plugin') ?></h3>
-
+	
 	<table class="form-table">
 		<tbody>
 			<tr>
@@ -188,8 +188,8 @@
 					<fieldset style="padding:0;">
 						<legend class="screen-reader-text"><span><?php _e('Secure Mode', 'wp_all_import_plugin'); ?></span></legend>
 						<input type="hidden" name="secure" value="0"/>
-						<label for="secure"><input type="checkbox" value="1" id="secure" name="secure" <?php echo (($post['secure']) ? 'checked="checked"' : ''); ?>><?php _e('Randomize folder names', 'wp_all_import_plugin'); ?></label>
-					</fieldset>
+						<label for="secure"><input type="checkbox" value="1" id="secure" name="secure" <?php echo (($post['secure']) ? 'checked="checked"' : ''); ?>><?php _e('Randomize folder names', 'wp_all_import_plugin'); ?></label>																				
+					</fieldset>														
 					<p class="description">
 						<?php
 							$wp_uploads = wp_upload_dir();
@@ -208,19 +208,19 @@
 			<tr>
 				<th scope="row"><label><?php _e('Clean Up Temp Files', 'wp_all_import_plugin'); ?></label></th>
 				<td>
-					<a class="button-primary wpallimport-clean-up-tmp-files" href="<?php echo esc_url(add_query_arg(array('action' => 'cleanup', '_wpnonce' => wp_create_nonce( '_wpnonce-cleanup_logs' )), $this->baseUrl)); ?>"><?php _e('Clean Up', 'wp_all_import_plugin'); ?></a>
+					<a class="button-primary wpallimport-clean-up-tmp-files" href="<?php echo add_query_arg(array('action' => 'cleanup'), $this->baseUrl); ?>"><?php _e('Clean Up', 'wp_all_import_plugin'); ?></a>
 					<p class="description"><?php _e('Attempt to remove temp files left over by imports that were improperly terminated.', 'wp_all_import_plugin'); ?></p>
 				</td>
 			</tr>
 		</tbody>
-	</table>
+	</table>	
 
 	<div class="clear"></div>
 
 	<h3><?php _e('Advanced Settings', 'wp_all_import_plugin') ?></h3>
-
+	
 	<table class="form-table">
-		<tbody>
+		<tbody>			
 			<tr>
 				<th scope="row"><label><?php _e('Chunk Size', 'wp_all_import_plugin'); ?></label></th>
 				<td>
@@ -231,55 +231,45 @@
 			<tr>
 				<th scope="row"><label><?php _e('WP_IMPORTING', 'wp_all_import_plugin'); ?></label></th>
 				<td>
-					<fieldset style="padding:0;">
+					<fieldset style="padding:0;">						
 						<input type="hidden" name="pingbacks" value="0"/>
-						<label for="pingbacks"><input type="checkbox" value="1" id="pingbacks" name="pingbacks" <?php echo (($post['pingbacks']) ? 'checked="checked"' : ''); ?>><?php _e('Enable WP_IMPORTING', 'wp_all_import_plugin'); ?></label>
-					</fieldset>
+						<label for="pingbacks"><input type="checkbox" value="1" id="pingbacks" name="pingbacks" <?php echo (($post['pingbacks']) ? 'checked="checked"' : ''); ?>><?php _e('Enable WP_IMPORTING', 'wp_all_import_plugin'); ?></label>																				
+					</fieldset>														
 					<p class="description"><?php _e('Setting this constant avoids triggering pingback.', 'wp_all_import_plugin'); ?></p>
 				</td>
-			</tr>
-            <tr>
-                <th scope="row"><label><?php _e('I HAVE BACKUPS', 'wp_all_import_plugin'); ?></label></th>
-                <td>
-                    <fieldset style="padding:0;">
-                        <input type="hidden" name="backups_prompt" value="0"/>
-                        <label for="backups_prompt"><input type="checkbox" value="1" id="backups_prompt" name="backups_prompt" <?php echo (($post['backups_prompt']) ? 'checked="checked"' : ''); ?>><?php _e('Enable "I HAVE BACKUPS" prompt', 'wp_all_import_plugin'); ?></label>
-                    </fieldset>
-                    <p class="description"><?php _e('Setting this will enable the "I HAVE BACKUPS" prompt at import settings screen.', 'wp_all_import_plugin'); ?></p>
-                </td>
-            </tr>
+			</tr>	
 			<tr>
 				<th scope="row"><label><?php _e('Add Port To URL', 'wp_all_import_plugin'); ?></label></th>
 				<td>
 					<input type="text" class="regular-text" name="port" value="<?php echo esc_attr($post['port']); ?>"/>
 					<p class="description"><?php _e('Specify the port number to add if you\'re having problems continuing to Step 2 and are running things on a custom port. Default is blank.', 'wp_all_import_plugin'); ?></p>
 				</td>
-			</tr>
+			</tr>			
 			<?php do_action('pmxi_settings_advanced', $post); ?>
 		</tbody>
 	</table>
 
 	<h3><?php _e('Force Stream Reader', 'wp_all_import_plugin') ?></h3>
-
+	
 	<table class="form-table">
 		<tbody>
 			<tr>
 				<th scope="row"><label><?php _e('Force WP All Import to use StreamReader instead of XMLReader to parse all import files', 'wp_all_import_plugin'); ?></label></th>
 				<td>
-					<fieldset style="padding:0;">
+					<fieldset style="padding:0;">						
 						<input type="hidden" name="force_stream_reader" value="0"/>
-						<label for="force_stream_reader"><input type="checkbox" value="1" id="force_stream_reader" name="force_stream_reader" <?php echo (($post['force_stream_reader']) ? 'checked="checked"' : ''); ?>><?php _e('Enable Stream Reader', 'wp_all_import_plugin'); ?></label>
-					</fieldset>
+						<label for="force_stream_reader"><input type="checkbox" value="1" id="force_stream_reader" name="force_stream_reader" <?php echo (($post['force_stream_reader']) ? 'checked="checked"' : ''); ?>><?php _e('Enable Stream Reader', 'wp_all_import_plugin'); ?></label>																				
+					</fieldset>					
 					<p class="description"><?php _e('XMLReader is much faster, but has a bug that sometimes prevents certain records from being imported with import files that contain special cases.', 'wp_all_import_plugin'); ?></p>
 					<p class="submit-buttons">
 						<?php wp_nonce_field('edit-settings', '_wpnonce_edit-settings') ?>
 						<input type="hidden" name="is_settings_submitted" value="1" />
-						<input type="submit" class="button-primary" value="<?php _e('Save Settings', 'wp_all_import_plugin'); ?>" />
+						<input type="submit" class="button-primary" value="Save Settings" />
 					</p>
 				</td>
-			</tr>
+			</tr>						
 		</tbody>
-	</table>
+	</table>			
 </form>
 
 <?php if ( $is_license_active ): ?>
@@ -311,7 +301,7 @@
 						<p class="submit-buttons">
 							<?php wp_nonce_field('edit-license', '_wpnonce_edit-license') ?>
 							<input type="hidden" name="is_license_submitted" value="1" />
-							<input type="submit" class="button-primary" value="<?php _e('Save License', 'wp_all_import_plugin'); ?>" />
+							<input type="submit" class="button-primary" value="Save License" />
 						</p>
 					</td>
 				</tr>
@@ -352,7 +342,7 @@
 					<p class="submit-buttons">
 						<?php wp_nonce_field('edit-license', '_wpnonce_edit-scheduling-license') ?>
 						<input type="hidden" name="is_scheduling_license_submitted" value="1"/>
-						<input type="submit" class="button-primary" value="<?php _e('Save License', 'wp_all_import_plugin'); ?>"/>
+						<input type="submit" class="button-primary" value="Save License"/>
 					</p>
 				</td>
 			</tr>
@@ -374,7 +364,7 @@ if (file_exists($functions) && PMXI_Plugin::$is_php_allowed):
     <div class="input" style="margin-top: 10px;">
         <div class="input" style="display:inline-block; margin-right: 20px;">
             <input type="button" class="button-primary wp_all_import_save_functions" value="<?php _e("Save Functions", 'wp_all_import_plugin'); ?>"/>
-            <a href="#help" class="wpallimport-help" title="<?php printf(__("Add functions here for use during your import. You can access this import file at %s", "wp_all_import_plugin"), preg_replace("%.*wp-content%", "wp-content", $functions));?>" style="top: 0;">?</a>
+            <a href="#help" class="wpallimport-help" title="<?php printf(__("Add functions here for use during your import. You can access this file at %s", "wp_all_import_plugin"), preg_replace("%.*wp-content%", "wp-content", $functions));?>" style="top: 0;">?</a>
             <div class="wp_all_import_functions_preloader"></div>
         </div>
         <div class="input wp_all_import_saving_status"></div>

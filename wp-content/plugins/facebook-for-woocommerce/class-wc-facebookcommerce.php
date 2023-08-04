@@ -368,6 +368,7 @@ class WC_Facebookcommerce extends WooCommerce\Facebook\Framework\Plugin {
 				'edit_item'                  => sprintf( esc_html__( 'Edit %s', 'facebook-for-woocommerce' ), $singular ),
 				// translators: Add new label
 				'add_new_item'               => sprintf( esc_html__( 'Add new %s', 'facebook-for-woocommerce' ), $singular ),
+				'menu_name'                  => $plural,
 				// translators: No items found text
 				'not_found'                  => sprintf( esc_html__( 'No %s found.', 'facebook-for-woocommerce' ), $plural ),
 				// translators: Search label
@@ -376,7 +377,6 @@ class WC_Facebookcommerce extends WooCommerce\Facebook\Framework\Plugin {
 				'separate_items_with_commas' => sprintf( esc_html__( 'Separate %s with commas', 'facebook-for-woocommerce' ), $plural ),
 				// translators: Text label
 				'choose_from_most_used'      => sprintf( esc_html__( 'Choose from the most used %s', 'facebook-for-woocommerce' ), $plural ),
-				'back_to_items'              => sprintf( esc_html__( 'Go to %s', 'facebook-for-woocommerce' ), $plural ),
 			),
 			'hierarchical'      => true,
 			'public'            => true,
@@ -440,7 +440,7 @@ class WC_Facebookcommerce extends WooCommerce\Facebook\Framework\Plugin {
 			array( 'edit.php?post_type=product', 'Products' ),
 		);
 
-		$term_id = empty( $_GET['tag_ID'] ) ? '' : wc_clean( wp_unslash( $_GET['tag_ID'] ) ); //phpcs:ignore WordPress.Security
+		$term_id = empty( $_GET['tag_ID'] ) ? '' : $_GET['tag_ID']; //phpcs:ignore WordPress.Security
 		if ( ! empty( $term_id ) ) {
 			$breadcrumbs[] = array( 'edit-tags.php?taxonomy=fb_product_set&post_type=product', 'Products Sets' );
 		}

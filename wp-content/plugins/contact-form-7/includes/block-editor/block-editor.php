@@ -1,10 +1,6 @@
 <?php
 
-add_action(
-	'init',
-	'wpcf7_init_block_editor_assets',
-	10, 0
-);
+add_action( 'init', 'wpcf7_init_block_editor_assets', 10, 0 );
 
 function wpcf7_init_block_editor_assets() {
 	$assets = array();
@@ -48,18 +44,9 @@ function wpcf7_init_block_editor_assets() {
 			'editor_script' => 'contact-form-7-block-editor',
 		)
 	);
-}
 
-
-add_action(
-	'enqueue_block_editor_assets',
-	'wpcf7_enqueue_block_editor_assets',
-	10, 0
-);
-
-function wpcf7_enqueue_block_editor_assets() {
 	$contact_forms = array_map(
-		static function ( $contact_form ) {
+		function ( $contact_form ) {
 			return array(
 				'id' => $contact_form->id(),
 				'slug' => $contact_form->name(),
@@ -82,4 +69,5 @@ function wpcf7_enqueue_block_editor_assets() {
 		),
 		'before'
 	);
+
 }

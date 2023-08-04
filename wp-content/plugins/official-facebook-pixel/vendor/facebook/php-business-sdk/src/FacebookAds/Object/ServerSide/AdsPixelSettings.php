@@ -151,7 +151,7 @@ class AdsPixelSettings implements ArrayAccess {
    * @param integer $offset Offset
    * @return boolean
    */
-  public function offsetExists($offset) : bool {
+  public function offsetExists($offset) {
     return isset($this->container[$offset]);
   }
 
@@ -160,7 +160,7 @@ class AdsPixelSettings implements ArrayAccess {
    * @param integer $offset Offset
    * @return mixed
    */
-  public function offsetGet($offset) : mixed {
+  public function offsetGet($offset) {
     return isset($this->container[$offset]) ? $this->container[$offset] : null;
   }
 
@@ -170,7 +170,7 @@ class AdsPixelSettings implements ArrayAccess {
    * @param mixed $value Value to be set
    * @return void
    */
-  public function offsetSet($offset, $value) : void {
+  public function offsetSet($offset, $value) {
     if (is_null($offset)) {
       $this->container[] = $value;
     } else {
@@ -183,7 +183,7 @@ class AdsPixelSettings implements ArrayAccess {
    * @param integer $offset Offset
    * @return void
    */
-  public function offsetUnset($offset) : void {
+  public function offsetUnset($offset) {
     unset($this->container[$offset]);
   }
 

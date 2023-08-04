@@ -110,7 +110,7 @@ function wpcf7_checkbox_form_tag_handler( $tag ) {
 			'name' => $tag->name . ( $multiple ? '[]' : '' ),
 			'value' => $value,
 			'checked' => $checked,
-			'tabindex' => $tabindex,
+			'tabindex' => false !== $tabindex ? $tabindex : '',
 		);
 
 		$item_atts = wpcf7_format_atts( $item_atts );
@@ -133,7 +133,8 @@ function wpcf7_checkbox_form_tag_handler( $tag ) {
 			$item = '<label>' . $item . '</label>';
 		}
 
-		if ( false !== $tabindex and 0 < $tabindex ) {
+		if ( false !== $tabindex
+		and 0 < $tabindex ) {
 			$tabindex += 1;
 		}
 
@@ -153,7 +154,7 @@ function wpcf7_checkbox_form_tag_handler( $tag ) {
 				$free_text_atts = array(
 					'name' => $free_text_name,
 					'class' => 'wpcf7-free-text',
-					'tabindex' => $tabindex,
+					'tabindex' => false !== $tabindex ? $tabindex : '',
 				);
 
 				if ( wpcf7_is_posted()

@@ -42,7 +42,6 @@ class InstagramInsightsResultFields extends AbstractEnum {
   const NAME = 'name';
   const PERIOD = 'period';
   const TITLE = 'title';
-  const TOTAL_VALUE = 'total_value';
   const VALUES = 'values';
 
   public function getFieldTypes() {
@@ -52,7 +51,6 @@ class InstagramInsightsResultFields extends AbstractEnum {
       'name' => 'string',
       'period' => 'string',
       'title' => 'string',
-      'total_value' => 'Object',
       'values' => 'list<InstagramInsightsValue>',
     );
   }

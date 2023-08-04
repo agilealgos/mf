@@ -434,12 +434,7 @@ abstract class ImportProduct extends ImportProductBase {
                     );
                 }
                 if ($isAddNew && isset($parsedAttributes[$attributeName])) {
-					// When attributes aren't stored as taxonomies we need them pipe delimited and must account for that.
-					if( !$attribute->is_taxonomy() ){
-						$productAttributes[$attributeName]['value'] = implode('|', array_merge(explode('|', $productAttributes[$attributeName]['value']), explode('|', $parsedAttributes[$attributeName]['value'])));
-					}else {
-						$productAttributes[ $attributeName ]['value'] = array_merge( $productAttributes[ $attributeName ]['value'], $parsedAttributes[ $attributeName ]['value'] );
-					}
+                    $productAttributes[$attributeName]['value'] = array_merge($productAttributes[$attributeName]['value'], $parsedAttributes[$attributeName]['value']);
                 }
             }
             $parsedAttributes = array_merge($parsedAttributes, $productAttributes);
@@ -549,8 +544,6 @@ abstract class ImportProduct extends ImportProductBase {
                     } catch(\Exception $e){
                         $this->log('<b>ERROR:</b> ' . $e->getMessage());
                     }
-                } else {
-                    $newSKU = substr(md5($this->getPid()), 0, 12);
                 }
 
                 if ( ( in_array($this->productType, array('variation', 'variable', 'variable-subscription')) || $this->getValue('product_types') == "variable" || $this->getValue('product_types') == "variable-subscription" ) && ! $this->getImport()->options['link_all_variations'] ) {

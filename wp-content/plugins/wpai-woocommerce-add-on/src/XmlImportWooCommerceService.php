@@ -98,18 +98,9 @@ final class XmlImportWooCommerceService {
         }
         if (empty($importID) && php_sapi_name() === 'cli') {
             global $argv;
-            // First check for the ID set by the WP_CLI code.
-            $temp_id = apply_filters('wp_all_import_cli_import_id', false);
-            if($temp_id !== false && is_numeric($temp_id)){
-                $importID = $temp_id;
-            } else {
-                // Try to get the ID from the CLI arguments if it's not found otherwise.
-                $import_id_arr = array_filter( $argv, function ( $a ) {
-                    return ( is_numeric( $a ) ) ? true : false;
-                } );
-
-                if ( ! empty( $import_id_arr ) ) {
-                    $importID = reset( $import_id_arr );
+            foreach ($argv as $key => $arg) {
+                if ($arg === 'run' && !empty($argv[$key + 1])) {
+                    $importID = $argv[$key + 1];
                 }
             }
         }
@@ -357,8 +348,6 @@ final class XmlImportWooCommerceService {
             $product_type_term = is_exists_term('simple', 'product_type', 0);
             if (!empty($product_type_term) && !is_wp_error($product_type_term)) {
                 $this->getTaxonomiesService()->associateTerms($product->get_id(), array( (int) $product_type_term['term_taxonomy_id'] ), 'product_type');
-                $simpleProduct = new \WC_Product_Simple($product->get_id());
-                $simpleProduct->save();
             }
         }
         // Sync prices after conversion to simple product or if product has less than 2 variations.
@@ -384,9 +373,6 @@ final class XmlImportWooCommerceService {
                 $simpleProduct->save();
             }
             if (empty($price)) {
-                if (!$this->isUpdateCustomField('_sale_price')) {
-                    $parsedData['sale_price'] = get_post_meta($product->get_id(), '_sale_price', TRUE);
-                }
                 $price = isset($parsedData['sale_price']) ? $parsedData['sale_price'] : '';
                 if ($price == '' && isset($parsedData['regular_price'])) {
                     $price = $parsedData['regular_price'];

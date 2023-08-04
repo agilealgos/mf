@@ -1,8 +1,8 @@
-Plugin Name : Stock Manager for WooCommerce
-Plugin URI	: https://wordpress.org/plugins/woocommerce-stock-manager/
-Author		  : StoreApps
+Plugin Name	: Stock Manager for WooCommerce
+Plugin URI	: https://www.storeapps.org/
+Author		: StoreApps
 Author URI	: https://www.storeapps.org/
-License		  : GPLv2
+License		: GPLv3
 
 Earlier versions
 

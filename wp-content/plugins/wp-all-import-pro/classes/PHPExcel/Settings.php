@@ -362,9 +362,7 @@ class PHPExcel_Settings
         if (is_null($options) && defined(LIBXML_DTDLOAD)) {
             $options = LIBXML_DTDLOAD | LIBXML_DTDATTR;
         }
-
-	    // Only use the function in PHP/libxml versions where it exists.
-        if (version_compare(PHP_VERSION, '5.2.11') >= 0 && \LIBXML_VERSION < 20900) {
+        if (version_compare(PHP_VERSION, '5.2.11') >= 0) {
             @libxml_disable_entity_loader($options == (LIBXML_DTDLOAD | LIBXML_DTDATTR));
         }
         self::$libXmlLoaderOptions = $options;
@@ -381,9 +379,7 @@ class PHPExcel_Settings
         if (is_null(self::$libXmlLoaderOptions) && defined(LIBXML_DTDLOAD)) {
             self::setLibXmlLoaderOptions(LIBXML_DTDLOAD | LIBXML_DTDATTR);
         }
-
-        // Only use the function in PHP/libxml versions where it exists.
-        if (version_compare(PHP_VERSION, '5.2.11') >= 0 && \LIBXML_VERSION < 20900) {
+        if (version_compare(PHP_VERSION, '5.2.11') >= 0) {
             @libxml_disable_entity_loader(self::$libXmlLoaderOptions == (LIBXML_DTDLOAD | LIBXML_DTDATTR));
         }
         return self::$libXmlLoaderOptions;

@@ -95,6 +95,7 @@ function scfw_size_chart_get_sub_title_text()
     if ( isset( $size_chart_field_value ) && !empty($size_chart_field_value) ) {
         return $size_chart_field_value;
     }
+    // return apply_filters( 'size_chart_how_to_measure_text', esc_html__( 'How to measure', 'size-chart-for-woocommerce' ) );
     return '';
 }
 
@@ -330,7 +331,7 @@ function scfw_size_chart_get_label_by_chart_id( $size_chart_id )
  *
  * @param int $size_chart_id size chart id.
  *
- * @return mixed|string a sub title.
+ * @return mixed|string a label name.
  */
 function scfw_size_chart_get_sub_title_by_chart_id( $size_chart_id )
 {
@@ -356,11 +357,11 @@ function scfw_size_chart_popup_note( $size_chart_id )
 }
 
 /**
- * Get the chart tab label value.
+ * Get the chart sub title value.
  *
  * @param int $size_chart_id size chart id.
  *
- * @return mixed|string a tab label.
+ * @return mixed|string a label name.
  */
 function scfw_size_chart_get_tab_label_by_chart_id( $size_chart_id )
 {
@@ -371,11 +372,11 @@ function scfw_size_chart_get_tab_label_by_chart_id( $size_chart_id )
 }
 
 /**
- * Get the chart popup label value.
+ * Get the chart sub title value.
  *
  * @param int $size_chart_id size chart id.
  *
- * @return mixed|string a popup label.
+ * @return mixed|string a label name.
  */
 function scfw_size_chart_get_popup_label_by_chart_id( $size_chart_id )
 {
@@ -386,7 +387,7 @@ function scfw_size_chart_get_popup_label_by_chart_id( $size_chart_id )
 }
 
 /**
- * Get the chart popup icon.
+ * Get the chart sub title value.
  *
  * @param int $size_chart_id size chart id.
  *
@@ -401,7 +402,7 @@ function scfw_size_chart_get_popup_icon_by_chart_id( $size_chart_id )
 }
 
 /**
- * Get the chart popup type value.
+ * Get the chart sub title value.
  *
  * @param int $size_chart_id size chart id.
  *
@@ -508,10 +509,40 @@ function scfw_size_chart_get_chart_table_by_chart_id( $size_chart_id, $return_js
     if ( false === $return_json_decode ) {
         return $chart_table;
     }
+    
     if ( isset( $chart_table ) && !empty($chart_table) ) {
+        // if ( false !== scfw_is_size_chart_table_empty( $chart_table ) ) {
         return json_decode( $chart_table );
+        // }
     }
+    
     return array();
+}
+
+/**
+ * Multidimensional array check is not empty.
+ *
+ * @param array|mixed|object $chart_table chart table data.
+ *
+ * @return bool a valid or not.
+ */
+function scfw_is_size_chart_table_empty( $chart_table )
+{
+    if ( !is_array( $chart_table ) ) {
+        $chart_table = json_decode( $chart_table );
+    }
+    
+    if ( is_array( $chart_table ) ) {
+        foreach ( $chart_table as $value ) {
+            if ( !array_filter( $value ) ) {
+                return false;
+            }
+        }
+    } elseif ( !empty($chart_table) ) {
+        return false;
+    }
+    
+    return true;
 }
 
 /**

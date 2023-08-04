@@ -183,23 +183,10 @@ class Debug_Data {
 			'verification_status'  => $this->get_verification_status_field(),
 			'connected_user_count' => $this->get_connected_user_count_field(),
 			'active_modules'       => $this->get_active_modules_field(),
-			'recoverable_modules'  => null,
+			'recoverable_modules'  => $this->get_recoverable_modules_field(),
 			'required_scopes'      => $this->get_required_scopes_field(),
 			'capabilities'         => $this->get_capabilities_field(),
 			'enabled_features'     => $this->get_feature_fields(),
-		);
-
-		if ( Feature_Flags::enabled( 'dashboardSharing' ) ) {
-			$fields['recoverable_modules'] = $this->get_recoverable_modules_field();
-
-			$fields = array_merge( $fields, $this->get_module_sharing_settings_fields() );
-		}
-
-		$fields = array_filter(
-			array_merge(
-				$fields,
-				$this->get_module_fields()
-			)
 		);
 		$none   = __( 'None', 'google-site-kit' );
 
@@ -212,7 +199,7 @@ class Debug_Data {
 
 				return $field;
 			},
-			$fields
+			array_merge( $fields, $this->get_module_sharing_settings_fields(), $this->get_module_fields() )
 		);
 	}
 
@@ -406,26 +393,25 @@ class Debug_Data {
 	 * @return array
 	 */
 	private function get_module_sharing_settings_fields() {
-		$sharing_settings = $this->modules->get_module_sharing_settings();
-		$fields           = array();
+		$sharing_settings  = $this->modules->get_module_sharing_settings()->get();
+		$shareable_modules = $this->modules->get_shareable_modules();
+		$fields            = array();
 
-		foreach ( $this->modules->get_shareable_modules() as $module_slug => $module ) {
-			$module_settings = $sharing_settings->get_module( $module_slug );
-
-			$fields[ "{$module_slug}_shared_roles" ] = array_merge(
+		foreach ( $shareable_modules as $module_slug => $module_details ) {
+			$fields[] = array_merge(
 				array(
 					/* translators: %s: module name */
-					'label' => sprintf( __( '%s Shared Roles', 'google-site-kit' ), $module->name ),
+					'label' => sprintf( __( '%s Shared Roles', 'google-site-kit' ), $module_details->name ),
 				),
-				$this->get_module_shared_role_names( $module_settings['sharedRoles'] )
+				$this->get_module_shared_role_names( $sharing_settings[ $module_slug ]['sharedRoles'] )
 			);
 
-			$fields[ "{$module_slug}_management" ] = array_merge(
+			$fields[] = array_merge(
 				array(
 					/* translators: %s: module name */
-					'label' => sprintf( __( '%s Management', 'google-site-kit' ), $module->name ),
+					'label' => sprintf( __( '%s Management', 'google-site-kit' ), $module_details->name ),
 				),
-				$this->get_module_management( $module_settings['management'] )
+				$this->get_module_management( $sharing_settings[ $module_slug ]['management'] )
 			);
 		}
 

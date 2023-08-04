@@ -82,8 +82,8 @@ esc_html_e( 'My Account', 'size-chart-for-woocommerce' );
             </div>
 
 			<?php 
-$get_size_chart_page = filter_input( INPUT_GET, 'page', FILTER_SANITIZE_SPECIAL_CHARS );
-$get_size_chart_post_type = filter_input( INPUT_GET, 'post_type', FILTER_SANITIZE_SPECIAL_CHARS );
+$get_size_chart_page = filter_input( INPUT_GET, 'page', FILTER_SANITIZE_STRING );
+$get_size_chart_post_type = filter_input( INPUT_GET, 'post_type', FILTER_SANITIZE_STRING );
 $this->scfw_size_chart_menus( $get_size_chart_post_type, $get_size_chart_page );
 ?>
         </header>

@@ -1,6 +1,5 @@
 <?php
 /**
-
  * @copyright 2017  Cloudways  https://www.cloudways.com
  *
  *  This plugin is inspired from WP Speed of Light by JoomUnited.
@@ -286,10 +285,8 @@ class Breeze_Admin {
 			'breeze_purge',
 			'_wpnonce',
 			'breeze_purge_cloudflare',
-				'breeze_purge_cache_cloudflare',
-			),
-			$current_screen_url
-		);
+			'breeze_purge_cache_cloudflare'
+		), $current_screen_url );
 
 		$purge_site_cache_url       = esc_url( wp_nonce_url( add_query_arg( 'breeze_purge', 1, $current_screen_url ), 'breeze_purge_cache' ) );
 		$purge_cloudflare_cache_url = esc_url( wp_nonce_url( add_query_arg( 'breeze_purge_cloudflare', 1, $current_screen_url ), 'breeze_purge_cache_cloudflare' ) );

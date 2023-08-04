@@ -39,7 +39,6 @@ class ApplicationAnPlatformsValues extends AbstractEnum {
 
   const ANDROID = 'ANDROID';
   const DESKTOP = 'DESKTOP';
-  const GALAXY = 'GALAXY';
   const INSTANT_ARTICLES = 'INSTANT_ARTICLES';
   const IOS = 'IOS';
   const MOBILE_WEB = 'MOBILE_WEB';

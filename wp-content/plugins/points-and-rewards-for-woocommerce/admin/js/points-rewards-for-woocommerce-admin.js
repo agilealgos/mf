@@ -79,21 +79,19 @@
 					$( this ).toggleClass( 'active' );
 				}
 			);
-
 			$( document ).find( '#wps_wpr_restrictions_for_purchasing_cat' ).select2();
 			
 			/* Update user Points in the points Table*/
 			$( '.wps_points_update' ).click( 
 				function(){
 				
-					var user_id     = $( this ).data( 'id' );
+					var user_id = $( this ).data( 'id' );
 					var user_points = $( document ).find( "#add_sub_points" + user_id ).val();
-					var sign        = $( document ).find( "#wps_sign" + user_id ).val();
-					var reason      = $( document ).find( "#wps_remark" + user_id ).val();
-					user_points     = Number( user_points );
+					var sign = $( document ).find( "#wps_sign" + user_id ).val();
+					var reason = $( document ).find( "#wps_remark" + user_id ).val();
+					user_points = Number( user_points );
 					if (user_points > 0 && user_points === parseInt( user_points, 10 )) {
 						if ( reason != '' ) {
-
 							jQuery( "#wps_wpr_loader" ).show();
 							var data = {
 								action:'wps_wpr_points_update',
@@ -103,23 +101,26 @@
 								reason:reason,
 								wps_nonce:wps_wpr_object.wps_wpr_nonce,
 							};
-							$.ajax({
-								url: wps_wpr_object.ajaxurl,
-								type: "POST",
-								data: data,
-								success: function(response) {
-									jQuery( "#wps_wpr_loader" ).hide();
-									$( 'html, body' ).animate(
-										{
-											scrollTop: $( ".wps_rwpr_header" ).offset().top
-										},
-										800
-									);
-									var assing_message = '<div class="notice notice-success is-dismissible"><p><strong>' + wps_wpr_object.success_update + '</strong></p></div>';
-									$( assing_message ).insertAfter( $( '.wps_rwpr_header' ) );
-									setTimeout( function(){ location.reload(); }, 1000 );
+							$.ajax(
+								{
+									url: wps_wpr_object.ajaxurl,
+									type: "POST",
+									data: data,
+									success: function(response)
+								{
+										jQuery( "#wps_wpr_loader" ).hide();
+										$( 'html, body' ).animate(
+											{
+												scrollTop: $( ".wps_rwpr_header" ).offset().top
+											},
+											800
+										);
+										var assing_message = '<div class="notice notice-success is-dismissible"><p><strong>' + wps_wpr_object.success_update + '</strong></p></div>';
+										$( assing_message ).insertAfter( $( '.wps_rwpr_header' ) );
+										setTimeout( function(){ location.reload(); }, 1000 );
+									}
 								}
-							} );
+							);
 						} else {
 							alert( wps_wpr_object.reason );
 						}
@@ -136,6 +137,8 @@
 					$( this ).siblings( '.wps_wpr_email_wrapper_content' ).slideToggle();
 				}
 			);
+
+
 			
 			$(document).on('change','#wps_wpr_membership_setting_enable',function() {
 				if($(this).prop("checked") == true) {			
@@ -146,8 +149,7 @@
 					jQuery(document).find('.parent_of_div').closest('tr').hide();
 					wps_wpr_remove_validation();
 				}
-			});
-
+			});	
 			/*This will add new setting*/
 			$( document ).on(
 				"change",
@@ -169,6 +171,7 @@
 							dataType :'json',
 							success: function(response)
 						{
+
 								if (response.result == 'success') {
 									var product = response.data;
 									var option = '';
@@ -185,7 +188,6 @@
 
 				}
 			);
-
 			var count = $( '.wps_wpr_repeat:last' ).data( 'id' );
 			for (var i = 0; i <= count; i++) {
 				 $( document ).find( '#wps_wpr_membership_category_list_' + i ).select2();
@@ -253,56 +255,11 @@
 						}
 					}
 				);
-			});
-		
-			jQuery(document).on('click', '#wps_wpr_points_on_previous_order', function(){
-    
-				var entered_points = jQuery('#wps_wpr_previous_order_point_value').val().trim();
-				jQuery(this).prop( 'disabled', true );
-				jQuery('.wps_wpr_previous_order_notice').hide();
-				jQuery('.wps_wpr_previous_order_notice').html( '' );
-			
-				if ( parseInt( entered_points ) > 0 ) {
-			
-					var data = {
-						'action'         : 'assign_points_on_previous_order',
-						'nonce'          : wps_wpr_object.wps_wpr_nonce,
-						'rewards_points' : entered_points,
-					};
-			
-					jQuery('.wps_wpr_previous_order_loader').show();
-					jQuery.ajax({
-			
-						'method' : 'POST',
-						'url'    : wps_wpr_object.ajaxurl,
-						'data'   : data,
-						success  : function( response ) {
-			
-							jQuery('.wps_wpr_previous_order_loader').hide();
-							jQuery('#wps_wpr_points_on_previous_order').prop( 'disabled', false );
-			
-							if ( true == response.result ) {
-			
-								jQuery('.wps_wpr_previous_order_notice').show();
-								jQuery('.wps_wpr_previous_order_notice').css( 'color', 'green' );
-								jQuery('.wps_wpr_previous_order_notice').html( response.msg );
-							} else {
-			
-								jQuery('.wps_wpr_previous_order_notice').show();
-								jQuery('.wps_wpr_previous_order_notice').css( 'color', 'red' );
-								jQuery('.wps_wpr_previous_order_notice').html( response.msg );
-							}
-						},
-					});
-				} else {
-			
-					jQuery('#wps_wpr_points_on_previous_order').prop( 'disabled', false );
-					jQuery('.wps_wpr_previous_order_notice').show();
-					jQuery('.wps_wpr_previous_order_notice').css( 'color', 'red' );
-					jQuery('.wps_wpr_previous_order_notice').html( 'Please enter valid points' );
-				}
-			});
-	});
+			}
+		);
+	
+		}
+	);
 
 var wps_wpr_remove_validation = function(){
 	jQuery(document).find('.wps_wpr_repeat').each(function(index,element){
@@ -337,7 +294,7 @@ setTimeout(
 				{
 					topSpacing: 60,
 					bottomSpacing: 60
-				}
+					}
 			);
 		}
 	},
@@ -347,13 +304,14 @@ setTimeout(
 /*=====  End of Sticky-Sidebar  ======*/
 jQuery( document ).ready(
 	function(){
-		jQuery( ".dashicons.dashicons-menu" ).click(
-			function(){
-				jQuery( ".wps_rwpr_navigator_template" ).toggleClass( "open-btn" );
-			}
-		);
+			jQuery( ".dashicons.dashicons-menu" ).click(
+				function(){
+					jQuery( ".wps_rwpr_navigator_template" ).toggleClass( "open-btn" );
+				}
+			);
 	}
 );
+
 
 jQuery( document ).on(
 	"change",'input',
@@ -365,17 +323,21 @@ jQuery( document ).on(
 		if(value1<0 && count =='wps_wpr_coupon_conversion_price'){
 			alert(wps_wpr_object.negative);
 			jQuery(this).val("1");
+		
+			
 		}
+		
 	}
 );
 jQuery( document ).ready(
 	function(){
-		jQuery( '.notice-dismiss' ).click(
-			function(){
-		
-				jQuery( ".notice-success" ).remove();
-			}
-		);
+	
+			jQuery( '.notice-dismiss' ).click(
+				function(){
+			
+					jQuery( ".notice-success" ).remove();
+				}
+			);
 	}
 );
 

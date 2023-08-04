@@ -10,43 +10,20 @@ wpsl.gmaps = {};
  * @since 2.2.22
  * @returns {void}
  */
-function wpslBorlabsCallback() {
+function initWpslMap() {
 	var mapsLoaded;
 
 	mapsLoaded = setInterval( function() {
 		if ( typeof google === 'object' && typeof google.maps === 'object' ) {
 			clearInterval( mapsLoaded );
-			initWpsl();
+
+			jQuery( ".wpsl-gmap-canvas" ).each( function( mapIndex ) {
+				var mapId = jQuery( this ).attr( "id" );
+
+				wpsl.gmaps.init( mapId, mapIndex );
+			});
 		}
 	}, 500 );
-}
-
-/**
- * Callback required by Google Maps.
- */
-function wpslCallback() {
-	jQuery( document ).ready( function( $ ) {
-		initWpsl();
-	})
-}
-
-function initWpsl() {
-
-	// Create the maps
-	jQuery( ".wpsl-gmap-canvas" ).each( function ( mapIndex ) {
-		var mapId = jQuery( this ).attr( "id" );
-
-		wpsl.gmaps.init( mapId, mapIndex );
-	});
-
-	// Init JS from the WPSL add-ons.
-	if ( typeof wpslAddons === 'object' ) {
-		for ( const key in wpslAddons ) {
-			if ( wpslAddons.hasOwnProperty( key ) ) {
-				wpslAddons[key].init()
-			}
-		}
-	}
 }
 
 jQuery( document ).ready( function( $ ) {
@@ -116,6 +93,9 @@ wpsl.gmaps.init = function( mapId, mapIndex ) {
         maxZoom = zoomLevel;
 	}
 
+	// Create a new infoWindow, either with the infobox libray or use the default one.
+	infoWindow = newInfoWindow();
+
     geocoder	      = new google.maps.Geocoder();
     directionsDisplay = new google.maps.DirectionsRenderer();
     directionsService = new google.maps.DirectionsService();
@@ -150,124 +130,120 @@ wpsl.gmaps.init = function( mapId, mapIndex ) {
 
 	// Check if we need to apply a map style.
 	maybeApplyMapStyle( settings.mapStyle );
+	
+	if ( ( typeof window[ "wpslMap_" + mapIndex ] !== "undefined" ) && ( typeof window[ "wpslMap_" + mapIndex ].locations !== "undefined" ) ) {
+		bounds	= new google.maps.LatLngBounds(),
+		mapData = window[ "wpslMap_" + mapIndex ].locations;
 
-	/**
-	 * Make sure the 'back' button works
-	 * when the directions are shown.
-	 */
-	bindRemoveDirections();
+		// Loop over the map data, create the infowindow object and add each marker.
+		$.each( mapData, function( index ) {
+			latLng = new google.maps.LatLng( mapData[index].lat, mapData[index].lng );
+			addMarker( latLng, mapData[index].id, mapData[index], false, infoWindow );
+			bounds.extend( latLng );
+		});
 
-	/**
-	 * Bind the 'more info' events
-	 */
-	bindMoreInfo();
+		// If we have more then one location on the map, then make sure to not zoom to far.
+		if ( mapData.length > 1 ) {
+            // Make sure we don't zoom to far when fitBounds runs.
+            attachBoundsChangedListener( map, maxZoom );
 
-	/**
-	 * Create a new infoWindow, either with the
-	 * infobox libray or the default one.
-	 */
-	prepareInfoWindow( function() {
-		infoWindow = newInfoWindow();
-
-		if ( ( typeof window[ "wpslMap_" + mapIndex ] !== "undefined" ) && ( typeof window[ "wpslMap_" + mapIndex ].locations !== "undefined" ) ) {
-			bounds	= new google.maps.LatLngBounds(),
-			mapData = window[ "wpslMap_" + mapIndex ].locations;
-
-			// Loop over the map data, create the infowindow object and add each marker.
-			$.each( mapData, function( index ) {
-				latLng = new google.maps.LatLng( mapData[index].lat, mapData[index].lng );
-				addMarker( latLng, mapData[index].id, mapData[index], false, infoWindow );
-				bounds.extend( latLng );
-			});
-
-			// If we have more then one location on the map, then make sure to not zoom to far.
-			if ( mapData.length > 1 ) {
-				// Make sure we don't zoom to far when fitBounds runs.
-				attachBoundsChangedListener( map, maxZoom );
-
-				// Make all the markers fit on the map.
-				map.fitBounds( bounds );
-			}
-
-			/*
-			 * If we need to apply the fix for the map showing up grey because
-			 * it's used in a tabbed nav multiple times, then collect the active maps.
-			 *
-			 * See the fixGreyTabMap function.
-			 */
-			if ( _.isArray( wpslSettings.mapTabAnchor ) ) {
-				mapDetails = {
-					map: map,
-					bounds: bounds,
-					maxZoom: maxZoom
-				};
-
-				mapsArray.push( mapDetails );
-			}
+            // Make all the markers fit on the map.
+            map.fitBounds( bounds );
 		}
 
-		// Only run this part if the store locator exist, and we don't just have a basic map.
-		if ( $( "#wpsl-gmap" ).length ) {
-			if ( wpslSettings.autoComplete == 1 ) {
-				activateAutocomplete();
-			}
+        /*
+         * If we need to apply the fix for the map showing up grey because
+         * it's used in a tabbed nav multiple times, then collect the active maps.
+         *
+         * See the fixGreyTabMap function.
+         */
+        if ( _.isArray( wpslSettings.mapTabAnchor ) ) {
+            mapDetails = {
+                map: map,
+                bounds: bounds,
+				maxZoom: maxZoom
+            };
 
-			/*
-			 * Not the most optimal solution, but we check the useragent if we should enable the styled dropdowns.
-			 *
-			 * We do this because several people have reported issues with the styled dropdowns on
-			 * iOS and Android devices. So on mobile devices the dropdowns will be styled according
-			 * to the browser styles on that device.
-			 */
-			if ( !checkMobileUserAgent() && $( ".wpsl-dropdown" ).length && wpslSettings.enableStyledDropdowns == 1 ) {
-				createDropdowns();
+            mapsArray.push( mapDetails );
+		}
+    }
+
+	// Only run this part if the store locator exist and we don't just have a basic map.
+	if ( $( "#wpsl-gmap" ).length ) {
+		
+		if ( wpslSettings.autoComplete == 1 ) {
+			activateAutocomplete();
+		}
+		
+		/*
+		 * Not the most optimal solution, but we check the useragent if we should enable the styled dropdowns.
+		 * 
+		 * We do this because several people have reported issues with the styled dropdowns on
+		 * iOS and Android devices. So on mobile devices the dropdowns will be styled according 
+		 * to the browser styles on that device.
+		 */
+		if ( !checkMobileUserAgent() && $( ".wpsl-dropdown" ).length && wpslSettings.enableStyledDropdowns == 1 ) {
+			createDropdowns();	
+		} else {
+			$( "#wpsl-search-wrap select" ).show();
+			
+			if ( checkMobileUserAgent() ) {
+				$( "#wpsl-wrap" ).addClass( "wpsl-mobile" );
 			} else {
-				$( "#wpsl-search-wrap select" ).show();
-
-				if ( checkMobileUserAgent() ) {
-					$( "#wpsl-wrap" ).addClass( "wpsl-mobile" );
-				} else {
-					$( "#wpsl-wrap" ).addClass( "wpsl-default-filters" );
-				}
+				$( "#wpsl-wrap" ).addClass( "wpsl-default-filters" );
 			}
-
-			// Check if we need to autolocate the user, or autoload the store locations.
-			if ( !$( ".wpsl-search" ).hasClass( "wpsl-widget" ) ) {
-				if ( wpslSettings.autoLocate == 1 ) {
-					checkGeolocation( settings.startLatLng, infoWindow );
-				} else if ( wpslSettings.autoLoad == 1 ) {
-					showStores( settings.startLatLng, infoWindow );
-				}
-			}
-
-			// Move the mousecursor to the store search field if the focus option is enabled.
-			if ( wpslSettings.mouseFocus == 1 && !checkMobileUserAgent() ) {
-				$( "#wpsl-search-input" ).focus();
-			}
-
-			// Bind store search button.
-			searchLocationBtn( infoWindow );
-
-			// Add the 'reload' and 'find location' icon to the map.
-			mapControlIcons( settings, map, infoWindow );
-
-			// Check if the user submitted a search through a search widget.
-			checkWidgetSubmit();
 		}
-	});
 
-	/**
-	 * If the infobox and marker clusters are active,
-	 * then listen to zoom changes to make sure the
-	 * infobox is closed when markers are merged.
-	 */
-	if ( typeof wpslSettings.infoWindowStyle !== "undefined" && wpslSettings.infoWindowStyle == "infobox" && wpslSettings.markerClusters == 1 ) {
-		clusterListener();
+		// Check if we need to autolocate the user, or autoload the store locations.
+		if ( !$( ".wpsl-search" ).hasClass( "wpsl-widget" ) ) {
+            if ( wpslSettings.autoLocate == 1 ) {
+				checkGeolocation( settings.startLatLng, infoWindow );
+			} else if ( wpslSettings.autoLoad == 1 ) {
+				showStores( settings.startLatLng, infoWindow );
+			}
+		}
+
+		// Move the mousecursor to the store search field if the focus option is enabled.
+		if ( wpslSettings.mouseFocus == 1 && !checkMobileUserAgent() ) {
+			$( "#wpsl-search-input" ).focus();
+		}
+
+		// Bind store search button.
+		searchLocationBtn( infoWindow );
+
+		// Add the 'reload' and 'find location' icon to the map.
+		mapControlIcons( settings, map, infoWindow );
+
+		// Check if the user submitted a search through a search widget.
+		checkWidgetSubmit();
 	}
 
 	// Bind the zoom_changed listener.
 	zoomChangedListener();
 };
+
+// Only continue if a map is present.
+if ( $( ".wpsl-gmap-canvas" ).length ) {
+	$( "<img />" ).attr( "src", wpslSettings.url + "img/ajax-loader.gif" );
+
+	/*
+	 * The [wpsl] shortcode can only exist once on a page,
+	 * but the [wpsl_map] shortcode can exist multiple times.
+	 *
+	 * So to make sure we init all the maps we loop over them.
+	 */
+	$( ".wpsl-gmap-canvas" ).each( function( mapIndex ) {
+		var mapId = $( this ).attr( "id" );
+
+		wpsl.gmaps.init( mapId, mapIndex );
+	});
+
+	/*
+	 * Check if we are dealing with a map that's placed in a tab,
+	 * if so run a fix to prevent the map from showing up grey.
+	 */
+	maybeApplyTabFix();
+}
 
 
 /**
@@ -308,7 +284,7 @@ function activateAutocomplete() {
         }
     }
 
-	input		 = document.getElementById( "wpsl-search-input" );
+	input		  = document.getElementById( "wpsl-search-input" );
 	autocomplete = new google.maps.places.Autocomplete( input, options );
 
 	autocomplete.addListener( "place_changed", function() {
@@ -427,49 +403,32 @@ function getStartLatlng( mapIndex ) {
 function newInfoWindow() {
 	var boxClearance, boxPixelOffset, 
 		infoBoxOptions = {};
-
+	
 	// Do we need to use the infobox script or use the default info windows?
-	if ( ( typeof wpslSettings.infoBox === "object" ) && ( wpslSettings.infoWindowStyle == "infobox" ) ) {
+	if ( ( typeof wpslSettings.infoWindowStyle !== "undefined" ) && ( wpslSettings.infoWindowStyle == "infobox" ) ) {
 
 		// See http://google-maps-utility-library-v3.googlecode.com/svn/trunk/infobox/docs/reference.html.
-		boxClearance   = wpslSettings.infoBox.clearance.split( "," );
-		boxPixelOffset = wpslSettings.infoBox.pixelOffset.split( "," );
+		boxClearance   = wpslSettings.infoBoxClearance.split( "," );
+		boxPixelOffset = wpslSettings.infoBoxPixelOffset.split( "," );
 		infoBoxOptions = {
 			alignBottom: true,
-			boxClass: wpslSettings.infoBox.class,
-			closeBoxMargin: wpslSettings.infoBox.margin,
-			closeBoxURL: wpslSettings.infoBox.url,
+			boxClass: wpslSettings.infoBoxClass,
+			closeBoxMargin: wpslSettings.infoBoxCloseMargin,
+			closeBoxURL: wpslSettings.infoBoxCloseUrl,
 			content: "",
-			disableAutoPan: ( Number( wpslSettings.infoBox.disableAutoPan ) ) ? true : false,
-			enableEventPropagation: ( Number( wpslSettings.infoBox.enableEventPropagation ) ) ? true : false,
+			disableAutoPan: ( Number( wpslSettings.infoBoxDisableAutoPan ) ) ? true : false,
+			enableEventPropagation: ( Number( wpslSettings.infoBoxEnableEventPropagation ) ) ? true : false,
 			infoBoxClearance: new google.maps.Size( Number( boxClearance[0] ), Number( boxClearance[1] ) ),
 			pixelOffset: new google.maps.Size( Number( boxPixelOffset[0] ), Number( boxPixelOffset[1] ) ),
-			zIndex: Number( wpslSettings.infoBox.zIndex )
+			zIndex: Number( wpslSettings.infoBoxZindex )
 		};
 
-		infoWindow = new InfoBox( infoBoxOptions );
+		infoWindow = new InfoBox( infoBoxOptions );	
 	} else {
 		infoWindow = new google.maps.InfoWindow();
 	}
 
 	return infoWindow;
-}
-
-/**
- * Load the required infobox JS script.
- *
- * @since 2.2.240
- */
-function prepareInfoWindow( callback ) {
-
-	if ( typeof infoWindow === 'undefined' ) {
-		$.getScript( wpslSettings.url + 'js/infobox.min.js' )
-			.done( function() {
-				callback();
-			});
-	} else {
-		callback();
-	}
 }
 
 /**
@@ -591,7 +550,8 @@ function checkGeolocation( startLatLng, infoWindow ) {
 		
 	if ( navigator.geolocation ) {
 		var geolocationInProgress, locationTimeout,
-			timeout = Number( wpslSettings.geoLocationTimeout );
+			keepStartMarker = false,
+			timeout			= Number( wpslSettings.geoLocationTimeout );
 	
 		// Make the direction icon flash every 600ms to indicate the geolocation attempt is in progress.
 		geolocationInProgress = setInterval( function() {
@@ -619,7 +579,7 @@ function checkGeolocation( startLatLng, infoWindow ) {
 			 * 
 			 * So we first clear the map before adding new ones.
 			 */
-			deleteOverlays();
+			deleteOverlays( keepStartMarker ); 
 			handleGeolocationQuery( startLatLng, position, resetMap, infoWindow );
 			
 			/*
@@ -816,7 +776,8 @@ function mapControlIcons( settings, map, infoWindow ) {
  */
 function resetMapBtn( startLatLng, infoWindow ) {
 	$( ".wpsl-icon-reset, #wpsl-reset-map" ).on( "click", function() {
-		var resetMap = true;
+		var keepStartMarker = false,
+			resetMap	    = true;
 
 		/* 
 		 * Check if a map reset is already in progress, 
@@ -837,7 +798,7 @@ function resetMapBtn( startLatLng, infoWindow ) {
 
 		// Check if the latlng or zoom has changed since pageload, if so there is something to reset.
 		if ( ( ( ( map.getCenter().lat() !== mapDefaults.centerLatlng.lat() ) || ( map.getCenter().lng() !== mapDefaults.centerLatlng.lng() ) || ( map.getZoom() !== mapDefaults.zoomLevel ) ) ) ) {
-			deleteOverlays();
+			deleteOverlays( keepStartMarker );
 
 			$( "#wpsl-search-input" ).val( "" ).removeClass();
 
@@ -848,8 +809,6 @@ function resetMapBtn( startLatLng, infoWindow ) {
 			if ( markerClusterer ) {
 				markerClusterer.clearMarkers();
 			}
-
-			closeInfoBoxWindow();
 
 			// Remove the start marker.
 			deleteStartMarker();
@@ -949,40 +908,37 @@ function resetDropdowns() {
 	}
 }
 
-function bindRemoveDirections() {
+// Handle the click on the back button when the route directions are displayed.
+$( "#wpsl-result-list" ).on( "click", ".wpsl-back", function() {	
+	var i, len;
 
-	// Handle the click on the back button when the route directions are displayed.
-	$( "#wpsl-result-list" ).on( "click", ".wpsl-back", function() {
-		var i, len;
+    // Remove the directions from the map.
+    directionsDisplay.setMap( null );
 
-		// Remove the directions from the map.
-		directionsDisplay.setMap( null );
+    // Restore the store markers on the map.
+    for ( i = 0, len = markersArray.length; i < len; i++ ) {
+		markersArray[i].setMap( map );
+    }
 
-		// Restore the store markers on the map.
-		for ( i = 0, len = markersArray.length; i < len; i++ ) {
-			markersArray[i].setMap( map );
-		}
+	// Restore the start marker on the map.
+	if ( ( typeof( startMarkerData ) !== "undefined" )  && ( startMarkerData !== "" ) ) {
+		startMarkerData.setMap( map );
+	}
 
-		// Restore the start marker on the map.
-		if ( ( typeof( startMarkerData ) !== "undefined" )  && ( startMarkerData !== "" ) ) {
-			startMarkerData.setMap( map );
-		}
+	// If marker clusters are enabled, restore them.
+	if ( markerClusterer ) {
+		checkMarkerClusters();			
+	}
 
-		// If marker clusters are enabled, restore them.
-		if ( markerClusterer ) {
-			checkMarkerClusters();
-		}
+	map.setCenter( directionMarkerPosition.centerLatlng );
+	map.setZoom( directionMarkerPosition.zoomLevel );	
 
-		map.setCenter( directionMarkerPosition.centerLatlng );
-		map.setZoom( directionMarkerPosition.zoomLevel );
+    $( ".wpsl-direction-before, .wpsl-direction-after" ).remove();
+    $( "#wpsl-stores" ).show();
+    $( "#wpsl-direction-details" ).hide();
 
-		$( ".wpsl-direction-before, .wpsl-direction-after" ).remove();
-		$( "#wpsl-stores" ).show();
-		$( "#wpsl-direction-details" ).hide();
-
-		return false;
-	});
-}
+    return false;
+});
 
 /**
  * Show the driving directions.
@@ -1142,20 +1098,20 @@ function calcRoute( start, end ) {
 				for ( i = 0, len = markersArray.length; i < len; i++ ) {
 					markersArray[i].setMap( null );
 				}
-
+			
 				// Remove the marker clusters from the map.
 				if ( markerClusterer ) {
 					markerClusterer.clearMarkers();
-				}
-
+				}			
+				
 				// Remove the start marker from the map.
 				if ( ( typeof( startMarkerData ) !== "undefined" ) && ( startMarkerData !== "" ) ) {
 					startMarkerData.setMap( null );
 				}
 
-				$( "#wpsl-stores" ).hide();
-
-				// Make sure the start of the route directions are visible if the store listings are shown below the map.
+				$( "#wpsl-stores" ).hide();		
+								
+				// Make sure the start of the route directions are visible if the store listings are shown below the map.				
 				if ( wpslSettings.templateId == 1 ) {
 					directionOffset = $( "#wpsl-gmap" ).offset();
 					$( window ).scrollTop( directionOffset.top );
@@ -1169,7 +1125,7 @@ function calcRoute( start, end ) {
 
 /**
  * Geocode the user input.
- *
+ * 
  * @since	1.0.0
  * @param	{object} infoWindow The infoWindow object
  * @returns {void}
@@ -1208,7 +1164,7 @@ function codeAddress( infoWindow ) {
 
 /**
  * Prepare a new location search.
- *
+ * 
  * @since	2.2.0
  * @param	{object} latLng 	The coordinates
  * @param	{object} infoWindow The infoWindow object.
@@ -1473,11 +1429,11 @@ function filterApiResponse( response ) {
 }
 
 /**
- * Call the function to make the ajax request to load the store locations.
- *
- * If we need to show the driving directions on maps.google.com itself,
+ * Call the function to make the ajax request to load the store locations. 
+ * 
+ * If we need to show the driving directions on maps.google.com itself, 
  * we first need to geocode the start latlng into a formatted address.
- *
+ * 
  * @since	1.0.0
  * @param	{object}  startLatLng The coordinates
  * @param	{boolean} resetMap    Whether we should reset the map or not
@@ -1498,7 +1454,7 @@ function findStoreLocations( startLatLng, resetMap, autoLoad, infoWindow ) {
 
 /**
  * Make the AJAX request to load the store data.
- *
+ * 
  * @since	1.2.0
  * @param	{object}  startLatLng The latlng used as the starting point
  * @param	{boolean} resetMap    Whether we should reset the map or not
@@ -1520,7 +1476,7 @@ function makeAjaxRequest( startLatLng, resetMap, autoLoad, infoWindow ) {
 	$storeList.empty().append( "<li class='wpsl-preloader'><img src='" + preloader + "'/>" + wpslLabels.preloader + "</li>" );
 
     $( "#wpsl-wrap" ).removeClass( "wpsl-no-results" );
-
+		
 	$.get( wpslSettings.ajaxurl, ajaxData, function( response ) {
 
 	    // Remove the preloaders and no results msg.
@@ -1530,11 +1486,11 @@ function makeAjaxRequest( startLatLng, resetMap, autoLoad, infoWindow ) {
 
 			// Loop over the returned locations.
 			$.each( response, function( index ) {
-				_.extend( response[index], templateHelpers );
+				_.extend( response[index], templateHelpers ); 
 
 				// Add the location maker to the map.
-				latLng = new google.maps.LatLng( response[index].lat, response[index].lng );
-				addMarker( latLng, response[index].id, response[index], draggable, infoWindow );
+				latLng = new google.maps.LatLng( response[index].lat, response[index].lng );	
+				addMarker( latLng, response[index].id, response[index], draggable, infoWindow );	
 
 				// Create the HTML output with help from underscore js.
 				storeData = storeData + _.template( template )( response[index] );
@@ -1564,14 +1520,14 @@ function makeAjaxRequest( startLatLng, resetMap, autoLoad, infoWindow ) {
 			$( "#wpsl-result-list p:empty" ).remove();
 		} else {
 			addMarker( startLatLng, 0, '', true, infoWindow );
-
+			
 			noResultsMsg = getNoResultsMsg();
 
 			$( "#wpsl-wrap" ).addClass( "wpsl-no-results" );
-
+			
 			$storeList.html( "<li class='wpsl-no-results-msg'>" + noResultsMsg + "</li>" );
 		}
-
+		
 		/*
 		 * Do we need to adjust the zoom level so that all the markers fit in the viewport,
 		 * or just center the map on the start marker.
@@ -1582,13 +1538,13 @@ function makeAjaxRequest( startLatLng, resetMap, autoLoad, infoWindow ) {
             map.setZoom( Number( wpslSettings.zoomLevel ) );
             map.setCenter( markersArray[0].position );
         }
-
+		
 		/*
-		 * Store the default zoom and latlng values the first time
+		 * Store the default zoom and latlng values the first time 
 		 * all the stores are added to the map.
-		 *
-		 * This way when a user clicks the reset button we can check if the
-		 * zoom/latlng values have changed, and if they have, then we know we
+		 * 
+		 * This way when a user clicks the reset button we can check if the 
+		 * zoom/latlng values have changed, and if they have, then we know we 
 		 * need to reload the map.
 		 */
 		if ( wpslSettings.resetMap == 1 ) {
@@ -1598,25 +1554,25 @@ function makeAjaxRequest( startLatLng, resetMap, autoLoad, infoWindow ) {
 						centerLatlng: map.getCenter(),
 						zoomLevel: map.getZoom()
 					};
-
+															
 					/*
-					 * Because the reset icon exists, we need to adjust
-					 * the styling of the direction icon.
+					 * Because the reset icon exists, we need to adjust 
+					 * the styling of the direction icon. 
 					 */
 					$( "#wpsl-map-controls" ).addClass( "wpsl-reset-exists" );
 
 					/*
-					 * The reset initialy is set to hidden to prevent
-					 * users from clicking it before the map is loaded.
+					 * The reset initialy is set to hidden to prevent 
+					 * users from clicking it before the map is loaded. 
 					 */
 					$( ".wpsl-icon-reset, #wpsl-reset-map" ).show();
 				});
 			}
-
+			
 			$( ".wpsl-icon-reset" ).removeClass( "wpsl-in-progress" );
 		}
-	});
-
+	});	
+	
 	// Move the mousecursor to the store search field if the focus option is enabled.
 	if ( wpslSettings.mouseFocus == 1 && !checkMobileUserAgent() ) {
 		$( "#wpsl-search-input" ).focus();
@@ -1625,7 +1581,7 @@ function makeAjaxRequest( startLatLng, resetMap, autoLoad, infoWindow ) {
 
 /**
  * Collect the data we need to include in the AJAX request.
- *
+ * 
  * @since	2.2.0
  * @param	{object}  startLatLng The latlng used as the starting point
  * @param	{boolean} resetMap    Whether we should reset the map or not
@@ -1643,9 +1599,9 @@ function collectAjaxData( startLatLng, resetMap, autoLoad ) {
 			lat: startLatLng.lat(),
 			lng: startLatLng.lng()
 		};
-
-	/*
-	 * If we reset the map we use the default dropdown values instead of the selected values.
+	
+	/* 
+	 * If we reset the map we use the default dropdown values instead of the selected values. 
 	 * Otherwise we first make sure the filter val is valid before including the radius / max_results param
 	 */
 	if ( resetMap ) {
@@ -1659,21 +1615,21 @@ function collectAjaxData( startLatLng, resetMap, autoLoad ) {
 			maxResult = parseInt( $( "#wpsl-results .wpsl-selected-item" ).attr( "data-value" ) );
 			radius    = parseInt( $( "#wpsl-radius .wpsl-selected-item" ).attr( "data-value" ) );
 		}
-
+		
 		// If the max results or radius filter values are NaN, then we use the default value.
 		if ( isNaN( maxResult ) ) {
 			ajaxData.max_results = wpslSettings.maxResults;
 		} else {
 			ajaxData.max_results = maxResult;
 		}
-
+		
 		if ( isNaN( radius ) ) {
 			ajaxData.search_radius = wpslSettings.searchRadius;
 		} else {
 			ajaxData.search_radius = radius;
 		}
-
-		/*
+		
+		/* 
 		 * If category ids are set through the wpsl shortcode, then we always need to include them.
 		 * Otherwise check if the category dropdown exist, or if the checkboxes are used.
 		 */
@@ -1683,7 +1639,7 @@ function collectAjaxData( startLatLng, resetMap, autoLoad ) {
 			if ( isMobile || defaultFilters ) {
 				categoryId = parseInt( $( "#wpsl-category .wpsl-dropdown" ).val() );
 			} else {
-				categoryId = parseInt( $( "#wpsl-category .wpsl-selected-item" ).attr( "data-value" ) );
+				categoryId = parseInt( $( "#wpsl-category .wpsl-selected-item" ).attr( "data-value" ) );				
 			}
 
 			if ( ( !isNaN( categoryId ) && ( categoryId !== 0 ) ) )  {
@@ -1712,7 +1668,7 @@ function collectAjaxData( startLatLng, resetMap, autoLoad ) {
 				if ( customDropdownName && customDropdownValue ) {
 					ajaxData[customDropdownName] = customDropdownValue;
 				}
-			});
+			});	
 		}
 
 		// Include values from custom checkboxes
@@ -1728,24 +1684,24 @@ function collectAjaxData( startLatLng, resetMap, autoLoad ) {
 	}
 
    /*
-	* If the autoload option is enabled, then we need to check if the included latlng
+	* If the autoload option is enabled, then we need to check if the included latlng 
 	* is based on a geolocation attempt before including the autoload param.
-	*
-	* Because if both the geolocation and autoload options are enabled,
+	* 
+	* Because if both the geolocation and autoload options are enabled, 
 	* and the geolocation attempt was successful, then we need to to include
-	* the skip_cache param.
-	*
-	* This makes sure the results don't come from an older transient based on the
-	* start location from the settings page, instead of the users actual location.
+	* the skip_cache param. 
+	* 
+	* This makes sure the results don't come from an older transient based on the 
+	* start location from the settings page, instead of the users actual location. 
 	*/
     if ( autoLoad == 1 ) {
 		if ( typeof userGeolocation.position !== "undefined" ) {
 			ajaxData.skip_cache = 1;
 		} else {
 			ajaxData.autoload = 1;
-
-			/*
-			 * If the user set the 'category' attr on the wpsl shortcode, then include the cat ids
+			
+			/* 
+			 * If the user set the 'category' attr on the wpsl shortcode, then include the cat ids 
 			 * to make sure only locations from the set categories are loaded on autoload.
 			 */
 			if ( typeof wpslSettings.categoryIds !== "undefined" ) {
@@ -1753,13 +1709,13 @@ function collectAjaxData( startLatLng, resetMap, autoLoad ) {
 			}
 		}
 	}
-
+	
 	// If the collection of statistics is enabled, then we include the searched value.
 	if ( statistics.enabled && autoLoad == 0 ) {
 		ajaxData.search = $( "#wpsl-search-input" ).val();
         ajaxData.statistics = statistics.addressComponents;
     }
-
+	
 	return ajaxData;
 }
 
@@ -1785,28 +1741,28 @@ function getCustomCheckboxValue( customCheckboxName ) {
 }
 
 /**
- * Check which no results msg we need to show.
- *
+ * Check which no results msg we need to show. 
+ * 
  * Either the default txt or a longer custom msg.
- *
+ * 
  * @since  2.2.0
  * @return string noResults The no results msg to show.
  */
 function getNoResultsMsg() {
 	var noResults;
-
+	
 	if ( typeof wpslSettings.noResults !== "undefined" && wpslSettings.noResults !== "" ) {
 		noResults = wpslSettings.noResults;
 	} else {
 		noResults = wpslLabels.noResults;
 	}
-
+	
 	return noResults;
 }
 
 /**
  * Collect the ids of the checked checkboxes.
- *
+ * 
  * @since  2.2.0
  * @return string catIds The cat ids from the checkboxes.
  */
@@ -1814,18 +1770,18 @@ function getCheckboxIds() {
 	var catIds = $( "#wpsl-checkbox-filter input:checked" ).map( function() {
 		return $( this ).val();
 	});
-
+	
 	catIds = catIds.get();
 	catIds = catIds.join(',');
-
+	
 	return catIds;
 }
 
 /**
  * Check if cluster markers are enabled.
- * If so, init the marker clustering with the
+ * If so, init the marker clustering with the 
  * correct gridsize and max zoom.
- *
+ * 
  * @since  1.2.20
  * @return {void}
  */
@@ -1838,7 +1794,7 @@ function checkMarkerClusters() {
 		if ( isNaN( clusterZoom ) ) {
 			clusterZoom = "";
 		}
-
+		
 		if ( isNaN( clusterSize ) ) {
 			clusterSize = "";
 		}
@@ -1873,7 +1829,8 @@ function checkMarkerClusters() {
  * @return {void}
  */
 function addMarker( latLng, storeId, infoWindowData, draggable, infoWindow ) {
-	var url, mapIcon, marker;
+	var url, mapIcon, marker,
+		keepStartMarker = true;
 
     if ( storeId === 0 ) {
         infoWindowData = {
@@ -1939,13 +1896,10 @@ function addMarker( latLng, storeId, infoWindowData, draggable, infoWindow ) {
 	// Only the start marker will be draggable.
 	if ( draggable ) {
 		google.maps.event.addListener( marker, "dragend", function( event ) {
-			deleteOverlays();
-			addMarker( event.latLng, 0, '', true, infoWindow );
+			deleteOverlays( keepStartMarker );
 			map.setCenter( event.latLng );
-
-			reverseGeocode( event.latLng, function() {
-				findStoreLocations( event.latLng, resetMap, autoLoad = false, infoWindow );
-			});
+			reverseGeocode( event.latLng );
+			findStoreLocations( event.latLng, resetMap, autoLoad = false, infoWindow );
 		}); 
     }
 }
@@ -1966,38 +1920,40 @@ function decodeHtmlEntity( str ) {
 	}
 };
 
-/**
- * If both the infobox and marker clusters are active,
- * then we need to check if the zoom level changes.
- *
- * We do this by listening to "zoom_changed" and "idle".
- *
- * This needs to happen to make sure all info windows
- * are closed then the markers are merged together.
- */
-function clusterListener() {
+// Check if we are using both the infobox for the info windows and have marker clusters.
+if ( typeof wpslSettings.infoWindowStyle !== "undefined" && wpslSettings.infoWindowStyle == "infobox" && wpslSettings.markerClusters == 1 ) {
 	var clusters, clusterLen, markerLen, i, j;
-
+	
+	/* 
+	 * We need to listen to both zoom_changed and idle. 
+	 * 
+	 * If the zoom level changes, then the marker clusters either merges nearby 
+	 * markers, or changes into individual markers. Which is the moment we 
+	 * either show or hide the opened info window.
+	 * 
+	 * "idle" is necessary to make sure the getClusters() is up 
+	 * to date with the correct cluster data.
+	 */
 	google.maps.event.addListener( map, "zoom_changed", function() {
 		google.maps.event.addListenerOnce( map, "idle", function() {
 
-			if ( typeof markerClusterer !== "undefined" ) {
+			if ( typeof markerClusterer !== "undefined" ) {		
 				clusters = markerClusterer.clusters_;
 
 				if ( clusters.length ) {
 					for ( i = 0, clusterLen = clusters.length; i < clusterLen; i++ ) {
 						for ( j = 0, markerLen = clusters[i].markers_.length; j < markerLen; j++ ) {
 
-							/*
-							 * Match the storeId from the cluster marker with the
-							 * marker id that was set when the info window was opened
+							/* 
+							 * Match the storeId from the cluster marker with the 
+							 * marker id that was set when the info window was opened 
 							 */
 							if ( clusters[i].markers_[j].storeId == activeWindowMarkerId ) {
 
-								/*
-								 * If there is a visible info window, but the markers_[j].map is null ( hidden )
+								/* 
+								 * If there is a visible info window, but the markers_[j].map is null ( hidden ) 
 								 * it means the info window belongs to a marker that is part of a marker cluster.
-								 *
+								 * 
 								 * If that is the case then we hide the info window ( the individual marker isn't visible ).
 								 *
 								 * The default info window script handles this automatically, but the
@@ -2358,22 +2314,33 @@ function fitBounds() {
  * Remove all existing markers from the map.
  * 
  * @since	1.0.0
+ * @param	{boolean} keepStartMarker Whether or not to keep the start marker while removing all the other markers from the map
  * @returns {void}
  */
-function deleteOverlays() {
+function deleteOverlays( keepStartMarker ) {
 	var markerLen, i;
 	
     directionsDisplay.setMap( null );
-
+	
     // Remove all the markers from the map, and empty the array.
     if ( markersArray ) {
 		for ( i = 0, markerLen = markersArray.length; i < markerLen; i++ ) {
-			markersArray[i].setMap( null );
+			
+			// Check if we need to keep the start marker, or remove everything.
+			if ( keepStartMarker ) {
+				if ( markersArray[i].draggable != true ) {
+					markersArray[i].setMap( null );
+				} else {
+					startMarkerData = markersArray[i];
+				}
+			} else {
+				markersArray[i].setMap( null );
+			}
 		}
 
 		markersArray.length = 0;
     }
-
+	
 	// If marker clusters exist, remove them from the map.
 	if ( markerClusterer ) {
 		markerClusterer.clearMarkers();
@@ -2431,51 +2398,40 @@ function directionErrors( status ) {
     alert( msg );	
 }
 
-/**
- * Bind the click handler to the more info link
- *
- * @since  2.2.240
- * @return void
- */
-function bindMoreInfo() {
+$( "#wpsl-stores" ).on( "click", ".wpsl-store-details", function() {	
+	var i, len,
+		$parentLi = $( this ).parents( "li" ),
+		storeId   = $parentLi.data( "store-id" );
 
-	$( '#wpsl-stores' ).off( 'click', '.wpsl-store-details' );
-
-	$( "#wpsl-stores" ).on( "click", ".wpsl-store-details", function() {
-		var i, len,
-			$parentLi = $( this ).parents( "li" ),
-			storeId   = $parentLi.data( "store-id" );
-
-		// Check if we should show the 'more info' details.
-		if ( wpslSettings.moreInfoLocation == "info window" ) {
-			for ( i = 0, len = markersArray.length; i < len; i++ ) {
-				if ( markersArray[i].storeId == storeId ) {
-					google.maps.event.trigger( markersArray[i], "click" );
-				}
+	// Check if we should show the 'more info' details.
+	if ( wpslSettings.moreInfoLocation == "info window" ) {
+		for ( i = 0, len = markersArray.length; i < len; i++ ) {
+			if ( markersArray[i].storeId == storeId ) {
+				google.maps.event.trigger( markersArray[i], "click" );
 			}
+		}
+	} else {
+		
+		// Check if we should set the 'more info' item to active or not.
+		if ( $parentLi.find( ".wpsl-more-info-listings" ).is( ":visible" ) ) {
+			$( this ).removeClass( "wpsl-active-details" );
 		} else {
+			$( this ).addClass( "wpsl-active-details" );
+		}		
+		
+		$parentLi.siblings().find( ".wpsl-store-details" ).removeClass( "wpsl-active-details" );
+		$parentLi.siblings().find( ".wpsl-more-info-listings" ).hide();
+		$parentLi.find( ".wpsl-more-info-listings" ).toggle();
+	}
 
-			// Check if we should set the 'more info' item to active or not.
-			if ( $parentLi.find( ".wpsl-more-info-listings" ).is( ":visible" ) ) {
-				$( this ).removeClass( "wpsl-active-details" );
-			} else {
-				$( this ).addClass( "wpsl-active-details" );
-			}
-
-			$parentLi.siblings().find( ".wpsl-store-details" ).removeClass( "wpsl-active-details" );
-			$parentLi.siblings().find( ".wpsl-more-info-listings" ).hide();
-			$parentLi.find( ".wpsl-more-info-listings" ).toggle();
-		}
-
-		/*
-		 * If we show the store listings under the map, we do want to jump to the
-		 * top of the map to focus on the opened infowindow
-		 */
-		if ( wpslSettings.templateId != "default" || wpslSettings.moreInfoLocation == "store listings" ) {
-			return false;
-		}
-	});
-}
+	/* 
+	 * If we show the store listings under the map, we do want to jump to the 
+	 * top of the map to focus on the opened infowindow 
+	 */
+	if ( wpslSettings.templateId != "default" || wpslSettings.moreInfoLocation == "store listings" ) {
+		return false;
+	}
+});
 
 /**
  * Create the styled dropdown filters.
@@ -2737,6 +2693,8 @@ function keyboardAutoCompleteSubmit() {
  * @returns {void}
  */
 function resetSearchResults() {
+	var keepStartMarker = false;
+
 	$( "#wpsl-result-list ul" ).empty();
 	$( "#wpsl-stores" ).show();
 	$( ".wpsl-direction-before, .wpsl-direction-after" ).remove();
@@ -2747,7 +2705,7 @@ function resetSearchResults() {
 	// Force the open InfoBox info window to close.
 	closeInfoBoxWindow();
 
-	deleteOverlays();
+	deleteOverlays( keepStartMarker );
 	deleteStartMarker();
 }
 

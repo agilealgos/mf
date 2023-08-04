@@ -138,9 +138,6 @@ class Widget_Video extends Widget_Base {
 				'condition' => [
 					'video_type' => 'youtube',
 				],
-				'ai' => [
-					'active' => false,
-				],
 				'frontend_available' => true,
 			]
 		);
@@ -163,9 +160,6 @@ class Widget_Video extends Widget_Base {
 				'condition' => [
 					'video_type' => 'vimeo',
 				],
-				'ai' => [
-					'active' => false,
-				],
 			]
 		);
 
@@ -186,9 +180,6 @@ class Widget_Video extends Widget_Base {
 				'label_block' => true,
 				'condition' => [
 					'video_type' => 'dailymotion',
-				],
-				'ai' => [
-					'active' => false,
 				],
 			]
 		);
@@ -215,9 +206,7 @@ class Widget_Video extends Widget_Base {
 						TagsModule::MEDIA_CATEGORY,
 					],
 				],
-				'media_types' => [
-					'video',
-				],
+				'media_type' => 'video',
 				'condition' => [
 					'video_type' => 'hosted',
 					'insert_url' => '',
@@ -241,6 +230,7 @@ class Widget_Video extends Widget_Base {
 						TagsModule::URL_CATEGORY,
 					],
 				],
+				'media_type' => 'video',
 				'placeholder' => esc_html__( 'Enter your URL', 'elementor' ),
 				'condition' => [
 					'video_type' => 'hosted',
@@ -706,18 +696,9 @@ class Widget_Video extends Widget_Base {
 					'11' => '1:1',
 					'916' => '9:16',
 				],
-				'selectors_dictionary' => [
-					'169' => '1.77777', // 16 / 9
-					'219' => '2.33333', // 21 / 9
-					'43' => '1.33333', // 4 / 3
-					'32' => '1.5', // 3 / 2
-					'11' => '1', // 1 / 1
-					'916' => '0.5625', // 9 / 16
-				],
 				'default' => '169',
-				'selectors' => [
-					'{{WRAPPER}} .elementor-wrapper' => '--video-aspect-ratio: {{VALUE}}',
-				],
+				'prefix_class' => 'elementor-aspect-ratio-',
+				'frontend_available' => true,
 			]
 		);
 
@@ -964,6 +945,10 @@ class Widget_Video extends Widget_Base {
 
 		$this->add_render_attribute( 'video-wrapper', 'class', 'elementor-wrapper' );
 
+		if ( ! $settings['lightbox'] ) {
+			$this->add_render_attribute( 'video-wrapper', 'class', 'elementor-fit-aspect-ratio' );
+		}
+
 		$this->add_render_attribute( 'video-wrapper', 'class', 'elementor-open-' . ( $settings['lightbox'] ? 'lightbox' : 'inline' ) );
 		?>
 		<div <?php $this->print_render_attribute_string( 'video-wrapper' ); ?>>
@@ -1002,7 +987,7 @@ class Widget_Video extends Widget_Base {
 					$this->add_render_attribute( 'image-overlay', [
 						'data-elementor-open-lightbox' => 'yes',
 						'data-elementor-lightbox' => wp_json_encode( $lightbox_options ),
-						'data-e-action-hash' => Plugin::instance()->frontend->create_action_hash( 'lightbox', $lightbox_options ),
+						'e-action-hash' => Plugin::instance()->frontend->create_action_hash( 'lightbox', $lightbox_options ),
 					] );
 
 					if ( Plugin::$instance->editor->is_edit_mode() ) {

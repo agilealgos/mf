@@ -14,8 +14,6 @@ use Google\Site_Kit\Core\Modules\Module_Settings;
 use Google\Site_Kit\Core\Storage\Setting_With_Legacy_Keys_Trait;
 use Google\Site_Kit\Core\Storage\Setting_With_Owned_Keys_Interface;
 use Google\Site_Kit\Core\Storage\Setting_With_Owned_Keys_Trait;
-use Google\Site_Kit\Modules\Analytics;
-use Google\Site_Kit\Modules\Analytics_4;
 
 /**
  * Class for Analytics settings.
@@ -193,7 +191,6 @@ class Settings extends Module_Settings implements Setting_With_Owned_Keys_Interf
 			'trackingDisabled'      => array( 'loggedinUsers' ),
 			'useSnippet'            => true,
 			'canUseSnippet'         => true,
-			'dashboardView'         => Analytics::DASHBOARD_VIEW,
 		);
 	}
 
@@ -226,11 +223,6 @@ class Settings extends Module_Settings implements Setting_With_Owned_Keys_Interf
 				}
 				if ( isset( $option['adsenseLinked'] ) ) {
 					$option['adsenseLinked'] = (bool) $option['adsenseLinked'];
-				}
-				if ( isset( $option['dashboardView'] ) ) {
-					if ( ! in_array( $option['dashboardView'], array( Analytics::DASHBOARD_VIEW, Analytics_4::DASHBOARD_VIEW ), true ) ) {
-						$option['dashboardView'] = $this->get()['dashboardView'];
-					}
 				}
 			}
 			return $option;

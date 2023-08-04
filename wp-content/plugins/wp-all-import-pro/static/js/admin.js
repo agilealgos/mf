@@ -24,11 +24,11 @@
                 jQuery('[class^="dd-selected-text dashicon"]').removeClass( class_check );
 
             }
-        }
+        }           
     }
 
     // Rapid Add-On API Images
-    $(document).ready(function($){
+    $(document).ready(function($){    
         var class_check;
         var original_class;
         var new_class_name;
@@ -55,19 +55,19 @@
                         $(this).addClass("wpaiimgfor" + new_class_name);
                         $(this).removeClass( class_check );
                     }
-                }
+                }                
             }
         });
         // Append all of the classes to head.
         allstyles = allstyles + "</style>";
         $( allstyles ).appendTo("head");
     });
-
+	
 	// fix wpallimport-layout position
 	setTimeout(function () {
-		$('table.wpallimport-layout').length && $('table.wpallimport-layout td.left h2:first-child').css('margin-top',  $('.wrap').has('.wpallimport-layout').offset().top - $('table.wpallimport-layout').offset().top);
+		$('table.wpallimport-layout').length && $('table.wpallimport-layout td.left h2:first-child').css('margin-top',  $('.wrap').offset().top - $('table.wpallimport-layout').offset().top);
 	}, 10);
-
+	
 	// help icons
 	$(document).tipsy({
 		gravity: function() {
@@ -116,7 +116,7 @@
 	// swither show/hide logic
 	$('input.switcher').on("change", function (e) {
 		if ($(this).is(':radio:checked')) {
-			$(this).parents('form').find('input.switcher:radio[name="' + $(this).attr('name') + '"]').not(this).trigger('change');
+			$(this).parents('form').find('input.switcher:radio[name="' + $(this).attr('name') + '"]').not(this).change();
 		}
 		let $targets = $('.switcher-target-' + $(this).attr('id'));
 		let is_show = $(this).is(':checked'); if ($(this).is('.switcher-reversed')) is_show = ! is_show;
@@ -125,12 +125,12 @@
 		} else {
 			$targets.slideUp().find('.clear-on-switch').add($targets.filter('.clear-on-switch')).val('');
 		}
-	}).trigger('change');
+	}).change();
 
 	// swither show/hide logic
 	$('input.switcher-horizontal').on('change', function (e) {
 		if ($(this).is(':checked')) {
-			$(this).parents('form').find('input.switcher-horizontal[name="' + $(this).attr('name') + '"]').not(this).trigger('change');
+			$(this).parents('form').find('input.switcher-horizontal[name="' + $(this).attr('name') + '"]').not(this).change();
 		}
 		let $targets = $('.switcher-target-' + $(this).attr('id'));
 		let is_show = $(this).is(':checked'); if ($(this).is('.switcher-reversed')) is_show = ! is_show;
@@ -139,7 +139,7 @@
 		} else {
 			$targets.animate({width:'0px'}, 1000).find('.clear-on-switch').add($targets.filter('.clear-on-switch')).val('');
 		}
-	}).trigger('change');
+	}).change();
 
 	// autoselect input content on click
 	$(document).on('click', 'input.selectable', function () {
@@ -149,16 +149,16 @@
 	// input tags with title
 	$('input[title]').each(function () {
 		var $this = $(this);
-		$this.on('focus', function () {
+		$this.bind('focus', function () {
 			if ('' == $(this).val() || $(this).val() == $(this).attr('title')) {
 				$(this).removeClass('note').val('');
 			}
-		}).on('blur', function () {
+		}).bind('blur', function () {
 			if ('' == $(this).val() || $(this).val() == $(this).attr('title')) {
 				$(this).addClass('note').val($(this).attr('title'));
 			}
-		}).trigger('blur');
-		$this.parents('form').on('submit', function () {
+		}).blur();
+		$this.parents('form').bind('submit', function () {
 			if ($this.val() == $this.attr('title')) {
 				$this.val('');
 			}
@@ -173,7 +173,7 @@
 		constrainInput: false,
 		showAnim: 'fadeIn',
 		showOptions: 'fast'
-	}).on('change', function () {
+	}).bind('change', function () {
 		var selectedDate = $(this).val();
 		var instance = $(this).data('datepicker');
 		var date = null;
@@ -190,11 +190,11 @@
 		if ($(this).hasClass('range-to')) {
 			$(this).parent().find('.datepicker.range-from').datepicker("option", "maxDate", date);
 		}
-	}).trigger('change');
+	}).change();
 	$('.ui-datepicker').hide(); // fix: make sure datepicker doesn't break wordpress wpallimport-layout upon initialization
 
 	// no-enter-submit forms
-	$('form.no-enter-submit').find('input,select,textarea').not('*[type="submit"]').on('keydown', function (e) {
+	$('form.no-enter-submit').find('input,select,textarea').not('*[type="submit"]').keydown(function (e) {
 		if (13 == e.keyCode) e.preventDefault();
 	});
 
@@ -219,12 +219,12 @@
 
 	$('a.collapser').each(function(){
 		$(this).parents('.fieldset:first').find('h3:first').on('click', function(){
-			$(this).prev('a.collapser').trigger('click');
+			$(this).prev('a.collapser').click();
 		});
 	});
 
 	$('.change_file').each(function(){
-		let $wrap = $('.wrap').has('.wpallimport-layout');
+		let $wrap = $('.wrap');
 		let formHeight = ($('.wpallimport-layout').height() < 730) ? 730 : $('.wpallimport-layout').height();
 		$('#file_selector').ddslick({
 			width: 600,
@@ -290,7 +290,7 @@
 					if ($('input[name=url]').val() != '') {
 						showImportType = true;
 					}
-					$('.wpallimport-download-from-checked').trigger('click');
+					$('.wpallimport-download-from-checked').click();
 					break;
 				case 'file_type':
 					if ($('input[name=file]').val() != '') {
@@ -301,7 +301,7 @@
 			}
 
 			$('.wpallimport-import-from').removeClass('selected').addClass('bind');
-			$(this).addClass('selected').removeClass('bind');
+			$(this).addClass('selected').removeClass('bind');			
 			$('.wpallimport-import-from').removeClass('selected').addClass('bind');
 			$(this).addClass('selected').removeClass('bind');
 			$('.change_file').find('.wpallimport-upload-type-container').hide();
@@ -312,10 +312,10 @@
 			//$('.first-step-errors').hide();
 
 			if ($(this).attr('rel') == 'upload_type'){
-				$('input[type=file]').trigger('click');
+				$('input[type=file]').click();
 			}
 		});
-		$('.wpallimport-import-from.selected').trigger('click');
+		$('.wpallimport-import-from.selected').click();
 
 		$('.wpallimport-download-from').on('click', function(){
 			if ($(this).attr('rel') === 'url') {
@@ -329,13 +329,13 @@
 			$(this).addClass('wpallimport-download-from-checked');
 			$('.change_file').find('input[name=new_type]').val( $(this).attr('rel') );
 		});
-		$('.wpallimport-download-from.wpallimport-download-from-checked').trigger('click');
+		$('.wpallimport-download-from.wpallimport-download-from-checked').click();
 
 	});
 
-	$('input[name=url]').on('change', function(){
+	$('input[name=url]').change(function(){
 
-	}).on('keyup', function (e) {
+	}).keyup(function (e) {
 		if ($(this).val() != ''){
 			$('.wpallimport-url-icon').addClass('focus');
 			$(this).addClass('focus');
@@ -343,6 +343,12 @@
 			$('.wpallimport-url-icon').removeClass('focus');
 			$(this).removeClass('focus');
 		}
+	}).focus(function(){
+		if ($(this).val() == 'Enter a web address to download the file from...')
+			$(this).val('');
+	}).blur(function(){
+		if($(this).val() == '')
+			$(this).val('Enter a web address to download the file from...');
 	});
 
 	$('#taxonomy_to_import').ddslick({
@@ -362,7 +368,7 @@
 	// enter-submit form on step 1
 	$('.wpallimport-step-1').each(function(){
 
-		var $wrap = $('.wrap').has('.wpallimport-layout');
+		var $wrap = $('.wrap');
 
 		var formHeight = ($('.wpallimport-layout').height() < 730) ? 730 : $('.wpallimport-layout').height();
 
@@ -381,9 +387,9 @@
 					if ($('input[name=url]').val() != '') {
 						showImportType = true;
 					}
-					$('.wpallimport-download-from-checked').trigger('click');
+					$('.wpallimport-download-from-checked').click();
 					break;
-				case 'file_type':
+				case 'file_type':					
 					if ($('input[name=file]').val() != '') {
 						showImportType = true;
 					}
@@ -407,7 +413,7 @@
 			}
 
 			if ($(this).attr('rel') == 'upload_type'){
-				$('input[type=file]').trigger('click');
+				$('input[type=file]').click();
 			}
 			if ( ! showImportType){
 				$('.wpallimport-choose-file').find('.wpallimport-upload-resource-step-two').slideUp();
@@ -418,7 +424,7 @@
 			}
 		});
 
-		$('.wpallimport-import-from.selected').trigger('click');
+		$('.wpallimport-import-from.selected').click();
 
 		$('.wpallimport-download-from-url').on('click', function(){
 
@@ -657,11 +663,11 @@
 							$('.wpallimport-header').next('.clear').after(response.responseText);
 						},
 						dataType: "json"
-					});
-
+					});					
+														
 		    	} else {
 		    		if ($('.wpallimport-import-from.selected').attr('rel') == 'file_type') {
-		    			$('.wpallimport-choose-file').find('input[name=file]').val('');
+		    			$('.wpallimport-choose-file').find('input[name=file]').val('');	
 			    		$('#file_selector').find('.dd-selected').css({'color':'#cfceca'});
 			    		$('.wpallimport-choose-file').find('.wpallimport-upload-resource-step-two').slideUp();
 						$('.wpallimport-choose-file').find('.wpallimport-submit-buttons').hide();
@@ -701,8 +707,8 @@
 
 		$('#custom_type_selector').hide();
 
-		$('.wpallimport-import-to.wpallimport-import-to-checked').trigger('click');
-		$('.wpallimport-download-from.wpallimport-download-from-checked').trigger('click');
+		$('.wpallimport-import-to.wpallimport-import-to-checked').click();
+		$('.wpallimport-download-from.wpallimport-download-from-checked').click();
 
 		$('a.auto-generate-template').on('click', function(){
 			$('input[name^=auto_generate]').val('1');
@@ -733,22 +739,6 @@
 	    });
 	};
 
-	// add expander
-	$(document).on('click', '.xml-expander', function () {
-		var method;
-		if ('-' == $(this).text()) {
-			$(this).text('+');
-			method = 'addClass';
-		} else {
-			$(this).text('-');
-			method = 'removeClass';
-		}
-		// for nested representation based on div
-		$(this).parent().find('> .xml-content')[method]('collapsed');
-		// for nested representation based on tr
-		var $tr = $(this).parent().parent().filter('tr.xml-element').next()[method]('collapsed');
-	});
-
 	// [xml representation dynamic]
 	$.fn.xml = function (opt) {
 		if ( ! this.length) return this;
@@ -765,6 +755,21 @@
 
 		if (action.init) {
 			this.data('initialized', true);
+			// add expander
+			$(document).on('click', '.xml-expander', function () {
+				var method;
+				if ('-' == $(this).text()) {
+					$(this).text('+');
+					method = 'addClass';
+				} else {
+					$(this).text('-');
+					method = 'removeClass';
+				}
+				// for nested representation based on div
+				$(this).parent().find('> .xml-content')[method]('collapsed');
+				// for nested representation based on tr
+				var $tr = $(this).parent().parent().filter('tr.xml-element').next()[method]('collapsed');
+			});
 		}
 		if (action.dragable) { // drag & drop
 			var _w; var _dbl = 0;
@@ -794,7 +799,7 @@
 				_dbl = true; setTimeout(function () {_dbl = false;}, 400);
 			}).mouseup(function () {
 				$drag.css('opacity', 0).css('width', _w);
-				$drag.trigger('blur');
+				$drag.blur();
 			}).dblclick(function(){
 				if (dblclickbuf.selected) {
 					$('.xml-element[title*="/'+dblclickbuf.value.replace('{','').replace('}','')+'"]').removeClass('selected');
@@ -814,7 +819,7 @@
 				}
 			});
 
-			$('input, textarea').not('#__drag').on('focus', insertxpath );
+			$('input, textarea').not('#__drag').bind('focus', insertxpath );
 
 			$(document).mousemove(function () {
 				if (parseInt($drag.css('opacity')) != 0) {
@@ -912,11 +917,11 @@
 						fix_tag_position();
 						$indicator.next().tag().prevObject.remove();
 						if ($('#variations_xpath').length){
-							$('#variations_xpath').data('checkedValue', '').trigger('change');
+							$('#variations_xpath').data('checkedValue', '').change();
 						}
 					    $preview.find('input[name="tagno"]').off();
 					    $preview.find('.navigation a').off('click');
-					    $form.find('.' + $preview_type).trigger('click');
+					    $form.find('.' + $preview_type).click();
 
 					}, 'json');
 					return false;
@@ -930,11 +935,11 @@
 						fix_tag_position();
 						$indicator.next().tag().prevObject.remove();
 						if ($('#variations_xpath').length){
-							$('#variations_xpath').data('checkedValue', '').trigger('change');
+							$('#variations_xpath').data('checkedValue', '').change();
 						}
 					    $preview.find('input[name="tagno"]').off();
 					    $preview.find('.navigation a').off('click');
-					    $form.find('.' + $preview_type).trigger('click');
+					    $form.find('.' + $preview_type).click();
 					}, 'json');
 					return false;
 				});
@@ -945,7 +950,7 @@
 
 		$form.find('.set_encoding').on('click', function(e){
 			e.preventDefault();
-			$form.find('a[rel="preview"].preview').trigger('click');
+			$form.find('a[rel="preview"].preview').click();
 		});
 
 		$form.find('input[name$=download_images]').each(function(){
@@ -1005,11 +1010,11 @@
 							});
 							// if this field doesn't present in custom fields section then put it there
 							if ( allow_add ){
-								parent.find('a.add-new-custom').trigger('click');
+								parent.find('a.add-new-custom').click();
 								var fieldParent = parent.find('.form-field:visible').last();
 								fieldParent.find('input[name^=custom_name]:visible').last().val(response.result[i].key);
 								fieldParent.find('textarea[name^=custom_value]:visible').last().val(response.result[i].val);
-								if (response.result[i].is_serialized) fieldParent.find('.set_serialize').last().parent().trigger('click');
+								if (response.result[i].is_serialized) fieldParent.find('.set_serialize').last().parent().click();
 								$added_fields_count++;
 							}
 						}
@@ -1042,7 +1047,7 @@
 				}
 			}
 			if ( ! parent.find('input[name^=custom_name]:visible').length){
-				parent.find('a.add-new-custom').trigger('click');
+				parent.find('a.add-new-custom').click();
 			}
 			$('.cf_detected').html('');
 			$('.cf_detect_result').hide();
@@ -1115,12 +1120,12 @@
 									if ( ! $(this).hasClass('template') ) $(this).remove();
 								});
 								for (var i = 0; i < response.result.length; i++){
-									$destination.find('a.add-new-key').trigger('click');
+									$destination.find('a.add-new-key').click();
 									$destination.find('tr.form-field').not('.template').last().css({"opacity": 1}).find('input.serialized_key').attr("value", response.result[i].key);
 									$destination.find('tr.form-field').not('.template').last().css({"opacity": 1}).find('input.serialized_value').attr("value", response.result[i].val);
 								}
 								$destination.parents('td:first').find('.pmxi_cf_pointer').pointer('destroy');
-								$destination.parents('td:first').find('.pmxi_cf_pointer').trigger('click');
+								$destination.parents('td:first').find('.pmxi_cf_pointer').click();
 							} else {
 								var $notice = $('<p style="color:red; position: absolute; top: -10px; padding:0; margin:0;">No fields detected.</p>').insertBefore(ths).show();
 								setTimeout(function() {
@@ -1255,6 +1260,8 @@
 
 						if (response.success)
 						{
+							//$form.find('.nested_cancel').click();
+
 							$form.find('.nested_files ul').append('<li rel="' + $form.find('.nested_files ul').find('li').length + '">' + $fileURL + ' <a href="javascript:void(0);" class="unmerge">remove</a></li>');
 							$form.find('input[name=nested_files]').val(window.JSON.stringify(response.nested_files));
 
@@ -1269,7 +1276,7 @@
 								fix_tag_position();
 								$indicator.next().tag().prevObject.remove();
 								if ($('#variations_xpath').length){
-									$('#variations_xpath').data('checkedValue', '').trigger('change');
+									$('#variations_xpath').data('checkedValue', '').change();
 								}
 							}, 'json');
 							return false;
@@ -1326,7 +1333,7 @@
 							fix_tag_position();
 							$indicator.next().tag().prevObject.remove();
 							if ($('#variations_xpath').length){
-								$('#variations_xpath').data('checkedValue', '').trigger('change');
+								$('#variations_xpath').data('checkedValue', '').change();
 							}
 						}, 'json');
 						return false;
@@ -1345,7 +1352,7 @@
 			});
 		});
 
-		$form.find('input[name=nested_url]').on('focus', function(){
+		$form.find('input[name=nested_url]').focus(function(){
 			$(this).css({'background':'#fff'});
 		});
 
@@ -1394,7 +1401,6 @@
 		$form.find('.wpallimport-dismiss-cf-welcome').on('click', function(){
 			$('.cf_welcome, .cf_detect_result').slideUp();
 		});
-
 	});
 
 	// options form: highlight options of selected post type
@@ -1402,7 +1408,7 @@
 		var $container = $(this).parents('.post-type-container');
 		$('.post-type-container').not($container).removeClass('selected').find('.post-type-options').hide();
 		$container.addClass('selected').find('.post-type-options').show();
-	}).filter(':checked').trigger('click');
+	}).filter(':checked').click();
 	// options form: add / remove custom params
 	$('.form-table a.action[href="#add"]').on('click', function () {
 		var $template = $(this).parents('table').first().find('tr.template');
@@ -1422,7 +1428,7 @@
 		let $box = $(this).parents('tbody').first();
 		$(this).parents('tr').first().remove();
 		if ( ! $box.find('tr.form-field:visible').length ){
-			$box.find('.add-new-entry').trigger('click');
+			$box.find('.add-new-entry').click();
 		}
 		return false;
 	});
@@ -1481,7 +1487,7 @@
 					if (response.result){
 						$('.wpallimport-elements-preloader').hide();
 						$('.ajax-console').html(response.html);
-						$input.attr('readonly', false).on('change', function(){$goto_element.val(1); xpathChanged();});
+						$input.attr('readonly', false).change(function(){$goto_element.val(1); xpathChanged();});
 						$form.removeClass('loading');
 
 						$xml.parents('fieldset:first').removeClass('preload');
@@ -1518,7 +1524,7 @@
 			var show_element = Math.max((parseInt($goto_element.val()) - 1), 1);
 			$goto_element.val(show_element).html( show_element ); $input.data('checkedValue', ''); xpathChanged();
 		});
-		$goto_element.on('change', function(){
+		$goto_element.change(function(){
 			var matches_count = ($('.matches_count').length) ? parseInt($('.matches_count').html()) : 0;
 			var show_element = Math.max(Math.min(parseInt($goto_element.val()), matches_count), 1);
 			$goto_element.val(show_element); $input.data('checkedValue', ''); xpathChanged();
@@ -1549,12 +1555,12 @@
 			$goto_element.val(1);
 			xpathChanged(true);
 		});
-		$input.on('change', function(){
+		$input.change(function(){
 			$goto_element.val(1);
 			xpathChanged(true);
-		}).trigger('change');
-		$input.on('keyup', function (e) {
-			if (13 == e.keyCode) $(this).trigger('change');
+		}).change();
+		$input.keyup(function (e) {
+			if (13 == e.keyCode) $(this).change();
 		});
 
 		$apply_delimiter.on('click', function(){
@@ -1565,10 +1571,153 @@
 			}
 		});
 
+		/* Advanced Filtering */
+
+		$('.filtering_rules').pmxi_nestedSortable({
+	        handle: 'div',
+	        items: 'li',
+	        toleranceElement: '> div',
+	        update: function () {
+	        	$('.filtering_rules').find('.condition').show();
+	        	$('.filtering_rules').find('.condition:last').hide();
+		    }
+	    });
+
+	    $('#pmxi_add_rule').on('click', function(){
+
+	    	var $el = $('#pmxi_xml_element');
+	    	var $rule = $('#pmxi_rule');
+	    	var $val = $('#pmxi_value');
+
+	    	if ($el.val() == "" || $rule.val() == "") return;
+
+	    	if ($rule.val() != 'is_empty' && $rule.val() != "is_not_empty" && $val.val() == "") return;
+
+	    	var relunumber = $('.filtering_rules').find('li').length + "_" + $.now();
+
+	    	var html = '<li><div class="drag-element">';
+	    		html += '<input type="hidden" value="'+ $el.val() +'" class="pmxi_xml_element"/>';
+	    		html += '<input type="hidden" value="'+ $rule.val() +'" class="pmxi_rule"/>';
+	    		html += '<input type="hidden" value="'+ $val.val() +'" class="pmxi_value"/>';
+				html += '<span class="rule_element">' + $el.val() + '</span><span class="rule_as_is">' + $rule.find('option:selected').html() + '</span><span class="rule_condition_value">"' + $val.val() +'"</span>';
+	    		html += '<span class="condition"> <label for="rule_and_'+relunumber+'">AND</label><input id="rule_and_'+relunumber+'" type="radio" value="and" name="rule_'+relunumber+'" checked="checked" class="rule_condition"/><label for="rule_or_'+relunumber+'">OR</label><input id="rule_or_'+relunumber+'" type="radio" value="or" name="rule_'+relunumber+'" class="rule_condition"/> </span>';
+	    		html += '</div><a href="javascript:void(0);" class="icon-item remove-ico"></a></li>';
+
+	    	$('#wpallimport-filters, #apply_filters').show();
+	    	$('#filtering_rules').find('p').hide();
+
+	    	$('.filtering_rules').append(html);
+
+	    	$('.filtering_rules').find('.condition').show();
+	        $('.filtering_rules').find('.condition:last').hide();
+
+	    	$el.prop('selectedIndex',0);
+	    	$rule.prop('selectedIndex',0);
+	    	$val.val('');
+	    	$('#pmxi_value').show();
+
+	    });
+
+		$(document).on('click', '.filtering_rules li a.remove-ico', function() {
+			$(this).parents('li:first').remove();
+			$('.filtering_rules').find('li:last div span.condition').hide();
+			if (!$('.filtering_rules').find('li').length){
+				$('#apply_filters').hide();
+	    		$('#filtering_rules').find('p').show();
+			}
+		});
+
+		$('#pmxi_rule').change(function(){
+			if ($(this).val() == 'is_empty' || $(this).val() == 'is_not_empty') {
+				$('#pmxi_value').hide();
+			} else {
+				$('#pmxi_value').show();
+			}
+		});
+
+		var filter = '[';
+
+		var xpath_builder = function(rules_box, lvl){
+
+			var rules = rules_box.children('li');
+
+			var root_element = $('#root_element').val();
+
+			if (lvl && rules.length > 1) filter += ' (';
+
+			rules.each(function(){
+
+				var node = $(this).children('.drag-element').find('.pmxi_xml_element').val();
+				var condition = $(this).children('.drag-element').find('.pmxi_rule').val();
+				var value = $(this).children('.drag-element').find('.pmxi_value').val();
+
+				var clause = ($(this).children('.drag-element').find('.condition').is(':visible')) ? $(this).children('.drag-element').find('input.rule_condition:checked').val() : false;
+
+				var is_attr = false;
+
+				if (node.indexOf('@') != -1){
+					is_attr = true;
+					node_name = node.split('@')[0];
+					attr_name = node.split('@')[1];
+				}
+
+				if (is_attr) {
+					filter += (node_name == root_element) ? '' : node_name.replace(/->/g, '/');
+				} else {
+					filter += node.replace(/->/g, '/');
+				}
+
+				if (is_attr) filter += '@' + attr_name;
+
+				switch (condition){
+					case 'equals':
+						filter += ' = "%s"';
+						break;
+					case 'not_equals':
+						filter += ' != "%s"';
+						break;
+					case 'greater':
+						filter += ' > %s';
+						break;
+					case 'equals_or_greater':
+						filter += ' >= %s';
+						break;
+					case 'less':
+						filter += ' < %s';
+						break;
+					case 'equals_or_less':
+						filter += ' <= %s';
+						break;
+					case 'contains':
+						filter += '[contains(.,"%s")]';
+						break;
+					case 'not_contains':
+						filter += '[not(contains(.,"%s"))]';
+						break;
+					case 'is_empty':
+						filter += '[not(string())]';
+						break;
+					case 'is_not_empty':
+						filter += '[string()]';
+						break;
+				}
+
+				filter = filter.replace('%s', value);
+
+				if (clause) filter += ' ' + clause + ' ';
+
+				if ($(this).children('ol').length){
+					$(this).children('ol').each(function(){
+						if ($(this).children('li').length) xpath_builder($(this), 1);
+					});
+				}
+			});
+			if (lvl && rules.length > 1) filter += ') ';
+		}
+
 		$('#apply_filters').on('click', function(){
 
-			var $input = $('input[name="xpath"]');
-			var xpath = $input.val();
+			var xpath = $('input[name=xpath]').val();
 
 			filter = '[';
 			xpath_builder($('.filtering_rules'), 0);
@@ -1578,165 +1727,8 @@
 			$input.data('checkedValue', '');
 			$goto_element.val(1);
 			xpathChanged(true);
-			if ($('.filtering_rules').html().length) {
-				$('.filtering-output').val(window.JSON.stringify($('.filtering_rules').html()));
-			} else {
-				$('.filtering-output').val('');
-			}
 		});
 	});
-
-	/* Advanced Filtering */
-
-	$('.filtering_rules').pmxi_nestedSortable({
-		handle: 'div',
-		items: 'li',
-		toleranceElement: '> div',
-		update: function () {
-			$('.filtering_rules').find('.condition').show();
-			$('.filtering_rules').find('.condition:last').hide();
-		}
-	});
-
-	$('#pmxi_add_rule').on('click', function(){
-
-		var $el = $('#pmxi_xml_element');
-		var $rule = $('#pmxi_rule');
-		var $val = $('#pmxi_value');
-
-		if ($el.val() == "" || $rule.val() == "") return;
-
-		if ($rule.val() != 'is_empty' && $rule.val() != "is_not_empty" && $val.val() == "") return;
-
-		var relunumber = $('.filtering_rules').find('li').length + "_" + $.now();
-
-		var html = '<li><div class="drag-element">';
-		html += '<input type="hidden" value="'+ $el.val() +'" class="pmxi_xml_element"/>';
-		html += '<input type="hidden" value="'+ $rule.val() +'" class="pmxi_rule"/>';
-		html += '<input type="hidden" value="'+ $val.val() +'" class="pmxi_value"/>';
-		html += '<span class="rule_element">' + $el.val() + '</span><span class="rule_as_is">' + $rule.find('option:selected').html() + '</span><span class="rule_condition_value">"' + $val.val() +'"</span>';
-		html += '<span class="condition"> <label for="rule_and_'+relunumber+'">AND</label><input id="rule_and_'+relunumber+'" type="radio" value="and" name="rule_'+relunumber+'" checked="checked" class="rule_condition"/><label for="rule_or_'+relunumber+'">OR</label><input id="rule_or_'+relunumber+'" type="radio" value="or" name="rule_'+relunumber+'" class="rule_condition"/> </span>';
-		html += '</div><a href="javascript:void(0);" class="icon-item remove-ico"></a></li>';
-
-		$('#wpallimport-filters, #apply_filters').show();
-		$('#filtering_rules').find('p').hide();
-
-		$('.filtering_rules').append(html);
-
-		$('.filtering_rules').find('.condition').show();
-		$('.filtering_rules').find('.condition:last').hide();
-
-		$el.prop('selectedIndex',0);
-		$rule.prop('selectedIndex',0);
-		$val.val('');
-		$('#pmxi_value').show();
-		fix_tag_position();
-
-	});
-
-	$(document).on('change', '.rule_condition', function() {
-		$('input[name=' + $(this).attr('name') + ']').removeAttr('checked');
-		$(this).prop('checked', true).attr('checked', 'checked');
-	});
-
-	$(document).on('click', '.filtering_rules li a.remove-ico', function() {
-		$(this).parents('li:first').remove();
-		$('.filtering_rules').find('li:last div span.condition').hide();
-		if (!$('.filtering_rules').find('li').length){
-			$('#apply_filters').hide().trigger('click');
-			$('#filtering_rules').find('p').show();
-		}
-		fix_tag_position();
-	});
-
-	$('#pmxi_rule').on('change', function(){
-		if ($(this).val() == 'is_empty' || $(this).val() == 'is_not_empty') {
-			$('#pmxi_value').hide();
-		} else {
-			$('#pmxi_value').show();
-		}
-	});
-
-	var filter = '[';
-
-	var xpath_builder = function(rules_box, lvl){
-
-		var rules = rules_box.children('li');
-
-		var root_element = $('#root_element').val();
-
-		if (lvl && rules.length > 1) filter += ' (';
-
-		rules.each(function(){
-
-			var node = $(this).children('.drag-element').find('.pmxi_xml_element').val();
-			var condition = $(this).children('.drag-element').find('.pmxi_rule').val();
-			var value = $(this).children('.drag-element').find('.pmxi_value').val();
-
-			var clause = ($(this).children('.drag-element').find('.condition').is(':visible')) ? $(this).children('.drag-element').find('input.rule_condition:checked').val() : false;
-
-			var is_attr = false;
-
-			if (node.indexOf('@') != -1){
-				is_attr = true;
-				node_name = node.split('@')[0];
-				attr_name = node.split('@')[1];
-			}
-
-			if (is_attr) {
-				filter += (node_name == root_element) ? '' : node_name.replace(/->/g, '/');
-			} else {
-				filter += node.replace(/->/g, '/');
-			}
-
-			if (is_attr) filter += '@' + attr_name;
-
-			switch (condition){
-				case 'equals':
-					filter += ' = "%s"';
-					break;
-				case 'not_equals':
-					filter += ' != "%s"';
-					break;
-				case 'greater':
-					filter += ' > %s';
-					break;
-				case 'equals_or_greater':
-					filter += ' >= %s';
-					break;
-				case 'less':
-					filter += ' < %s';
-					break;
-				case 'equals_or_less':
-					filter += ' <= %s';
-					break;
-				case 'contains':
-					filter += '[contains(.,"%s")]';
-					break;
-				case 'not_contains':
-					filter += '[not(contains(.,"%s"))]';
-					break;
-				case 'is_empty':
-					filter += '[not(string())]';
-					break;
-				case 'is_not_empty':
-					filter += '[string()]';
-					break;
-			}
-
-			filter = filter.replace('%s', value);
-
-			if (clause) filter += ' ' + clause + ' ';
-
-			if ($(this).children('ol').length){
-				$(this).children('ol').each(function(){
-					if ($(this).children('li').length) xpath_builder($(this), 1);
-				});
-			}
-		});
-		if (lvl && rules.length > 1) filter += ') ';
-
-	}
 
 	$('form.wpallimport-choose-elements').find('input[type="submit"]').on('click', function(e){
 		e.preventDefault();
@@ -1781,7 +1773,7 @@
 					fix_tag_position();
 					$indicator.next().tag().prevObject.remove();
 					if ($('#variations_xpath').length){
-						$('#variations_xpath').data('checkedValue', '').trigger('change');
+						$('#variations_xpath').data('checkedValue', '').change();
 					}
 
 				}, 'json');
@@ -1791,13 +1783,13 @@
 				tagno = (parseInt($(this).val()) > parseInt($tag.find('.pmxi_count').html())) ? $tag.find('.pmxi_count').html() : ( (parseInt($(this).val())) ? $(this).val() : 1 );
 				$(this).val(tagno);
 				$tag.addClass('loading').css('opacity', 0.7);
-				$.post($tagURL, {tagno: tagno, import_action: import_action, xpath: $('input[name="xpath"]').val(), security: wp_all_import_security}, function (data) {
+				$.post($tagURL, {tagno: tagno, import_action: import_action, security: wp_all_import_security}, function (data) {
 					var $indicator = $('<span />').insertBefore($tag);
 					$tag.replaceWith(data.html);
 					fix_tag_position();
 					$indicator.next().tag().prevObject.remove();
 					if ($('#variations_xpath').length){
-						$('#variations_xpath').data('checkedValue', '').trigger('change');
+						$('#variations_xpath').data('checkedValue', '').change();
 					}
 				}, 'json');
 				return false;
@@ -1836,7 +1828,7 @@
 							minLength: 0
 						}).on('click', function () {
 							$(this).autocomplete('search', '');
-						}).trigger('click');
+						}).click();
 					}
 					$custom_name.attr('rel','done');
 					$ths.removeClass('loading');
@@ -1898,7 +1890,7 @@
 	});
 
 	$(document).on('click', '.add-new-ico', function() {
-		let count = parseInt($(this).parents('tr:first').find('ol.sortable').find('li.dragging').last().attr('id').replace('item_', '')) + 1;
+		let count = $(this).parents('tr:first').find('ol.sortable').find('li.dragging').length + 1;
 		let $template = $(this).parents('td:first').find('ol').children('li.template');
 		$clone = $template.clone(true);
 		$clone.addClass('dragging').attr({'id': $clone.attr('id') + '_' + count}).find('input[type=checkbox][name^=categories_mapping]').each(function(){
@@ -1906,13 +1898,13 @@
 			$(this).next('label').attr({'for':$(this).next('label').attr('for') + '_' + count});
 			$(this).next('label').next('div').addClass($(this).next('label').next('div').attr('rel') + '_' + count);
 		});
-		$clone.insertBefore($template).css('display', 'none').removeClass('template').fadeIn().find('input.switcher').trigger('change');
+		$clone.insertBefore($template).css('display', 'none').removeClass('template').fadeIn().find('input.switcher').change();
 		let sortable = $(this).parents('.ui-sortable:first');
 		if (sortable.length){
 			$(this).parents('td:first').find('.hierarhy-output').val(window.JSON.stringify(sortable.pmxi_nestedSortable('toArray', {startDepthCount: 0})));
 	    	if ($(this).parents('td:first').find('input:first').val() == '') $(this).parents('td:first').find('.hierarhy-output').val('');
 	    }
-		$('.widefat').on('focus', insertxpath );
+		$('.widefat').bind('focus', insertxpath );
 	});
 
 	$('.add-new-cat').on('click', function(){
@@ -1921,78 +1913,35 @@
 		var $cloneName = $template.find('input.assign_term').attr('name').replace('NUMBER', $number);
 		$clone = $template.clone(true);
 		$clone.find('input[name^=tax_hierarchical_assing]').attr('name', $cloneName);
-		$clone.insertBefore($template).css('display', 'none').removeClass('template').fadeIn().find('input.switcher').trigger('change');
+		$clone.insertBefore($template).css('display', 'none').removeClass('template').fadeIn().find('input.switcher').change();
 	});
 
 	$('ol.sortable').each(function(){
-		if ( ! $(this).children('li').not('.template').length ) $(this).next('.add-new-ico').trigger('click');
+		if ( ! $(this).children('li').not('.template').length ) $(this).next('.add-new-ico').click();
 	});
-
-	$('form.wpallimport-template.edit').each(function() {
-
-		var $input = $('input[name="xpath"]');
-
-		$input.on('change', function(){
-			$('.tagno').trigger('change');
-			// console.log('XPath changed - ', $(this).val());
-			// $.post('admin.php?page=pmxi-admin-import&action=evaluate', {xpath: $(this).val(), show_element: 1, root_element:$('#root_element').val(), is_csv: $('input[name="is_csv"]').length, delimiter:$('input[name="is_csv"]').val(), security: wp_all_import_security}, function (response) {
-			// 	console.log('Rsponse - ', response);
-			// 	if (response.result){
-			// 		$('.tagno').trigger('change');
-			// 	}
-			// }, "json").fail(function() {
-			//
-			// });
-		}).trigger('change');
-		$input.on('keyup', function (e) {
-			if (13 == e.keyCode) $(this).trigger('change');
-		});
-
-		$('#apply_filters').on('click', function(){
-
-			filter = '';
-			if ($('.filtering_rules').children('li').length) {
-				filter = '[';
-				xpath_builder($('.filtering_rules'), 0);
-				filter += ']';
-			}
-
-			$input.val( $input.val().split('[')[0] + filter);
-			$input.data('checkedValue', '');
-			$input.trigger('change');
-			if ($('.filtering_rules').html().length) {
-				$('.filtering-output').val(window.JSON.stringify($('.filtering_rules').html()));
-			} else {
-				$('.filtering-output').val('');
-			}
-
-			// $goto_element.val(1);
-			// xpathChanged(true);
-		});
-	});
-
+	
 	$('form.wpallimport-template').find('input[type=submit]').on('click', function(e){
 
 		e.preventDefault();
-
+		
 		$('.hierarhy-output').each(function(){
 			var sortable = $(this).parents('td:first').find('.ui-sortable:first');
 			if (sortable.length){
-				$(this).val(window.JSON.stringify(sortable.pmxi_nestedSortable('toArray', {startDepthCount: 0})));
+				$(this).val(window.JSON.stringify(sortable.pmxi_nestedSortable('toArray', {startDepthCount: 0})));			
 				if ($(this).parents('td:first').find('input:first').val() == '') $(this).val('');
 			}
 		});
 		if ($(this).attr('name') == 'btn_save_only') $('.save_only').val('1');
 
 		$('input[name^=in_variations], input[name^=is_visible], input[name^=is_taxonomy], input[name^=create_taxonomy_in_not_exists], input[name^=variable_create_taxonomy_in_not_exists], input[name^=variable_in_variations], input[name^=variable_is_visible], input[name^=variable_is_taxonomy]').each(function(){
-	    	if ( ! $(this).is(':checked') && ! $(this).parents('.form-field:first').hasClass('template')){
+	    	if ( ! $(this).is(':checked') && ! $(this).parents('.form-field:first').hasClass('template')){	    		
 	    		$(this).val('0').prop('checked', true);
 	    	}
 	    });
 
 	    $('.custom_type[rel=serialized]').each(function(){
 	    	var values = new Array();
-	    	$(this).find('.form-field').each(function(){
+	    	$(this).find('.form-field').each(function(){	    		
     			var skey = $(this).find('.serialized_key').val();
     			if ('' == skey){
     				values.push($(this).find('.serialized_value').val());
@@ -2000,7 +1949,7 @@
     				var obj = {};
     				obj[skey] = $(this).find('.serialized_value').val();
     				values.push(obj);
-    			}
+    			}	    			
 	    	});
 	    	$(this).find('input[name^=serialized_values]').val(window.JSON.stringify(values));
 	    });
@@ -2010,7 +1959,7 @@
 	    	$(this).find('.form-field').each(function(){
 	    		if ($(this).find('.mapping_to').val() != "") {
 	    			var skey = $(this).find('.mapping_from').val();
-	    			if ('' != skey){
+	    			if ('' != skey){	    				
 	    				var obj = {};
 	    				obj[skey] = $(this).find('.mapping_to').val();
 	    				values.push(obj);
@@ -2024,7 +1973,7 @@
 
 		$(this).parents('form:first').submit();
 
-	});
+	});	
 
 	$('.wpallimport-step-4').each(function(){
 		$(this).find('input[name^=custom_duplicate_name]').autocomplete({
@@ -2040,7 +1989,7 @@
 		var $template = $(this).parents('table').first().children('tbody').children('tr.template');
 		$number = $(this).parents('table').first().children('tbody').children('tr').length - 2;
 		$clone = $template.clone(true);
-
+		
 		$clone.find('div[rel^=serialized]').attr({'id':'serialized_' + $number}).find('table:first').attr({'rel':'serialized_' + $number});
 		$clone.find('div[rel^=mapping]').attr({'id':'cf_mapping_' + $number}).find('table:first').attr({'rel':'cf_mapping_' + $number});
 		$clone.find('a.specify_cf').attr({'rel':'serialized_' + $number})
@@ -2063,7 +2012,7 @@
 		$template.clone(true).insertBefore($template).css('display', 'none').removeClass('template').fadeIn();
 	});
 
-	/* END Categories hierarchy */
+	/* END Categories hierarchy */		
 
 	$('form.options').each(function(){
 		var $form = $(this);
@@ -2075,7 +2024,7 @@
 	});
 
 	$('form.edit').each(function(){
-		var $form = $(this);
+		var $form = $(this);		
 		$form.find('.wpallimport-change-unique-key').on('click', function(){
 			var $ths = $(this);
 			$( "#dialog-confirm" ).dialog({
@@ -2085,10 +2034,10 @@
 				modal: true,
 				draggable: false,
 				buttons: {
-					"Continue": function() {
+					"Continue": function() {						
 						$( this ).dialog( "close" );
 						$ths.hide();
-						$('input[name=unique_key]').removeAttr('disabled').trigger('focus');
+						$('input[name=unique_key]').removeAttr('disabled').focus();
 					},
 					Cancel: function() {
 						$( this ).dialog( "close" );
@@ -2102,11 +2051,11 @@
 			$uniqueKey.val($tmpUniqueKey.val());
 		});
 	});
-
+	
 	// chunk files upload
 	if ($('#plupload-ui').length) {
 		$('#plupload-ui').show();
-		$('#html-upload-ui').hide();
+		$('#html-upload-ui').hide();	
 
 		wplupload = $('#select-files').wplupload({
 			runtimes : 'gears,browserplus,html5,flash,silverlight,html4',
@@ -2116,11 +2065,11 @@
 			file_data_name : 'async-upload',
 			multipart: true,
 			max_file_size: '1000mb',
-			chunk_size: '1mb',
+			chunk_size: '1mb',			
 			drop_element: 'plupload-ui',
-			multipart_params : {}
+			multipart_params : {}				
 		});
-	}
+	}	
 
 	/* END plupload scripts */
 
@@ -2129,7 +2078,7 @@
 		$('#logwrapper').slideToggle(100, function(){
 			$('#import_finished').css({'visibility':'visible'});
 		});
-	});
+	});			     
 
 	// Select Encoding
 	$('#import_encoding').on('change', function(){
@@ -2141,43 +2090,43 @@
 
 	$('#cancel_new_encoding').on('click', function(){
 		$('#add_encoding').hide();
-		$('#select_encoding').show();
+		$('#select_encoding').show();		
 		$('#new_encoding').val('');
-		$('#import_encoding').prop('selectedIndex', 0);
+		$('#import_encoding').prop('selectedIndex', 0);	
 	});
 
 	$('#add_new_encoding').on('click', function(){
 		var new_encoding = $('#new_encoding').val();
 		if ("" != new_encoding){
 			$('#import_encoding').prepend('<option value="'+new_encoding+'">' + new_encoding + '</option>');
-			$('#cancel_new_encoding').trigger('click');
-			$('#import_encoding').prop('selectedIndex',0);
+			$('#cancel_new_encoding').click();
+			$('#import_encoding').prop('selectedIndex',0);	
 		}
 		else alert('Please enter encoding.');
 	});
 
 	$('input[name=keep_custom_fields]').on('click', function(){
 		$(this).parents('.input:first').find('.keep_except').slideToggle();
-	});
-
-    $('.pmxi_choosen').each(function(){
+	});		
+	
+    $('.pmxi_choosen').each(function(){    	
     	$(this).find(".choosen_input").select2({
     		tags: $(this).find('.choosen_values').html().split(','),
-    		width: '80%',
+    		width: '80%',    		
     	});
-    });
+    });    
 
     if (typeof wpPointerL10n != "undefined") wpPointerL10n.dismiss = 'Close';
 
 	$('.show_hints').on('click', function(){
-		var $ths = $(this);
+		var $ths = $(this);	
 		$('.wpallimport-overlay').show();
 
 		$(this).pointer({
             content: $('#' + $ths.attr('rel')).html(),
             position: {
                 edge: 'right',
-                align: 'center'
+                align: 'center'                
             },
             pointerWidth: 715,
             close: function() {
@@ -2188,11 +2137,11 @@
                 $('.wpallimport-overlay').hide();
             }
         }).pointer('open');
-	});
+	});		
 
 	// Serialized Custom Field Dialog
 	$('.pmxi_cf_pointer').on('click', function(){
-		var $ths = $(this);
+		var $ths = $(this);	
 		//$('.wpallimport-overlay').show();
 
 		if ($ths.parents('.form-field:first').find('input[name^=custom_name]').val() == "") {
@@ -2205,7 +2154,7 @@
             content: $('#' + $ths.attr('rel')).html(),
             position: {
                 edge: 'top',
-                align: 'center'
+                align: 'center'                
             },
             pointerWidth: 450,
             close: function() {
@@ -2216,7 +2165,7 @@
                 //$('.wpallimport-overlay').hide();
             }
         }).pointer('open');
-	});
+	});	
 
 	// Custom Fields Mapping Dialog
 	$('.wpallimport-cf-menu li').on('click', function(){
@@ -2224,12 +2173,12 @@
 		if ($triggerEvent.hasClass('pmxi_cf_mapping')){
 
 			//$('.wpallimport-overlay').show();
-			var $ths = $triggerEvent;
+			var $ths = $triggerEvent;	
 			$triggerEvent.pointer({
 	            content: $('#' + $ths.attr('rel')).html(),
 	            position: {
 	                edge: 'right',
-	                align: 'center'
+	                align: 'center'                
 	            },
 	            pointerWidth: 450,
 	            close: function() {
@@ -2239,15 +2188,15 @@
 	                });
 	                //$('.wpallimport-overlay').hide();
 	            }
-	        }).pointer('open');
+	        }).pointer('open');					
 		}
-	});
+	});	
 
 	$('.wpallimport-overlay').on('click', function(){
 		$('.wp-pointer').hide();
 		$('fieldset.wp-all-import-scheduling-help').hide();
-		$(this).hide();
-	});
+		$(this).hide();        
+	});	
 
 	if ($('#wp_all_import_code').length){
 		var editor = wp.codeEditor.initialize($('#wp_all_import_code'), wpai_cm_settings);
@@ -2271,17 +2220,17 @@
 
     $('.wp_all_import_save_functions').on('click', function(){
     	var request = {
-			action: 'save_import_functions',
+			action: 'save_import_functions',	
 			data: editor.codemirror.getValue(),
-			security: wp_all_import_security
-	    };
+			security: wp_all_import_security				
+	    };    
 	    $('.wp_all_import_functions_preloader').show();
 	    $('.wp_all_import_saving_status').removeClass('error updated').html('');
 		$.ajax({
 			type: 'POST',
 			url: ajaxurl + ((typeof import_id != "undefined") ? '?id=' + import_id : ''),
 			data: request,
-			success: function(response) {
+			success: function(response) {						
 				$('.wp_all_import_functions_preloader').hide();
 				if (response.result) {
 					window.onbeforeunload = false;
@@ -2294,12 +2243,12 @@
 				}
 				$('.wp_all_import_saving_status').html(response.msg).show();
 			},
-			error: function( jqXHR, textStatus ) {
+			error: function( jqXHR, textStatus ) {						
 				$('.wp_all_import_functions_preloader').hide();
 			},
 			dataType: "json"
 		});
-    });
+    }); 
 
     $('.wp_all_import_ajax_deletion').on('click', function(e){
     	e.preventDefault();
@@ -2351,12 +2300,12 @@
 				if ($('#wp_all_import_code').length) editor.codemirror.setCursor(1);
 			});
 		} else {
-			$parent.addClass('closed');
-			$parent.find('.wpallimport-collapsed-content:first').slideUp(400);
+			$parent.addClass('closed');			
+			$parent.find('.wpallimport-collapsed-content:first').slideUp();
 		}
-	});
+	});	
 
-	$('#is_delete_posts').on('change', function(){
+	$('#is_delete_posts').change(function(){
 		if ($(this).is(':checked')){
 			$('.wpallimport-delete-posts-warning').show();
 		} else {
@@ -2371,16 +2320,16 @@
 	$('.wpallimport-delete-and-edit, .download_import_template, .download_import_bundle').on('click', function(e){
 		e.preventDefault();
     	window.location.href = $(this).attr('rel');
-    });
+    });        
 
     $('.wpallimport-wpae-notify-read-more').on('click', function(e){
     	e.preventDefault();
-
+    	
     	var request = {
-			action: 'dismiss_notifications',
-			security: wp_all_import_security,
+			action: 'dismiss_notifications',		
+			security: wp_all_import_security,	
 			addon: $(this).parent('div:first').attr('rel')
-	    };
+	    };		
 
 	    var ths = $(this);
 
@@ -2389,11 +2338,11 @@
 			url: ajaxurl,
 			data: request,
 			success: function(response) {
-
-			},
+								
+			},			
 			dataType: "json"
 		});
-
+		
 		$(this).parent('div:first').slideUp();
 
     	window.open($(this).attr('href'), '_blank');
@@ -2409,7 +2358,7 @@
     		$('.wp-all-import-sure-to-delete').show();
     	}
     	if ( ! $('#is_delete_import').is(':checked') && ! $('#is_delete_posts').is(':checked')) {
-    		$('.wp-all-import-sure-to-delete').hide();
+    		$('.wp-all-import-sure-to-delete').hide();    		
     		$('.delete-single-import').attr('disabled', 'disabled');
     	}
     	if ( $('#is_delete_import').is(':checked') && $('#is_delete_posts').is(':checked')) {
@@ -2433,94 +2382,29 @@
 
     $('#is_delete_import, #is_delete_posts').on('click', function(){
     	wpai_are_sure_to_delete_import();
-    });
-    // [\ Delete Import]
-
-	let get_delete_missing_notice_type = function() {
-		let $is_delete_missing = $('input#is_delete_missing');
-		if (!$is_delete_missing.is(':checked') || $is_delete_missing.data('backups-prompt') === 'disabled') {
-			return 0;
-		}
-		if ($('input[name="delete_missing_logic"]:checked').val() == 'import' && $('input[name="delete_missing_action"]:checked').val() == 'keep' && $('input[name="is_send_removed_to_trash"]').is(':checked')) {
-			return 1;
-		}
-		if ($('input[name="delete_missing_logic"]:checked').val() == 'import' && $('input[name="delete_missing_action"]:checked').val() == 'keep' && $('input[name="is_change_post_status_of_removed"]').is(':checked')) {
-			return 2;
-		}
-		if ($('input[name="delete_missing_logic"]:checked').val() == 'import' && $('input[name="delete_missing_action"]:checked').val() == 'remove') {
-			return 3;
-		}
-		if ($('input[name="delete_missing_logic"]:checked').val() == 'all' && $('input[name="delete_missing_action"]:checked').val() == 'keep' && $('input[name="is_send_removed_to_trash"]').is(':checked')) {
-			return 4;
-		}
-		if ($('input[name="delete_missing_logic"]:checked').val() == 'all' && $('input[name="delete_missing_action"]:checked').val() == 'keep' && $('input[name="is_change_post_status_of_removed"]').is(':checked')) {
-			return 5;
-		}
-		if ($('input[name="delete_missing_logic"]:checked').val() == 'all' && $('input[name="delete_missing_action"]:checked').val() == 'remove') {
-			return 6;
-		}
-		return 0;
-	}
-
-	function is_valid_delete_missing_options() {
-		let is_valid = true;
-		if ( $('input[name="is_delete_missing"]').is(':checked') && $('input[name="delete_missing_action"]:checked').val() == 'keep' ) {
-			if ( ! $('input[name="is_send_removed_to_trash"]').is(':checked')
-				&& ! $('input[name="is_change_post_status_of_removed"]').is(':checked')
-				&& ! $('input[name="is_update_missing_cf"]').is(':checked')
-				&& ! $('input[name="missing_records_stock_status"]').is(':checked')
-			) {
-				is_valid = false;
-			}
-		}
-		return is_valid;
-	}
-
-	let delete_missing_helper_text = function() {
-		$('.helper-text').hide();
-		if ( is_valid_delete_missing_options() ) {
-			$('.delete-missing-error').addClass('hidden');
-			$('.switcher-target-delete_missing_action_keep').removeClass('delete-missing-error-wrapper');
-		} else {
-			$('.delete-missing-error').removeClass('hidden');
-			$('.switcher-target-delete_missing_action_keep').addClass('delete-missing-error-wrapper');
-		}
-		let notice_type = get_delete_missing_notice_type();
-		// Show notice if any.
-		if (notice_type) {
-			$('.helper-text-' + notice_type).find('.status_of_removed').html($('select[name="status_of_removed"]').val());
-			$('.helper-text-' + notice_type).show();
-		}
-	};
-
-	delete_missing_helper_text();
-	$('.switcher-target-is_delete_missing').find('input, select').on('change', function() {
-		delete_missing_helper_text();
-	});
-	$('#is_delete_missing').on('change', function() {
-		delete_missing_helper_text();
-	});
+    });    
+    // [\ Delete Import]    
 
     if ($('.switcher-target-update_choosen_data').length) {
     	var $re_import_options = $('.switcher-target-update_choosen_data');
     	var $toggle_re_import_options = $('.wpallimport-trigger-options');
-
+    	
     	if ($re_import_options.find('input[type=checkbox]').length == $re_import_options.find('input[type=checkbox]:checked').length) {
-    		var $newtitle = $toggle_re_import_options.attr('rel');
+    		var $newtitle = $toggle_re_import_options.attr('rel');    		
     		$toggle_re_import_options.attr('rel', $toggle_re_import_options.html());
     		$toggle_re_import_options.html($newtitle);
     		$toggle_re_import_options.removeClass('wpallimport-select-all');
-    	}
+    	}    	
     }
 
     $('.wpallimport-trigger-options').on('click', function(){
     	var $parent = $(this).parents('.switcher-target-update_choosen_data:first');
     	var $newtitle = $(this).attr('rel');
     	if ( $(this).hasClass('wpallimport-select-all') ) {
-    		$parent.find('input[type=checkbox]').not('.exclude-select-all').removeAttr('checked').trigger('click');
-    		$(this).removeClass('wpallimport-select-all');
+    		$parent.find('input[type=checkbox]').not('.exclude-select-all').removeAttr('checked').click();
+    		$(this).removeClass('wpallimport-select-all');    		    		
     	} else {
-			$parent.find('input[type=checkbox]:checked').not('.exclude-select-all').trigger('click');
+			$parent.find('input[type=checkbox]:checked').not('.exclude-select-all').click();
     		$(this).addClass('wpallimport-select-all');
     	}
     	$(this).attr('rel', $(this).html());
@@ -2542,27 +2426,26 @@
 
 	var fix_tag_position = function(){
 		if ($('.wpallimport-layout').length && $('.tag').length && $('.wpallimport-content-section').length){
-			let offset_top = $('.wpallimport-content-section').eq(0).offset().top;
-			if ($('.xpath_filtering').length) {
-				offset_top = $('.wpallimport-content-section').eq(2).offset().top;
-			}
-			let wordpress_adminbar_height = $('#wpadminbar').height();
-			let position_top = $(document).scrollTop() + wordpress_adminbar_height + 20;
+			var offset_top = $('.wpallimport-content-section').first().offset().top;
+			var position_top = offset_top - $(document).scrollTop();
+			var wordpress_adminbar_height = $('#wpadminbar').height();
 
+			$('.tag').css({'top': offset_top});
 			$('.tag').css('margin-top', '0');
 
-	        if (position_top > offset_top){
-				$('.tag').css({'top': position_top - offset_top});
+	        if ($(document).scrollTop() + wordpress_adminbar_height > offset_top){
+	            $('.tag').css({'top':'50px'});
+	            $('.wpallimport-xml').css({'max-height': ($(window).height() - 147) + 'px' });
 	        } else {
-				$('.tag').css({'top': '0' });
-				$('.wpallimport-xml').css({'max-height': ($(window).height() - 220) + 'px' });
+				$('.tag').css({'top': position_top + 'px' });
+	        	$('.wpallimport-xml').css({'max-height': ($(window).height() - 220) + 'px' });
 	        }
 	    }
 	}
 
-	fix_tag_position();
+	fix_tag_position();	
 
-	$(document).on('scroll', function() {
+	$(document).scroll(function() {    	    				
     	fix_tag_position();
     });
 

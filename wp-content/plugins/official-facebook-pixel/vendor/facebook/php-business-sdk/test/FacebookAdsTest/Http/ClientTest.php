@@ -83,13 +83,13 @@ class ClientTest extends AbstractUnitTestCase {
 
     $client = new Client();
     $client->setDefaultRequestHeaders($headers);
-    $this->assertTrue($headers === $client->getDefaultRequestHeaders());
+    $this->assertTrue($headers === $client->getDefaultRequestHeaderds());
 
     // Default initialization
     $client = new Client();
-    $headers = $client->getDefaultRequestHeaders();
+    $headers = $client->getDefaultRequestHeaderds();
     $this->assertTrue($headers instanceof Headers);
-    $this->assertTrue($headers === $client->getDefaultRequestHeaders());
+    $this->assertTrue($headers === $client->getDefaultRequestHeaderds());
     $this->assertArrayHasKey('User-Agent', $headers);
     $this->assertEquals('fbbizsdk-php-v'.ApiConfig::SDKVersion, $headers['User-Agent']);
   }

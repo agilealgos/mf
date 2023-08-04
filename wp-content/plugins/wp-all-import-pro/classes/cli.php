@@ -40,11 +40,8 @@ class PMXI_Cli {
 
         foreach( $import_ids as $import_id) {
             try {
-				// Set the import ID currently running.
-				add_filter('wp_all_import_cli_import_id', function() use ($import_id){ return $import_id;});
-
             	$logger = function($m) {
-		            print("<p>[". date("H:i:s") ."] ".wp_all_import_filter_html_kses($m)."</p>\n");
+		            print("<p>[". date("H:i:s") ."] $m</p>\n");
 	            };
                 $logger = apply_filters('wp_all_import_logger', $logger);
                 if (array_key_exists('disable-log', $assoc_args)) {
@@ -112,25 +109,24 @@ class PMXI_Cli {
                         'Updated' => $import->updated,
                         'Skipped' => $import->skipped,
                         'Deleted' => $import->deleted,
-                        'Changed Missing' => $import->changed_missing,
                         'Count' => $import->count,
                     ]
                 ];
-                WP_CLI\Utils\format_items( 'table', $items, [ 'Created', 'Updated', 'Skipped', 'Deleted', 'Changed Missing', 'Count' ] );
+                WP_CLI\Utils\format_items( 'table', $items, [ 'Created', 'Updated', 'Skipped', 'Deleted', 'Count' ] );
                 WP_CLI::success( sprintf(__('Import completed. [ time: %s ]', PMXI_Plugin::LANGUAGE_DOMAIN), human_time_diff($start, $end)));
 
-                $custom_type = wp_all_import_custom_type_labels($import->options['custom_type'], $import->options['taxonomy_type']);
-                $log_msg = sprintf(__("%d %s created %d updated %d skipped", "wp_all_import_plugin"), $import->created, ( ($import->created == 1) ? $custom_type->labels->singular_name : $custom_type->labels->name ), $import->updated, $import->skipped);
-                if ($import->options['is_delete_missing']) {
-                    if (empty($this->options['delete_missing_action']) || $this->options['delete_missing_action'] != 'remove') {
-                        $log_msg = sprintf(__("%d %s created %d updated %d changed missing %d skipped", "wp_all_import_plugin"), $import->created, ( ($import->created == 1) ? $custom_type->labels->singular_name : $custom_type->labels->name ), $import->updated, $import->changed_missing, $import->skipped);
-                    } else {
-                        $log_msg = sprintf(__("%d %s created %d updated %d deleted %d skipped", "wp_all_import_plugin"), $import->created, ( ($import->created == 1) ? $custom_type->labels->singular_name : $custom_type->labels->name ), $import->updated, $import->deleted, $import->skipped);
-                    }
+                if ($import->options['custom_type'] == 'taxonomies') {
+                    $tx = get_taxonomy($import->options['taxonomy_type']);
+                    $custom_type = new stdClass();
+                    $custom_type->labels = new stdClass();
+                    $custom_type->labels->name = empty($tx->labels->name) ? __('Taxonomy Terms', 'wp_all_import_plugin') : $tx->labels->name;
+                    $custom_type->labels->singular_name = empty($tx->labels->singular_name) ? __('Taxonomy Term', 'wp_all_import_plugin') : $tx->labels->singular_name;
+                } else {
+                    $custom_type = get_post_type_object( $import->options['custom_type'] );
                 }
                 $history_log->set([
                     'time_run' => $end - $start,
-                    'summary' => $log_msg
+                    'summary' => sprintf(__("%d %s created %d updated %d deleted %d skipped", "wp_all_import_plugin"), $import->created, ( ($import->created == 1) ? $custom_type->labels->singular_name : $custom_type->labels->name ), $import->updated, $import->deleted, $import->skipped)
                 ])->save();
             } catch (Exception $e) {
                 WP_CLI::error($e->getTraceAsString());
@@ -155,7 +151,7 @@ class PMXI_Cli {
             $imports = new PMXI_Import_List();
             foreach ($imports->setColumns($imports->getTable() . '.*')->getBy(array('id !=' => ''))->convertRecords() as $import){
                 $import->getById($import->id);
-                if ( ! $import->isEmpty() && $import->parent_import_id != 99999 ){
+                if ( ! $import->isEmpty() ){
                     $items[] = [
                         'ID' => $import->id,
                         'Name' => empty($import->friendly_name) ? $import->name : $import->friendly_name,
@@ -163,14 +159,13 @@ class PMXI_Cli {
                         'Updated' => $import->updated,
                         'Skipped' => $import->skipped,
                         'Deleted' => $import->deleted,
-                        'Changed Missing' => $import->changed_missing,
                         'Count' => $import->count,
                         'Last Activity' => $import->last_activity
                     ];
                 }
             }
 
-            WP_CLI\Utils\format_items( 'table', $items, array( 'ID', 'Name', 'Created', 'Updated', 'Skipped', 'Deleted', 'Changed Missing', 'Count', 'Last Activity' ) );
+            WP_CLI\Utils\format_items( 'table', $items, array( 'ID', 'Name', 'Created', 'Updated', 'Skipped', 'Deleted', 'Count', 'Last Activity' ) );
 
         } catch (Exception $e) {
             WP_CLI::error($e->getMessage());

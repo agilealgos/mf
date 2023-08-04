@@ -32,14 +32,26 @@ class Widget_WordPress extends Widget_Base {
 	 */
 	private $_widget_instance = null;
 
+	/**
+	 * Whether the widget is a Pojo widget or not.
+	 *
+	 * @since 2.0.0
+	 * @access private
+	 *
+	 * @return bool
+	 */
+	private function is_pojo_widget() {
+		return $this->get_widget_instance() instanceof \Pojo_Widget_Base;
+	}
+
 	public function hide_on_search() {
-		return true;
+		return Plugin::$instance->experiments->is_feature_active( 'e_hidden_wordpress_widgets' );
 	}
 
 	/**
 	 * Get widget name.
 	 *
-	 * Retrieve WordPress widget name.
+	 * Retrieve WordPress/Pojo widget name.
 	 *
 	 * @since 1.0.0
 	 * @access public
@@ -53,7 +65,7 @@ class Widget_WordPress extends Widget_Base {
 	/**
 	 * Get widget title.
 	 *
-	 * Retrieve WordPress widget title.
+	 * Retrieve WordPress/Pojo widget title.
 	 *
 	 * @since 1.0.0
 	 * @access public
@@ -67,30 +79,38 @@ class Widget_WordPress extends Widget_Base {
 	/**
 	 * Get widget categories.
 	 *
-	 * Retrieve the list of categories the WordPress widget belongs to.
+	 * Retrieve the list of categories the WordPress/Pojo widget belongs to.
 	 *
 	 * Used to determine where to display the widget in the editor.
 	 *
 	 * @since 1.0.0
 	 * @access public
 	 *
-	 * @return array Widget categories. Returns either a WordPress category.
+	 * @return array Widget categories. Returns either a WordPress category or Pojo category.
 	 */
 	public function get_categories() {
-		return [ 'wordpress' ];
+		if ( $this->is_pojo_widget() ) {
+			$category = 'pojo';
+		} else {
+			$category = 'wordpress';
+		}
+		return [ $category ];
 	}
 
 	/**
 	 * Get widget icon.
 	 *
-	 * Retrieve WordPress widget icon.
+	 * Retrieve WordPress/Pojo widget icon.
 	 *
 	 * @since 1.0.0
 	 * @access public
 	 *
-	 * @return string Widget icon. Returns either a WordPress icon.
+	 * @return string Widget icon. Returns either a WordPress icon or Pojo icon.
 	 */
 	public function get_icon() {
+		if ( $this->is_pojo_widget() ) {
+			return 'eicon-pojome';
+		}
 		return 'eicon-wordpress';
 	}
 
@@ -127,7 +147,7 @@ class Widget_WordPress extends Widget_Base {
 	}
 
 	/**
-	 * Retrieve WordPress widget form.
+	 * Retrieve WordPress/Pojo widget form.
 	 *
 	 * Returns the WordPress widget form, to be used in Elementor.
 	 *
@@ -152,7 +172,7 @@ class Widget_WordPress extends Widget_Base {
 	}
 
 	/**
-	 * Retrieve WordPress widget instance.
+	 * Retrieve WordPress/Pojo widget instance.
 	 *
 	 * Returns an instance of WordPress widget, to be used in Elementor.
 	 *
@@ -177,7 +197,7 @@ class Widget_WordPress extends Widget_Base {
 	}
 
 	/**
-	 * Retrieve WordPress widget parsed settings.
+	 * Retrieve WordPress/Pojo widget parsed settings.
 	 *
 	 * Returns the WordPress widget settings, to be used in Elementor.
 	 *
@@ -200,7 +220,7 @@ class Widget_WordPress extends Widget_Base {
 	}
 
 	/**
-	 * Register WordPress widget controls.
+	 * Register WordPress/Pojo widget controls.
 	 *
 	 * Adds different input fields to allow the user to change and customize the widget settings.
 	 *
@@ -220,7 +240,7 @@ class Widget_WordPress extends Widget_Base {
 	}
 
 	/**
-	 * Render WordPress widget output on the frontend.
+	 * Render WordPress/Pojo widget output on the frontend.
 	 *
 	 * Written in PHP and used to generate the final HTML.
 	 *
@@ -261,7 +281,7 @@ class Widget_WordPress extends Widget_Base {
 	}
 
 	/**
-	 * Render WordPress widget output in the editor.
+	 * Render WordPress/Pojo widget output in the editor.
 	 *
 	 * Written as a Backbone JavaScript template and used to generate the live preview.
 	 *
@@ -271,7 +291,7 @@ class Widget_WordPress extends Widget_Base {
 	protected function content_template() {}
 
 	/**
-	 * WordPress widget constructor.
+	 * WordPress/Pojo widget constructor.
 	 *
 	 * Used to run WordPress widget constructor.
 	 *
@@ -288,7 +308,7 @@ class Widget_WordPress extends Widget_Base {
 	}
 
 	/**
-	 * Render WordPress widget as plain content.
+	 * Render WordPress/Pojo widget as plain content.
 	 *
 	 * Override the default render behavior, don't render widget content.
 	 *

@@ -46,10 +46,7 @@ class Key_Metrics_Settings extends User_Setting {
 	 * @return array The default value.
 	 */
 	protected function get_default() {
-		return array(
-			'widgetSlugs'    => array(),
-			'isWidgetHidden' => false,
-		);
+		return array();
 	}
 
 	/**
@@ -94,7 +91,7 @@ class Key_Metrics_Settings extends User_Setting {
 
 			$sanitized_settings = array();
 
-			if ( isset( $settings['widgetSlugs'] ) ) {
+			if ( isset( $settings['widgetSlugs'] ) && ! empty( $settings['widgetSlugs'] ) ) {
 				$sanitized_settings['widgetSlugs'] = Sanitize::sanitize_string_list( $settings['widgetSlugs'] );
 			}
 

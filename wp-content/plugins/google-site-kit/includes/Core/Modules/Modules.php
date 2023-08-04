@@ -286,8 +286,6 @@ final class Modules {
 		add_filter( 'googlesitekit_inline_base_data', $this->get_method_proxy( 'inline_js_data' ) );
 		add_filter( 'googlesitekit_inline_tracking_data', $this->get_method_proxy( 'inline_js_data' ) );
 
-		add_filter( 'googlesitekit_inline_modules_data', $this->get_method_proxy( 'inline_modules_data' ) );
-
 		add_filter(
 			'googlesitekit_dashboard_sharing_data',
 			function ( $data ) {
@@ -431,26 +429,6 @@ final class Modules {
 	}
 
 	/**
-	 * Populates modules data to pass to JS.
-	 *
-	 * @since 1.96.0
-	 *
-	 * @param array $modules_data Inline modules data.
-	 * @return array Inline modules data.
-	 */
-	private function inline_modules_data( $modules_data ) {
-		$available_modules = $this->get_available_modules();
-
-		foreach ( $available_modules as $module ) {
-			if ( $module instanceof Module_With_Data_Available_State ) {
-				$modules_data[ 'data_available_' . $module->slug ] = $this->is_module_active( $module->slug ) && $module->is_connected() && $module->is_data_available();
-			}
-		}
-
-		return $modules_data;
-	}
-
-	/**
 	 * Gets the reference to the Module_Sharing_Settings instance.
 	 *
 	 * @since 1.69.0
@@ -536,24 +514,6 @@ final class Modules {
 			function( Module $module ) use ( $option ) {
 				// Force active OR manually active modules.
 				return $module->force_active || in_array( $module->slug, $option, true );
-			}
-		);
-	}
-
-	/**
-	 * Gets the connected modules.
-	 *
-	 * @since 1.105.0
-	 *
-	 * @return array Connected modules as $slug => $module pairs.
-	 */
-	public function get_connected_modules() {
-		$modules = $this->get_available_modules();
-
-		return array_filter(
-			$modules,
-			function( Module $module ) {
-				return $this->is_module_connected( $module->slug );
 			}
 		);
 	}
@@ -661,38 +621,13 @@ final class Modules {
 	 * @return bool True if module is connected, false otherwise.
 	 */
 	public function is_module_connected( $slug ) {
-		if ( ! $this->is_module_active( $slug ) ) {
+		try {
+			$module = $this->get_module( $slug );
+		} catch ( Exception $e ) {
 			return false;
 		}
 
-		$module = $this->get_module( $slug );
-
-		// TODO: Remove this when UA is sunset.
-		// Consider UA to be connected if GA4 is connected.
-		if (
-			Analytics::MODULE_SLUG === $slug &&
-			Feature_Flags::enabled( 'ga4Reporting' ) &&
-			! $module->is_connected() &&
-			$this->is_module_connected( Analytics_4::MODULE_SLUG )
-		) {
-			return true;
-		}
-
 		return (bool) $module->is_connected();
-	}
-
-	/**
-	 * Checks whether the module identified by the given slug is shareable.
-	 *
-	 * @since 1.105.0
-	 *
-	 * @param string $slug Unique module slug.
-	 * @return bool True if module is shareable, false otherwise.
-	 */
-	public function is_module_shareable( $slug ) {
-		$modules = $this->get_shareable_modules();
-
-		return isset( $modules[ $slug ] );
 	}
 
 	/**
@@ -901,18 +836,17 @@ final class Modules {
 	}
 
 	/**
-	 * Gets the shareable connected modules.
+	 * Gets the shareable active modules.
 	 *
 	 * @since 1.50.0
-	 * @since 1.105.0 Updated to only return connected shareable modules.
 	 *
 	 * @return array Shareable modules as $slug => $module pairs.
 	 */
 	public function get_shareable_modules() {
-		$all_connected_modules = $this->get_connected_modules();
+		$all_active_modules = $this->get_active_modules();
 
 		return array_filter(
-			$all_connected_modules,
+			$all_active_modules,
 			function( Module $module ) {
 				return $module->is_shareable();
 			}

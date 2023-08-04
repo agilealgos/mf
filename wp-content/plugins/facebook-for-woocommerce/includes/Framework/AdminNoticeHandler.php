@@ -207,7 +207,7 @@ class AdminNoticeHandler {
 			esc_attr( implode( ' ', $classes ) ),
 			esc_attr( $this->get_plugin()->get_id() ),
 			esc_attr( $message_id ),
-			esc_html( ( ! $params['is_visible'] ) ? 'style="display:none;"' : '' ),
+			( ! $params['is_visible'] ) ? 'style="display:none;"' : '',
 			wp_kses_post( $message )
 		);
 	}
@@ -369,9 +369,7 @@ class AdminNoticeHandler {
 	 * @since 3.0.0
 	 */
 	public function handle_dismiss_notice() {
-		if ( isset( $_REQUEST['messageid'] ) ) {
-			$this->dismiss_notice( wc_clean( wp_unslash( $_REQUEST['messageid'] ) ) );
-		}
+		$this->dismiss_notice( $_REQUEST['messageid'] );
 	}
 
 

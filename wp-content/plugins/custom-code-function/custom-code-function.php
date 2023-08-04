@@ -8,6 +8,10 @@
  * Author URI: https://pishago.com/
  * License: GPL2
 */
+include 'include/wc-template-functions.php';
+
+
+
 
 add_filter('wf_pklist_alter_product_table_head','wt_pklist_add_short_desc_column_in_invoice',10,3);
 function wt_pklist_add_short_desc_column_in_invoice($columns_list_arr, $template_type, $order){
@@ -189,7 +193,7 @@ function my_product_api_update_data_handler() {
 		
 		$totalproducts = 0;
 		$totalnotfoundproducts = 0;
-
+		
 		foreach ($updatedata as $product) {
 
 			$args = array(
@@ -203,9 +207,8 @@ function my_product_api_update_data_handler() {
 				)
 			);
 			$posts = get_posts($args);
-			
-			foreach ($posts as $vproduct) {
 
+			foreach ($posts as $vproduct) {
 				update_post_meta( $vproduct->ID, '_stock', $product->qty );
 				update_post_meta( $vproduct->ID, '_regular_price', $product->mrp );
 				update_post_meta( $vproduct->ID, '_price', $product->mrp );
@@ -267,88 +270,6 @@ function my_product_api_update_data_handler() {
 		echo json_encode($json_response);
 		exit();
 	}else if ($_SERVER["REQUEST_URI"] == '/product-stock-store-get-by-proceger-data') {
-
-
-	
-		/* global $wpdb;
-
-
-		$args = array(
-			'post_status' => array('publish', 'private'),
-			'post_type'  => 'product_variation',
-			'meta_query' => array(
-				array(
-					'key'   => '_sku',
-					'value' => 'test-product-by-developer',
-				)
-			)
-		);
-		$posts = get_posts($args);
-		
-		foreach ($posts as $vproduct) {
-			update_post_meta( $vproduct->ID, '_stock', 5051 );
-			update_post_meta( $vproduct->ID, '_regular_price', 10000 );
-			update_post_meta( $vproduct->ID, '_price', 10000 );
-			if (0 > 0) {
-				update_post_meta( $vproduct->ID, '_price', 5000 );
-				update_post_meta( $vproduct->ID, '_sale_price', 5000 );
-			}else{
-				update_post_meta( $vproduct->ID, '_sale_price', '' );
-			}
-
-
-			// $vproductchild = wc_get_product($vproduct->ID);
-			// $mainproduct = wc_get_product($vproductchild->parent_id);
-			// $product_attributes = $mainproduct->get_attributes();
-			// $product_attributes = $mainproduct->get_attribute('size');
-			
-			// $mainproductid = $vproduct->post_parent;
-			
-			// $variation = wc_get_product($vproduct->ID);
-			
-			// $variation->update_meta_data( '_rey_related_ids', 'dsdfdff' );
-			
-			// $product_data = $vproduct->get_data();
-			/* $variation->set_stock_quantity(50);
-			$variation->set_regular_price(10000);
-			if (0 > 0) {
-				$variation->set_sale_price(5000);
-			}else{
-				$variation->set_sale_price('');
-			}
-			
-			$relatedproduct = get_post_meta( $vproduct->post_parent, '_rey_related_ids' );
-
-			$variation->save();
-
-			if ( ! empty( $relatedproduct ) ) {
-				// delete_post_meta( $vproduct->post_parent, '_rey_related_ids');
-				// $escaped_json = '{"key":"value with \\"escaped quotes\\""}';
-				// update_post_meta( $vproduct->post_parent, '_rey_related_ids', $escaped_json );
-				
-				/* $mainproduct = wc_get_product($vproduct->post_parent);
-				$mainproduct->update_meta_data( '_rey_related_ids', $escaped_json );
-				$mainproduct->save();
-				echo '<pre>';
-				print_r('ms');
-				exit;
-
-			} */
-			
-			
-			
-			
-			/* $update_post = array(
-				'ID' => $vproduct->ID,
-				'post_status' => 'publish'
-			);
-			wp_update_post($update_post); 
-		}
-			*/
-			
-		echo '<pre>';
-		print_r('s');
-		exit;
 		/* 
 		error_reporting(E_ALL);
 		ini_set('display_errors', '1');
@@ -454,59 +375,67 @@ function my_product_api_update_data_handler() {
 		];
 		echo json_encode($json_response);
 		exit(); */
-	}else if ($_SERVER["REQUEST_URI"] == '/product-json-to-price-status-update') {
-		/* ini_set('display_startup_errors', 1);
-		ini_set('display_errors', 1);
-		error_reporting(-1);
-
-		global $wpdb;
-		$api_json_dir = WP_PLUGIN_DIR . '/custom-code-function/';
-		$json = file_get_contents($api_json_dir.'price-sku-status-update.json');
+	}else if ($_SERVER["REQUEST_URI"] == '/product-chat-to-sku-update') {
+		/* global $wpdb;
 		
-		$json_data = json_decode($json,true);
-		$count = 0;
-		foreach ($json_data as $pro) {
-			
-			$args = array(
-				'post_status' => array('publish', 'private'),
-				'post_type'  => 'product_variation',
-				'meta_query' => array(
-					array(
-						'key'   => '_sku',
-						'value' => $pro['stock_no'],
-					)
-				)
-			);
-			$posts = get_posts($args);
-			$found = 1;
-			foreach ($posts as $vproduct) {
-				$variation = wc_get_product($vproduct->ID);
-				$variation->set_regular_price($pro['mrp']);
-				$variation->set_sale_price($pro['selling_price']);
-				$variation->save();
-
-				if ($vproduct->post_parent > 0) {
-					$update_post = array(
-						'ID' => $vproduct->post_parent,
-						'post_status' => 'publish'
-					);
-					
-					wp_update_post($update_post);
+		$args = array(
+			'post_type'      => 'product',
+			'posts_per_page' => 50,
+			'paged' => 42,
+			'post_status'    => 'any'
+		);
+		
+		$loop = new WP_Query( $args );
+		foreach ($loop->posts as $product) {
+			$handle = new WC_Product_Variable($product->ID);
+			$variationData = $handle->get_children();
+			foreach ($variationData as $value) {
+				$single_variation = new WC_Product_Variation($value);
+				if (isset($single_variation->sku)) {
+					$sku = $single_variation->sku;
+					$sku_last = substr($sku, -2);				
+					$sizeupdate = false;
+					if ($sku_last == '-0') {
+						$sizeupdate = 'm';
+					}else if ($sku_last == '-1') {
+						$sku_3_last = substr($sku, -3);
+						if ($sku_3_last == '--1') {
+							$sizeupdate = 's';
+						}else{
+							$sizeupdate = 'l';
+						}
+					}else if ($sku_last == '-2') {
+						$sku_3_last = substr($sku, -3);
+						if ($sku_3_last == '--2') {
+							$sizeupdate = 'xs';
+						}else{
+							$sizeupdate = 'xl';
+						}
+					}else if ($sku_last == '-3') {
+						$sizeupdate = '2xl';
+					}else if ($sku_last == '-4') {
+						$sizeupdate = '3xl';
+					}else if ($sku_last == '-5') {
+						$sizeupdate = '4xl';
+					}else if ($sku_last == '-6') {
+						$sizeupdate = '5xl';
+					}else if ($sku_last == '-7') {
+						$sizeupdate = '6xl';
+					}
+					if ($sizeupdate) {
+						update_post_meta($value, 'attribute_pa_size', sanitize_title($sizeupdate));
+						$single_variation->save();
+					}
 				}
-				
-
-				$count++;
-				$found = 0;
-			}
-			if ($found) {
-				echo "<br />";
-				echo $pro['stock_no'];
+			
 			}
 		}
-		
+	
+		wp_reset_query();
+			
 		$json_response = [
 			'success' => 1,
-			'product_update' => $count,
+			'product_update' => count($loop->posts),
 			'error' => '',
 		];
 		echo json_encode($json_response);
@@ -555,6 +484,7 @@ function my_product_api_update_data_handler() {
 		echo json_encode($json_response);
 		exit(); */
 	}else if ($_SERVER["REQUEST_URI"] == '/product-json-model-to-update-price-sku') {
+		
 		/* global $wpdb;
 		$api_json_dir = WP_PLUGIN_DIR . '/custom-code-function/';
 		$json = file_get_contents($api_json_dir.'product-json-model-to-update-price-sku.json');
@@ -718,86 +648,6 @@ function my_product_api_update_data_handler() {
 		];
 		echo json_encode($json_response);
 		exit();
-	}else if ($_SERVER["REQUEST_URI"] == '/product-api-category-mrp-special') {
-
-		global $wpdb;
-		$api_json_dir = WP_PLUGIN_DIR . '/custom-code-function/';
-		$json = file_get_contents($api_json_dir.'category-mrp-special.json');
-		$json_data = json_decode($json,true);
-		
-		$count = 1;
-		foreach ($json_data as $product) {
-			$product['style_desc'] = trim($product['style_desc']);
-			$product['name'] = trim($product['name']);
-			$product['mrp'] = trim($product['mrp']);
-			$product['after_disc'] = trim($product['after_disc']);
-			$product['category'] = trim($product['category']);
-			$product['product_mapping'] = trim($product['product_mapping']);
-			
-			
-			$get_products = get_posts(
-				array(
-					'post_status' => array('publish', 'private', 'draft'),
-					'post_type'  => array( 'product', 'product_variation' ),
-					'post_parent'  => 0,
-					'meta_query' => array(
-						array(
-							'key'     => '_sku',
-							'value'   => $product['style_desc'],
-						)
-					),
-				)
-			);
-			foreach ($get_products as $key => $get_product) {
-				$categorys = explode(',',$product['product_mapping']);
-				$cate_ids = [];
-				foreach ($categorys as $cat) {
-					$cat = trim($cat);
-					$category = get_term_by( 'name', $cat, 'product_cat' );
-					if ($category) {
-						$cate_ids[] = $category->term_id;						
-					}else{
-						echo '<pre>';
-						print_r($cat);
-						exit;
-					}
-				}
-				
-				/* $handle = new WC_Product_Variable($get_product->ID);
-				$handle->set_category_ids( $cate_ids );
-				$handle->save();
-
-
-				$variationData = $handle->get_children();
-				
-				foreach ($variationData as $value) {
-
-					update_post_meta( $value, '_regular_price', $product['mrp'] );
-					update_post_meta( $value, '_price', $product['mrp'] );
-
-					if ((int)$product['after_disc'] > 0) {
-						update_post_meta( $value, '_price', $product['after_disc'] );
-						update_post_meta( $value, '_sale_price', $product['after_disc'] );
-					}else{
-						update_post_meta( $value, '_sale_price', '' );
-					}
-					
-				} */
-			
-				/* echo '<pre>';
-				print_r($value);
-				exit;	 */
-			}
-			
-			$count++;
-		}
-			
-		$json_response = [
-			'success' => $count,
-			'error' => '',
-		];
-		echo json_encode($json_response);
-		exit(); 
 	}
 }
 
@@ -823,25 +673,7 @@ function woocommerce_payment_complete_order_status($order_id)
 
 
 
-add_filter( 'woocommerce_package_rates', 'bbloomer_unset_shipping_when_free_is_available_all_zones', 9999, 2 );
-   
-function bbloomer_unset_shipping_when_free_is_available_all_zones( $rates, $package ) {
-	global  $woocommerce;
 
-   	$all_free_rates = array();
-   	foreach ( $rates as $rate_id => $rate ) {
-		if ( 'free_shipping' === $rate->method_id ) {
-			$all_free_rates[ $rate_id ] = $rate;
-			$all_free_rates[ $rate_id ]->label = get_woocommerce_currency_symbol().'0';
-			break;
-		}
-   	}
-   	if ( empty( $all_free_rates )) {
-      return $rates;
-   	} else {
-      return $all_free_rates;
-   	} 
-}
 
 /* add_filter( 'woocommerce_countries_inc_tax_or_vat', function () {
 	return __( 'GST', 'woocommerce' );
@@ -852,6 +684,9 @@ add_filter( 'woocommerce_countries_ex_tax_or_vat', function () {
 }); 
 
  
+
+
+
 
 
 
@@ -947,7 +782,7 @@ function size_chart_popup() {
 
 
 
-
+ 
 
 // order edit in admin products column add storetable
 add_action( 'woocommerce_admin_order_item_headers', 'pishago_admin_order_item_headers' );
@@ -967,7 +802,44 @@ function pishago_admin_order_item_values( $product, $item, $item_id ) {
 		foreach ($dbstores as $key => $store) {
 			$stores[$store->email] = $store->name;
 		}
-
+		
+		/* $stores = [
+			'qbambience2@emustard.com' => 'AMBIENCE MALL- AMB',
+			'qbardee2@emustard.com' => 'ARDEE MALL - ARD',
+			'qbccm2@emustard.com' => 'CITY CENTER-MANGALORE - CCM',
+			'qbcommstreet2@emustard.com' => 'COMMERCIAL STREET BANGALORE - CMS',
+			'qbpacific.dehradun2@emustard.com' => 'DEHARADUN PACIFIC - DDP',
+			'dlfmega@emustard.com' => 'DT Mega Mall - DMM',
+			'qbelante2@emustard.com' => 'ELANTE MALL CHANDIGARH - ELM',
+			'qbexpress2@emustard.com' => 'EXPRESS CHENNAI-EAM',
+			'factorypos@emustard.com' => 'Factory Outlet - Noida',
+			'qbforum2@emustard.com' => 'FORUM BANGALORE - F01',
+			'ffc@emustard.com' => 'FORUM FALCON CITY - FFC',
+			'qbneighbourhood.forum2@emustard.com' => 'FORUM NEIGHBORHOOD MALL - FNM',
+			'qbgaruda2@emustard.com' => 'GREATER KAILASH DELHI - GKD',
+			'qbgvkone2@emustard.com' => 'GVK HYDERABAD - GVK',
+			'qbinfinity2@emustard.com' => 'INFINITY MALL MALAD-IMM',
+			'qbkorum2@emustard.com' => 'KORUM MALL-KOR',
+			'dlf@emustard.com' => 'Mall Of India Noida-DLFN',
+			'qbdlf2@emustard.com' => 'MALL OF INDIA-NOIDA - DLF',
+			'qbmgf2@emustard.com' => 'MGF MALL GURGOAN - MGF',
+			'qbdispatch@emustard.com' => 'MUSTARD CLOTHING - MC1',
+			'qbcorp@gmail.com' => 'MUSTARD CORPORATE (POS)',
+			'mrpl@emustard.com' => 'Mustard Retail Pvt. Ltd',
+			'qbost2@emustard.com' => 'ONLINE STORE-OST',
+			'qbpacific2@emustard.com' => 'PACIFIC MALL DELHI - PCM',
+			'qbpacific.dwarka2@emustard.com' => 'PACIFIC MALL DWARKA-PMD',
+			'qbpavilion2@emustard.com' => 'PAVILION MALL LUDHIANA - PVM',
+			'qbphoenix2@emustard.com' => 'PHOENIX CHENNAI-PMC',
+			'qbphoenix.pune2@emustard.com' => 'PHOENIX PUNE-PMP',
+			'qbphoenix.blr2@emustard.com' => 'PHOENIX-BANGALORE - PMB',
+			'qbpvp2@emustard.com' => 'PVP SQUARE MALL-VIJAYAWADA - PVP',
+			'qbrajouri2@emustard.com' => 'RAJOURI GARDEN - RJG',
+			'qbsarathcity2@emustard.com' => 'SARATH CITY CAPITAL MALL - SCM',
+			'qbshantiniketan2@emustard.com' => 'SHANTHINIKETAN - SNK',
+			'qbforum.sujana2@emustard.com' => 'Sujana Mall FORUM - SMF',
+		]; */
+		
 		$emailstring = implode("','",array_keys($stores));
 		
 		$curl = curl_init();
@@ -1022,6 +894,82 @@ function pishago_admin_order_item_values( $product, $item, $item_id ) {
 
 
 
+
+
+
+
+
+
+
+
+// sale 80% category time remove cash on delivery
+function filter_woocommerce_available_payment_gateways( $payment_gateways ) {
+    if ( is_admin() ) return $payment_gateways;
+    $flag = false;	
+	if ( WC()->cart ) {
+		foreach ( WC()->cart->get_cart() as $cart_item ) {
+			if ( has_term( 'sale 80', 'product_cat', $cart_item['product_id'] ) ) {
+				$flag = true;
+				break;
+			}
+		}
+	}
+	
+    if ( $flag ) {
+        if ( isset( $payment_gateways['cod'] ) ) {
+            unset( $payment_gateways['cod'] );
+        }  
+    }
+    return $payment_gateways;
+}
+add_filter( 'woocommerce_available_payment_gateways', 'filter_woocommerce_available_payment_gateways', 10, 1 );
+// sale 80% category time remove cash on delivery
+
+// sale 80% category time remove free shipping only free shipping enable time show only free shipping
+add_filter( 'woocommerce_package_rates', 'bbloomer_unset_shipping_when_free_is_available_all_zones', 9999, 2 );
+   
+function bbloomer_unset_shipping_when_free_is_available_all_zones( $rates, $package ) {
+	global  $woocommerce;
+
+	// sale 80% category time remove free shipping
+	$flag = false;	
+	if ( WC()->cart ) {
+		foreach ( WC()->cart->get_cart() as $cart_item ) {
+			if ( has_term( 'sale 80', 'product_cat', $cart_item['product_id'] ) ) {
+				$flag = true;
+				break;
+			}
+		}
+	}
+	
+    if ( $flag ) {
+		foreach ( $rates as $rate_id => $rate ) {
+			if ( 'free_shipping' === $rate->method_id ) {
+				unset($rates[$rate_id]);
+				break;
+			}
+		}
+    }
+	// sale 80% category time remove free shipping end
+	
+
+   	$all_free_rates = array();
+   	foreach ( $rates as $rate_id => $rate ) {
+		if ( 'free_shipping' === $rate->method_id ) {
+			$all_free_rates[ $rate_id ] = $rate;
+			$all_free_rates[ $rate_id ]->label = get_woocommerce_currency_symbol().'0';
+			break;
+		}
+   	}
+   	if ( empty( $all_free_rates )) {
+      return $rates;
+   	} else {
+      return $all_free_rates;
+   	} 
+}
+// sale 80% category time remove free shipping only free shipping enable time show only free shipping
+
+
 // checkout phone number validation
 add_action('woocommerce_checkout_process', 'my_custom_checkout_field_process');
   
@@ -1032,3 +980,10 @@ function my_custom_checkout_field_process() {
     }
 }
 // checkout phone number validation end
+
+
+
+
+
+
+

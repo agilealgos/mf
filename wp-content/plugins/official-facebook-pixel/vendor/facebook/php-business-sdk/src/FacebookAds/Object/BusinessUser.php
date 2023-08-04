@@ -114,7 +114,6 @@ class BusinessUser extends AbstractCrudObject {
     $this->assureId();
 
     $param_types = array(
-      'pages' => 'list<unsigned int>',
     );
     $enums = array(
     );

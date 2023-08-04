@@ -50,8 +50,6 @@ class AdCreativeFields extends AbstractEnum {
   const CALL_TO_ACTION_TYPE = 'call_to_action_type';
   const CATEGORIZATION_CRITERIA = 'categorization_criteria';
   const CATEGORY_MEDIA_SOURCE = 'category_media_source';
-  const COLLABORATIVE_ADS_LSB_IMAGE_BANK_ID = 'collaborative_ads_lsb_image_bank_id';
-  const DEGREES_OF_FREEDOM_SPEC = 'degrees_of_freedom_spec';
   const DESTINATION_SET_ID = 'destination_set_id';
   const DYNAMIC_AD_VOICE = 'dynamic_ad_voice';
   const EFFECTIVE_AUTHORIZATION_CATEGORY = 'effective_authorization_category';
@@ -81,7 +79,6 @@ class AdCreativeFields extends AbstractEnum {
   const OBJECT_STORY_SPEC = 'object_story_spec';
   const OBJECT_TYPE = 'object_type';
   const OBJECT_URL = 'object_url';
-  const OMNICHANNEL_LINK_SPEC = 'omnichannel_link_spec';
   const PLACE_PAGE_SET_ID = 'place_page_set_id';
   const PLATFORM_CUSTOMIZATIONS = 'platform_customizations';
   const PLAYABLE_ASSET_ID = 'playable_asset_id';
@@ -92,7 +89,6 @@ class AdCreativeFields extends AbstractEnum {
   const STATUS = 'status';
   const TEMPLATE_URL = 'template_url';
   const TEMPLATE_URL_SPEC = 'template_url_spec';
-  const THUMBNAIL_ID = 'thumbnail_id';
   const THUMBNAIL_URL = 'thumbnail_url';
   const TITLE = 'title';
   const URL_TAGS = 'url_tags';
@@ -100,6 +96,7 @@ class AdCreativeFields extends AbstractEnum {
   const VIDEO_ID = 'video_id';
   const CALL_TO_ACTION = 'call_to_action';
   const IMAGE_FILE = 'image_file';
+  const INSTANT_CHECKOUT_SETTING = 'instant_checkout_setting';
   const IS_DCO_INTERNAL = 'is_dco_internal';
 
   public function getFieldTypes() {
@@ -117,8 +114,6 @@ class AdCreativeFields extends AbstractEnum {
       'call_to_action_type' => 'CallToActionType',
       'categorization_criteria' => 'string',
       'category_media_source' => 'string',
-      'collaborative_ads_lsb_image_bank_id' => 'string',
-      'degrees_of_freedom_spec' => 'AdCreativeDegreesOfFreedomSpec',
       'destination_set_id' => 'string',
       'dynamic_ad_voice' => 'string',
       'effective_authorization_category' => 'string',
@@ -148,7 +143,6 @@ class AdCreativeFields extends AbstractEnum {
       'object_story_spec' => 'AdCreativeObjectStorySpec',
       'object_type' => 'ObjectType',
       'object_url' => 'string',
-      'omnichannel_link_spec' => 'AdCreativeOmnichannelLinkSpec',
       'place_page_set_id' => 'string',
       'platform_customizations' => 'AdCreativePlatformCustomization',
       'playable_asset_id' => 'string',
@@ -159,7 +153,6 @@ class AdCreativeFields extends AbstractEnum {
       'status' => 'Status',
       'template_url' => 'string',
       'template_url_spec' => 'AdCreativeTemplateURLSpec',
-      'thumbnail_id' => 'string',
       'thumbnail_url' => 'string',
       'title' => 'string',
       'url_tags' => 'string',
@@ -167,6 +160,7 @@ class AdCreativeFields extends AbstractEnum {
       'video_id' => 'string',
       'call_to_action' => 'Object',
       'image_file' => 'string',
+      'instant_checkout_setting' => 'InstantCheckoutSetting',
       'is_dco_internal' => 'bool',
     );
   }

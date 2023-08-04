@@ -7,8 +7,8 @@
 /**
  * Wrapper function of WPCF7_ContactForm::get_instance().
  *
- * @param WPCF7_ContactForm|WP_Post|int $post Object or post ID.
- * @return WPCF7_ContactForm|null Contact form object. Null if unset.
+ * @param int|WP_Post $post Post ID or post object.
+ * @return WPCF7_ContactForm Contact form object.
  */
 function wpcf7_contact_form( $post ) {
 	return WPCF7_ContactForm::get_instance( $post );
@@ -40,18 +40,13 @@ function wpcf7_get_contact_form_by_old_id( $old_id ) {
  * @return WPCF7_ContactForm|null Contact form object if found, null otherwise.
  */
 function wpcf7_get_contact_form_by_title( $title ) {
-	if ( ! is_string( $title ) or '' === $title ) {
-		return null;
+	$page = get_page_by_title( $title, OBJECT, WPCF7_ContactForm::post_type );
+
+	if ( $page ) {
+		return wpcf7_contact_form( $page->ID );
 	}
 
-	$contact_forms = WPCF7_ContactForm::find( array(
-		'title' => $title,
-		'posts_per_page' => 1,
-	) );
-
-	if ( $contact_forms ) {
-		return wpcf7_contact_form( reset( $contact_forms ) );
-	}
+	return null;
 }
 
 
@@ -225,13 +220,12 @@ function wpcf7_contact_form_tag_func( $atts, $content = null, $code = '' ) {
 
 	if ( ! $contact_form ) {
 		return sprintf(
-			'<p class="wpcf7-contact-form-not-found"><strong>%1$s</strong> %2$s</p>',
-			esc_html( __( 'Error:', 'contact-form-7' ) ),
-			esc_html( __( "Contact form not found.", 'contact-form-7' ) )
+			'[contact-form-7 404 "%s"]',
+			esc_html( __( 'Not Found', 'contact-form-7' ) )
 		);
 	}
 
-	$callback = static function ( $contact_form, $atts ) {
+	$callback = function ( $contact_form, $atts ) {
 		return $contact_form->form_html( $atts );
 	};
 

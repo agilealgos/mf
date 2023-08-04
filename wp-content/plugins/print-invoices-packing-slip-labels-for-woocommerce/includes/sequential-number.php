@@ -120,15 +120,16 @@ class Wf_Woocommerce_Packing_List_Sequential_Number
 	    	$inv_num= $order_num;	
 	    }else
 	    {
-			/* global $wpdb;
-			$wpdb->query($wpdb->prepare("UPDATE wp_posts SET post_status = 'wc-invoiced' WHERE ID = %s",$order_id)); */
+			global $wpdb;
+			/* $wpdb->query($wpdb->prepare("UPDATE wp_posts SET post_status = 'wc-invoiced' WHERE ID = %s",$order_id)); */
 			global $wpdb;
 			$update_post = array(
 				'ID' => $order_id,
 				'post_status' => 'wc-invoiced'
 			);
 			wp_update_post($update_post);
-			
+
+				
 	    	$current_invoice_number =(int) Wf_Woocommerce_Packing_List::get_option('woocommerce_wf_Current_Invoice_number', $module_id); 
 	    	$inv_num=++$current_invoice_number;
 	    	$padded_next_invoice_number=self::add_sequential_padding($inv_num, $module_id);

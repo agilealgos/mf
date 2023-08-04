@@ -96,7 +96,7 @@ class RequestTest extends AbstractUnitTestCase {
     // Default initialization
     $headers = new Headers();
     $client = $this->createClientMock();
-    $client->method('getDefaultRequestHeaders')->willReturn($headers);
+    $client->method('getDefaultRequestHeaderds')->willReturn($headers);
     $request = new Request($client);
     $headers_mirror = $request->getHeaders();
     $this->assertTrue($headers_mirror instanceof Headers);

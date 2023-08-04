@@ -7,7 +7,6 @@
 
 use Yoast\WP\SEO\Helpers\Product_Helper;
 use Yoast\WP\SEO\Helpers\Score_Icon_Helper;
-use Yoast\WP\SEO\Integrations\Support_Integration;
 use Yoast\WP\SEO\Models\Indexable;
 use Yoast\WP\SEO\Presenters\Admin\Premium_Badge_Presenter;
 use Yoast\WP\SEO\Repositories\Indexable_Repository;
@@ -542,13 +541,6 @@ class WPSEO_Admin_Bar_Menu implements WPSEO_WordPress_Integration {
 			'title'  => __( 'Help', 'wordpress-seo' ),
 			'meta'   => [ 'tabindex' => '0' ],
 		];
-
-		if ( current_user_can( Support_Integration::CAPABILITY ) ) {
-			$menu_args['href'] = admin_url( 'admin.php?page=' . Support_Integration::PAGE );
-			$wp_admin_bar->add_menu( $menu_args );
-
-			return;
-		}
 		$wp_admin_bar->add_menu( $menu_args );
 
 		$submenu_items = [

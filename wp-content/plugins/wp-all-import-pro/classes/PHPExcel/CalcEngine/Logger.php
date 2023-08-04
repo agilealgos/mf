@@ -120,9 +120,9 @@ class PHPExcel_CalcEngine_Logger
             $message = implode(func_get_args());
             $cellReference = implode(' -> ', $this->cellStack->showStack());
             if ($this->echoDebugLog) {
-                echo wp_kses_post($cellReference),
+                echo $cellReference,
                     ($this->cellStack->count() > 0 ? ' => ' : ''),
-                    wp_kses_post($message),
+                    $message,
                     PHP_EOL;
             }
             $this->debugLog[] = $cellReference .

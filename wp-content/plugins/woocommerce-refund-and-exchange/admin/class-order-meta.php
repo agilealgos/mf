@@ -3,6 +3,9 @@
  * Exit if accessed directly
  */
 
+ include_once '/home/713465.cloudwaysapps.com/axzavxnuwv/public_html/wp-content/plugins/custom-order-numbers-for-woocommerce/includes/class-alg-wc-custom-order-numbers-core.php';
+
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -2244,6 +2247,11 @@ if ( ! class_exists( 'Ced_refund_and_exchange_order_meta' ) ) {
 				);
 
 				$order_id = wp_insert_post( $order_data, true );
+				
+				// custom order number create
+				$algcustom = new Alg_WC_Custom_Order_Numbers_Core();
+				$algcustom->add_new_order_number($order_id);
+				// custom order number create end
 
 				$approve = get_option( 'ced_rnx_notification_exchange_approve' );
 				$fname = get_post_meta( $orderid, '_billing_first_name', true );

@@ -159,7 +159,6 @@ class ServerEventFactory {
       'zip' => AAMSettingsFields::ZIP_CODE,
       'gender' => AAMSettingsFields::GENDER,
       'date_of_birth' => AAMSettingsFields::DATE_OF_BIRTH,
-      'external_id' => AAMSettingsFields::EXTERNAL_ID,
     );
     foreach( $data as $key => $value ){
       if( array_key_exists( $key, $key_to_aam_field ) ){
@@ -229,11 +228,10 @@ class ServerEventFactory {
           $user_data_array[AAMSettingsFields::DATE_OF_BIRTH]);
       }
       if(
-        array_key_exists(AAMSettingsFields::EXTERNAL_ID, $user_data_array) &&
-        !is_null($user_data_array[AAMSettingsFields::EXTERNAL_ID])
+        array_key_exists(AAMSettingsFields::EXTERNAL_ID, $user_data_array)
       ){
         $user_data->setExternalId(
-          hash("sha256", $user_data_array[AAMSettingsFields::EXTERNAL_ID])
+          Util::hash($user_data_array[AAMSettingsFields::EXTERNAL_ID])
         );
       }
       if(

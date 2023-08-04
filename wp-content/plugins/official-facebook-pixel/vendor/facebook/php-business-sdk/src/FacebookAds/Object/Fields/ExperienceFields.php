@@ -46,7 +46,7 @@ class ExperienceFields extends AbstractEnum {
   public function getFieldTypes() {
     return array(
       'description' => 'string',
-      'from' => 'Object',
+      'from' => 'User',
       'id' => 'string',
       'name' => 'string',
       'with' => 'list<User>',

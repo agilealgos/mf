@@ -28,29 +28,26 @@
 	 * practising this, we should strive to set a better example in our own work.
 	 */
 
-    $('.md-size-chart-btn').click(function (t) {
-        t.preventDefault();
-        var c = $(this).attr('chart-data-id');
-        $('.scfw-size-chart-modal[chart-data-id="' + c + '"]').show();
-        $('.scfw-size-chart-modal[chart-data-id="' + c + '"]').removeClass('md-size-chart-hide');
-        $('.scfw-size-chart-modal[chart-data-id="' + c + '"]').addClass('md-size-chart-show');
-    });
+	/*** Open popup ***/
+	$('.md-size-chart-btn').click(function(e) {
+		e.preventDefault();
+		var chart_btn_ID = $(this).attr('chart-data-id');
+		$('.scfw-size-chart-modal[chart-data-id="'+ chart_btn_ID +'"]').show();
+	});
 
-    $('div#md-size-chart-modal .remodal-close').click(function (t) {
-        t.preventDefault();
-        $(this).parents('.scfw-size-chart-modal').removeClass('md-size-chart-show');
-        $(this).parents('.scfw-size-chart-modal').addClass('md-size-chart-hide');
-    });
+	$('div#md-size-chart-modal .remodal-close').click(function(e) {
+		e.preventDefault();
+		$(this).parents('.scfw-size-chart-modal').hide();
+	});
 
-    $('div.md-size-chart-overlay').click(function (t) {
-        t.preventDefault();
-        $(this).parents('.scfw-size-chart-modal').removeClass('md-size-chart-show');
-        $(this).parents('.scfw-size-chart-modal').addClass('md-size-chart-hide');
-    });
+	$('div.md-size-chart-overlay').click(function(e) {
+		e.preventDefault();
+		$(this).parents('.scfw-size-chart-modal').hide();
+	});
 
-    $('.md-size-chart-modal').each(function () {
-        var c = $(this).attr('chart-data-id');
-        $('.md-size-chart-modal[chart-data-id="' + c + '"]').slice(1).remove();
-    });
+	$('.md-size-chart-modal').each(function () {
+		var chart_btn_ID = $(this).attr('chart-data-id');
+		$('.md-size-chart-modal[chart-data-id="' + chart_btn_ID + '"]').slice(1).remove();
+	});
 
 })(jQuery);

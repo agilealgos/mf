@@ -13,16 +13,16 @@
  * @package           SCFW_Size_Chart_For_Woocommerce
  *
  * @wordpress-plugin
- * Plugin Name: Product Size Charts Plugin for WooCommerce
+ * Plugin Name: Product Size Charts Plugin for WooCommerce Premium
  * Plugin URI:        https://www.thedotstore.com/woocommerce-advanced-product-size-charts/
  * Description:       Add product size charts with default template or custom size chart to any of your WooCommerce products.
- * Version:           2.4.2.1
+ * Version:           2.4.1
  * Author:            theDotstore
  * Author URI:        https://www.thedotstore.com/
  * License:           GPL-2.0+
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
  * Text Domain:       size-chart-for-woocommerce
- * WC tested up to:   7.7.0
+ * WC tested up to:   7.0.0
  * Domain Path:       /languages
  */
 // If this file is called directly, abort.
@@ -79,6 +79,7 @@ if ( !function_exists( 'scfw_fs' ) ) {
     scfw_fs();
     do_action( 'scfw_fs_loaded' );
     scfw_fs()->get_upgrade_url();
+    // scfw_fs()->add_action( 'after_uninstall', 'scfw_fs_uninstall_cleanup' );
 }
 
 if ( !defined( 'SCFW_PLUGIN_URL' ) ) {
@@ -138,7 +139,7 @@ if ( !function_exists( 'scfw_run_size_chart_for_woocommerce' ) ) {
     {
         $plugin_post_type_name = 'size-chart';
         $plugin_name = esc_attr__( 'Product Size Charts Plugin for WooCommerce', 'size-chart-for-woocommerce' );
-        $plugin_version = esc_attr__( '2.4.2.1', 'size-chart-for-woocommerce' );
+        $plugin_version = esc_attr__( '2.4.1', 'size-chart-for-woocommerce' );
         $plugin = new SCFW_Size_Chart_For_Woocommerce( $plugin_name, $plugin_version, $plugin_post_type_name );
         $plugin->run();
     }
@@ -152,28 +153,12 @@ if ( !function_exists( 'scfw_run_size_chart_for_woocommerce' ) ) {
 if ( !function_exists( 'scfw_size_chart_initialize_plugin' ) ) {
     function scfw_size_chart_initialize_plugin()
     {
-        /*Check WooCommerce Active or not*/
-        $active_plugins = get_option( 'active_plugins', array() );
+        $wc_active = in_array( 'woocommerce/woocommerce.php', get_option( 'active_plugins' ), true );
         
-        if ( is_multisite() ) {
-            $network_active_plugins = get_site_option( 'active_sitewide_plugins', array() );
-            $active_plugins = array_merge( $active_plugins, array_keys( $network_active_plugins ) );
-            $active_plugins = array_unique( $active_plugins );
-            
-            if ( !in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', $active_plugins ), true ) ) {
-                add_action( 'admin_notices', 'scfw_size_chart_plugin_admin_notice' );
-            } else {
-                scfw_run_size_chart_for_woocommerce();
-            }
-        
+        if ( current_user_can( 'activate_plugins' ) && $wc_active !== true || $wc_active !== true ) {
+            add_action( 'admin_notices', 'scfw_size_chart_plugin_admin_notice' );
         } else {
-            
-            if ( !in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ), true ) ) {
-                add_action( 'admin_notices', 'scfw_size_chart_plugin_admin_notice' );
-            } else {
-                scfw_run_size_chart_for_woocommerce();
-            }
-        
+            scfw_run_size_chart_for_woocommerce();
         }
         
         // Load the language file for translating the plugin strings

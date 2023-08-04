@@ -303,6 +303,11 @@ class WC_Facebookcommerce_Integration extends WC_Integration {
 					[ $this, 'on_quick_and_bulk_edit_save' ]
 				);
 
+				add_action( 'before_delete_post', [ $this, 'on_product_delete' ] );
+
+				// Ensure product is deleted from FB when moved to trash.
+				add_action( 'wp_trash_post', [ $this, 'on_product_delete' ] );
+
 				add_action( 'add_meta_boxes', 'WooCommerce\Facebook\Admin\Product_Sync_Meta_Box::register', 10, 1 );
 
 				add_action(
@@ -361,15 +366,7 @@ class WC_Facebookcommerce_Integration extends WC_Integration {
 			3
 		);
 
-		add_action( 'before_delete_post', [ $this, 'on_product_delete' ] );
-
-		// Ensure product is deleted from FB when moved to trash.
-		add_action( 'wp_trash_post', [ $this, 'on_product_delete' ] );
-
 		add_action( 'untrashed_post', [ $this, 'fb_restore_untrashed_variable_product' ] );
-
-		// Ensure product is deleted from FB when status is changed to draft.
-		add_action( 'publish_to_draft', [ $this, 'delete_draft_product' ] );
 
 		// Product Set hooks.
 		add_action( 'fb_wc_product_set_sync', [ $this, 'create_or_update_product_set_item' ], 99, 2 );
@@ -1019,23 +1016,6 @@ class WC_Facebookcommerce_Integration extends WC_Integration {
 	private function should_update_visibility_for_product_status_change( $new_status, $old_status ) {
 		return ( $old_status === 'publish' && $new_status !== 'publish' ) || ( $old_status === 'trash' && $new_status === 'publish' ) || ( $old_status === 'future' && $new_status === 'publish' );
 	}
-
-	/**
-	 * Deletes a product from Facebook when status is changed to draft.
-	 *
-	 * @since 3.0.27
-	 * @param \WP_post $post
-	 */
-	public function delete_draft_product( $post ) {
-
-		if ( ! $post ) {
-			return;
-		}
-
-		$this->on_product_delete ( $post->ID );
-
-	}
-
 
 	/**
 	 * Generic function for use with any product publishing.

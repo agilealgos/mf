@@ -30,7 +30,6 @@ use FacebookAds\Http\RequestInterface;
 use FacebookAds\TypeChecker;
 use FacebookAds\Object\Fields\HomeListingFields;
 use FacebookAds\Object\Values\HomeListingImageFetchStatusValues;
-use FacebookAds\Object\Values\HomeListingVisibilityValues;
 
 /**
  * This class is auto-generated.
@@ -60,7 +59,6 @@ class HomeListing extends AbstractCrudObject {
   protected static function getReferencedEnums() {
     $ref_enums = array();
     $ref_enums['ImageFetchStatus'] = HomeListingImageFetchStatusValues::getInstance()->getValues();
-    $ref_enums['Visibility'] = HomeListingVisibilityValues::getInstance()->getValues();
     return $ref_enums;
   }
 

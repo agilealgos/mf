@@ -169,7 +169,7 @@ abstract class ImportProductBase extends ImportBase {
             }
             if (!$product_id) {
                 // Search linked product by title.
-                $product = wp_all_import_get_page_by_title( $identifier, 'product' );
+                $product = get_page_by_title( $identifier, OBJECT, 'product' );
                 if ($product && !is_wp_error($product)) {
                     $product_id = $product->ID;
                 }

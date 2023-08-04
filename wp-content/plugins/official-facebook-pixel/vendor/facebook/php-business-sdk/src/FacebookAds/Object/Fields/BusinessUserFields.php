@@ -38,7 +38,6 @@ use FacebookAds\Enum\AbstractEnum;
 class BusinessUserFields extends AbstractEnum {
 
   const BUSINESS = 'business';
-  const BUSINESS_ROLE_REQUEST = 'business_role_request';
   const EMAIL = 'email';
   const FINANCE_PERMISSION = 'finance_permission';
   const FIRST_NAME = 'first_name';
@@ -55,7 +54,6 @@ class BusinessUserFields extends AbstractEnum {
   public function getFieldTypes() {
     return array(
       'business' => 'Business',
-      'business_role_request' => 'BusinessRoleRequest',
       'email' => 'string',
       'finance_permission' => 'string',
       'first_name' => 'string',

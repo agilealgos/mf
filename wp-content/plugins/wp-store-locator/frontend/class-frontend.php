@@ -43,6 +43,7 @@ if ( !class_exists( 'WPSL_Frontend' ) ) {
 
         private $store_map_data = array();
 
+
         /**
          * Class constructor
          */
@@ -76,6 +77,7 @@ if ( !class_exists( 'WPSL_Frontend' ) ) {
         public function includes() {
             require_once( WPSL_PLUGIN_DIR . 'frontend/underscore-functions.php' );
         }
+
 
         /**
          * Include the required file for the borlabs cookie plugin to work.
@@ -555,12 +557,7 @@ if ( !class_exists( 'WPSL_Frontend' ) ) {
 
                 foreach ( $opening_days as $index => $day ) {
                     $i          = 0;
-
-                    if ( isset( $hours[$index] ) && is_array( $hours[$index] ) ) {
-                    	$hour_count = count( $hours[$index] );
-                    } else {
-                        $hour_count = 0;
-                    }
+                    $hour_count = count( $hours[$index] );
 
                     // If we need to hide days that are set to closed then skip them.
                     if ( $hide_closed && !$hour_count ) {
@@ -1729,8 +1726,6 @@ if ( !class_exists( 'WPSL_Frontend' ) ) {
                 wpsl_deregister_other_gmaps();
             }
 
-            wp_enqueue_script( 'wpsl-js', apply_filters( 'wpsl_gmap_js', WPSL_URL . 'js/wpsl-gmap'. $min .'.js' ), array( 'jquery' ), WPSL_VERSION_NUM, true );
-
             if ( !function_exists( 'BorlabsCookieHelper' ) ) {
                 wp_enqueue_script( 'wpsl-gmap', ( 'https://maps.google.com/maps/api/js' . wpsl_get_gmap_api_params( 'browser_key' ) . '' ), '', null, true );
             } else {
@@ -1844,6 +1839,8 @@ if ( !class_exists( 'WPSL_Frontend' ) ) {
 
             // Check if we need to include the infobox script and settings.
             if ( $wpsl_settings['infowindow_style'] == 'infobox' ) {
+                wp_enqueue_script( 'wpsl-infobox', WPSL_URL . 'js/infobox'. $min .'.js', array( 'wpsl-gmap' ), WPSL_VERSION_NUM, true  ); // Not minified version is in the /js folder
+
                 $base_settings['infoWindowStyle'] = $wpsl_settings['infowindow_style'];
                 $base_settings = $this->get_infobox_settings( $base_settings );
             }
@@ -1853,6 +1850,7 @@ if ( !class_exists( 'WPSL_Frontend' ) ) {
                 $base_settings['mapStyle'] = strip_tags( stripslashes( json_decode( $wpsl_settings['map_style'] ) ) );
             }
 
+            wp_enqueue_script( 'wpsl-js', apply_filters( 'wpsl_gmap_js', WPSL_URL . 'js/wpsl-gmap'. $min .'.js' ), array( 'jquery' ), WPSL_VERSION_NUM, true );
             wp_enqueue_script( 'underscore' );
 
             // Check if we need to include all the settings and labels or just a part of them.
@@ -1912,16 +1910,20 @@ if ( !class_exists( 'WPSL_Frontend' ) ) {
          */
         public function get_infobox_settings( $settings ) {
 
-            $settings['infoBox'] = apply_filters( 'wpsl_infobox_settings', array(
-                'class'                  => 'wpsl-infobox',
-                'margin'                 => '2px', // The margin can be written in css style, so 2px 2px 4px 2px for top, right, bottom, left
-                'url'                    => '//www.google.com/intl/en_us/mapfiles/close.gif',
-                'clearance'              => '40,40',
-                'disableAutoPan'         => 0,
-                'enableEventPropagation' => 0,
-                'pixelOffset'            => '-52,-45',
-                'zIndex'                 => 1500
-            ));
+            $infobox_settings = apply_filters( 'wpsl_infobox_settings', array(
+                'infoBoxClass'                  => 'wpsl-infobox',
+                'infoBoxCloseMargin'            => '2px', // The margin can be written in css style, so 2px 2px 4px 2px for top, right, bottom, left
+                'infoBoxCloseUrl'               => '//www.google.com/intl/en_us/mapfiles/close.gif',
+                'infoBoxClearance'              => '40,40',
+                'infoBoxDisableAutoPan'         => 0,
+                'infoBoxEnableEventPropagation' => 0,
+                'infoBoxPixelOffset'            => '-52,-45',
+                'infoBoxZindex'                 => 1500
+            ) );
+
+            foreach ( $infobox_settings as $infobox_key => $infobox_setting ) {
+                $settings[$infobox_key] = $infobox_setting;
+            }
 
             return $settings;
         }

@@ -53,7 +53,6 @@ class DestinationFields extends AbstractEnum {
   const TYPES = 'types';
   const UNIT_PRICE = 'unit_price';
   const URL = 'url';
-  const VISIBILITY = 'visibility';
 
   public function getFieldTypes() {
     return array(
@@ -73,7 +72,6 @@ class DestinationFields extends AbstractEnum {
       'types' => 'list<string>',
       'unit_price' => 'Object',
       'url' => 'string',
-      'visibility' => 'Visibility',
     );
   }
 }

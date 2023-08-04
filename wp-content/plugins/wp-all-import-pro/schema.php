@@ -63,7 +63,6 @@ CREATE TABLE {$table_prefix}imports (
   	updated BIGINT(20) NOT NULL DEFAULT 0,
   	skipped BIGINT(20) NOT NULL DEFAULT 0,
   	deleted BIGINT(20) NOT NULL DEFAULT 0,
-  	changed_missing BIGINT(20) NOT NULL DEFAULT 0,
   	canceled BOOL NOT NULL DEFAULT 0,  	
   	canceled_on DATETIME NOT NULL DEFAULT '0000-00-00 00:00:00',
   	failed BOOL NOT NULL DEFAULT 0,  	
@@ -94,8 +93,8 @@ CREATE TABLE {$table_prefix}files (
 CREATE TABLE {$table_prefix}images (
 	id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,	
 	attachment_id BIGINT(20) UNSIGNED NOT NULL,
-	image_url TEXT NOT NULL DEFAULT '',
-	image_filename TEXT NOT NULL DEFAULT '',	
+	image_url VARCHAR(900) NOT NULL DEFAULT '',
+	image_filename VARCHAR(900) NOT NULL DEFAULT '',	
 	PRIMARY KEY  (id)
 ) $charset_collate;
 CREATE TABLE {$table_prefix}history (

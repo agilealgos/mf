@@ -31,8 +31,6 @@ table#size-chart tr th,table#size-chart tr td{text-align:center;word-wrap:break-
 
 .chart-table td,.chart-table th{border:1px solid #d1d1d1}
 
-#size-chart-meta-fields table.inputtable th.invalid-character,#size-chart-meta-fields table.inputtable td.invalid-character{border:2px solid red!important;}
-
 .size-chart-model .remodal-close::before,.size-chart-model .remodal-close{right:0;left:auto}
 table#size-chart tr td:last-child{border-right:0}
 #wait{display:none;position:absolute;top:50%;left:50%;padding:2px;z-index:9999999}
@@ -70,7 +68,7 @@ div#size-chart-setting-fields legend{background-color:#e7e7e7;border:1px solid #
 .field_image_box:hover a.delete-chart-image{display:block;position:absolute;right:5px;top:5px;cursor:pointer}
 .size-chart-ft{font-size:12px!important}
 .wrap.about-wrap img{width:auto}
-.md-size-chart-modal{display:none;}
+.md-size-chart-modal{display: none;}
 .md-size-chart-hide{-webkit-animation: cssAnimation 0.4s forwards; animation: cssAnimation 0.4s forwards;}
 .md-size-chart-show{display:block;}
 .md-size-chart-modal-content{margin:0;position:fixed;z-index:199999;top:0;right:0;bottom:0;left:0;padding:50px}
@@ -140,10 +138,6 @@ table.inputtable a.icon-button {border-radius: 5px;width: 20px;height: 20px;line
 .field-default-icon-wrap .dashicons img {width: 100%;display: block;}
 .field-default-icon-wrap label span.dashicons:hover {border: 2px solid #333;}
 
-/* shortcode copy css */
-.scfw-after-copy-text{opacity:0;top:-25px;z-index:9999999;position:fixed;width:auto;left:50%;text-align:center;margin-left:-125px;padding:10px 15px;line-height:15px;color:#5db62e;border-radius:3px;background:#eaf8e1;border:1px solid #a2de83;}
-.scfw-after-copy-text span{font-size:18px;line-height:16px;height:16px;}
-
 /* Woocoomerce spinner custom code start */
 .blockUI.blockOverlay::before {height: 1em;width: 1em;display: block;position: absolute;top: 50%;left: 50%;margin-left: -0.5em;margin-top: -0.5em;content: "";-webkit-animation: spin 1s ease-in-out infinite;animation: spin 1s ease-in-out infinite;background: url(../images/loader.svg) center center;background-size: cover;line-height: 1;text-align: center;font-size: 2em;color: rgba(0,0,0,.75);}
 @-webkit-keyframes spin {
@@ -161,9 +155,15 @@ table.inputtable a.icon-button {border-radius: 5px;width: 20px;height: 20px;line
 /* Woocoomerce spinner custom code end */
 
 @media only screen and (min-width:641px){
-    .md-size-chart-modal-body.small{max-width:600px;}
-    .md-size-chart-modal-body.medium,.md-size-chart-modal-body{max-width:800px;}
-    .md-size-chart-modal-body.large{max-width:1000px;}
+    .md-size-chart-modal-body.small{
+        max-width:600px;
+    }
+    .md-size-chart-modal-body.medium, .md-size-chart-modal-body{
+        max-width:800px;
+    }
+    .md-size-chart-modal-body.large{
+        max-width:1000px;
+    }
 }
 @media only screen and (max-width:640px){div#md-size-chart-modal .chart-table{overflow:scroll;width:100%}.chart-content-list{width:100%;box-sizing:border-box}div#md-size-chart-modal .chart-table table{width:100%;table-layout:auto;margin-bottom:0;white-space:nowrap}}
 @media only screen and (max-width:500px){table#size-chart tr th{font-size:11px!important}table#size-chart tr td{font-size:10px!important}.chart-content-image{float:none}}

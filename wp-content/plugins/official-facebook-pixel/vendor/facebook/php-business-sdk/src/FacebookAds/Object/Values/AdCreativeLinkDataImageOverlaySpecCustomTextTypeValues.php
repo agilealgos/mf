@@ -38,5 +38,4 @@ use FacebookAds\Enum\AbstractEnum;
 class AdCreativeLinkDataImageOverlaySpecCustomTextTypeValues extends AbstractEnum {
 
   const FREE_SHIPPING = 'free_shipping';
-  const POPULAR = 'popular';
 }

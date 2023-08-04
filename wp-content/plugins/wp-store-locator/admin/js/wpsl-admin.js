@@ -1,15 +1,6 @@
-var wpslAdmin = wpslAdmin || {};
-
-function wpslCallback() {
-    jQuery( document ).ready( function( $ ) {
-        if ( $( "#wpsl-gmap-wrap" ).length ) {
-            wpslAdmin.init();
-        }
-    })
-}
-
 jQuery( document ).ready( function( $ ) {
-    var map, geocoder, startLatLng, markersArray = [];
+    var map, geocoder, startLatLng, markersArray = [],
+        wpslAdmin = wpslAdmin || {};
 
     /**
      * Verify the provided API keys
@@ -190,7 +181,7 @@ jQuery( document ).ready( function( $ ) {
             $( "#wpsl-show-geocode-response" ).on( "click", function( e ) {
                 self.createDialog();
 
-                wpslAdmin.init( "wpsl-geocode-preview" );
+                initializeGmap("wpsl-geocode-preview" );
 
                 // Make sure we don't add the same message twice.
                 if ( !$( ".wpsl-geocode-warning span" ).length ) {
@@ -389,6 +380,10 @@ jQuery( document ).ready( function( $ ) {
         },
     };
 
+    if ( $( "#wpsl-gmap-wrap" ).length ) {
+        initializeGmap();
+    }
+
     /**
      * If we are on the settings page, then init the API tools.
      */
@@ -404,7 +399,7 @@ jQuery( document ).ready( function( $ ) {
      * @param   string mapId The ID of the element to render the map in
      * @returns {void}
      */
-    wpslAdmin.init = function( mapId = "wpsl-gmap-wrap" ) {
+    function initializeGmap( mapId = "wpsl-gmap-wrap" ) {
         var defaultLatLng = wpslSettings.defaultLatLng.split( "," ),
             mapOptions;
 
@@ -424,11 +419,6 @@ jQuery( document ).ready( function( $ ) {
         map		  = new google.maps.Map( document.getElementById( mapId ), mapOptions );
 
         checkEditStoreMarker();
-
-        // If we have a city/country input field enable the autocomplete.
-        if ( $( "#wpsl-start-name" ).length ) {
-            activateAutoComplete();
-        }
     }
 
     /**
@@ -452,6 +442,11 @@ jQuery( document ).ready( function( $ ) {
             map.setZoom( 16 );
             addMarker( location );
         }
+    }
+
+    // If we have a city/country input field enable the autocomplete.
+    if ( $( "#wpsl-start-name" ).length ) {
+        activateAutoComplete();
     }
 
     /**

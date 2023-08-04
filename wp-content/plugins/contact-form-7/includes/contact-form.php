@@ -33,7 +33,7 @@ class WPCF7_ContactForm {
 	/**
 	 * Returns the contact form that is currently processed.
 	 *
-	 * @return WPCF7_ContactForm|null Current contact form object. Null if unset.
+	 * @return WPCF7_ContactForm Current contact form object.
 	 */
 	public static function get_current() {
 		return self::$current;
@@ -116,7 +116,7 @@ class WPCF7_ContactForm {
 			$args['locale'] = determine_locale();
 		}
 
-		$callback = static function ( $args ) {
+		$callback = function ( $args ) {
 			$contact_form = new self;
 			$contact_form->title = $args['title'];
 			$contact_form->locale = $args['locale'];
@@ -151,25 +151,19 @@ class WPCF7_ContactForm {
 
 
 	/**
-	 * Creates a WPCF7_ContactForm object and sets it as the current instance.
+	 * Returns an instance of WPCF7_ContactForm.
 	 *
-	 * @param WPCF7_ContactForm|WP_Post|int $post Object or post ID.
-	 * @return WPCF7_ContactForm|null Contact form object. Null if unset.
+	 * @return WPCF7_ContactForm A new contact form object.
 	 */
 	public static function get_instance( $post ) {
-		$contact_form = null;
+		$post = get_post( $post );
 
-		if ( $post instanceof self ) {
-			$contact_form = $post;
-		} elseif ( ! empty( $post ) ) {
-			$post = get_post( $post );
-
-			if ( isset( $post ) and self::post_type === get_post_type( $post ) ) {
-				$contact_form = new self( $post );
-			}
+		if ( ! $post
+		or self::post_type != get_post_type( $post ) ) {
+			return false;
 		}
 
-		return self::$current = $contact_form;
+		return self::$current = new self( $post );
 	}
 
 
@@ -289,7 +283,7 @@ class WPCF7_ContactForm {
 		// Filtering out properties with invalid name
 		$properties = array_filter(
 			$properties,
-			static function ( $key ) {
+			function ( $key ) {
 				$sanitized_key = sanitize_key( $key );
 				return $key === $sanitized_key;
 			},

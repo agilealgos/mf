@@ -29,8 +29,6 @@ use FacebookAds\Cursor;
 use FacebookAds\Http\RequestInterface;
 use FacebookAds\TypeChecker;
 use FacebookAds\Object\Fields\ProductSetFields;
-use FacebookAds\Object\Values\ProductItemErrorPriorityValues;
-use FacebookAds\Object\Values\ProductItemErrorTypeValues;
 
 /**
  * This class is auto-generated.
@@ -203,9 +201,9 @@ class ProductSet extends AbstractCrudObject {
       $this->data['id'],
       RequestInterface::METHOD_GET,
       '/media_titles',
-      new MediaTitle(),
+      new AbstractCrudObject(),
       'EDGE',
-      MediaTitle::getFieldsEnum()->getValues(),
+      array(),
       new TypeChecker($param_types, $enums)
     );
     $request->addParams($params);
@@ -218,13 +216,9 @@ class ProductSet extends AbstractCrudObject {
 
     $param_types = array(
       'bulk_pagination' => 'bool',
-      'error_priority' => 'error_priority_enum',
-      'error_type' => 'error_type_enum',
       'filter' => 'Object',
     );
     $enums = array(
-      'error_priority_enum' => ProductItemErrorPriorityValues::getInstance()->getValues(),
-      'error_type_enum' => ProductItemErrorTypeValues::getInstance()->getValues(),
     );
 
     $request = new ApiRequest(
@@ -347,7 +341,6 @@ class ProductSet extends AbstractCrudObject {
       'metadata' => 'map',
       'name' => 'string',
       'ordering_info' => 'list<unsigned int>',
-      'publish_to_shops' => 'list<map>',
       'retailer_id' => 'string',
     );
     $enums = array(

@@ -30,7 +30,6 @@ use FacebookAds\Http\RequestInterface;
 use FacebookAds\TypeChecker;
 use FacebookAds\Object\Fields\JobsJobFields;
 use FacebookAds\Object\Values\JobsJobImageFetchStatusValues;
-use FacebookAds\Object\Values\JobsJobVisibilityValues;
 
 /**
  * This class is auto-generated.
@@ -53,7 +52,6 @@ class JobsJob extends AbstractCrudObject {
   protected static function getReferencedEnums() {
     $ref_enums = array();
     $ref_enums['ImageFetchStatus'] = JobsJobImageFetchStatusValues::getInstance()->getValues();
-    $ref_enums['Visibility'] = JobsJobVisibilityValues::getInstance()->getValues();
     return $ref_enums;
   }
 

@@ -59,7 +59,6 @@ class HotelFields extends AbstractEnum {
   const STAR_RATING = 'star_rating';
   const UNIT_PRICE = 'unit_price';
   const URL = 'url';
-  const VISIBILITY = 'visibility';
   const BASE_PRICE = 'base_price';
 
   public function getFieldTypes() {
@@ -86,7 +85,6 @@ class HotelFields extends AbstractEnum {
       'star_rating' => 'float',
       'unit_price' => 'Object',
       'url' => 'string',
-      'visibility' => 'Visibility',
       'base_price' => 'unsigned int',
     );
   }

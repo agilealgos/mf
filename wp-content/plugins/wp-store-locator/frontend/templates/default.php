@@ -8,10 +8,54 @@ $output .= '<div id="wpsl-wrap">' . "\r\n";
 $output .= "\t" . '<div class="wpsl-search wpsl-clearfix ' . $this->get_css_classes() . '">' . "\r\n";
 $output .= "\t\t" . '<div id="wpsl-search-wrap">' . "\r\n";
 $output .= "\t\t\t" . '<form autocomplete="off">' . "\r\n";
-$output .= "\t\t\t" . '<div class="wpsl-input">' . "\r\n";
+$output .= "\t\t\t" . '<div class="wpsl-input" style="display:none;">' . "\r\n";
 $output .= "\t\t\t\t" . '<div><label for="wpsl-search-input">' . esc_html( $wpsl->i18n->get_translation( 'search_label', __( 'Your location', 'wpsl' ) ) ) . '</label></div>' . "\r\n";
 $output .= "\t\t\t\t" . '<input id="wpsl-search-input" type="text" value="' . apply_filters( 'wpsl_search_input', '' ) . '" name="wpsl-search-input" placeholder="" aria-required="true" />' . "\r\n";
 $output .= "\t\t\t" . '</div>' . "\r\n";
+
+
+$output .= "\t\t\t" . '<div class="wpsl-select-wrap">' . "\r\n";
+$output .= "\t\t\t\t" . '<div><label for="wpsl-search-state">State</label></div>' . "\r\n";
+$output .= "\t\t\t\t" . '<div><select name="wpsl-search-state" style="display: block;" onchange="stateChange(this);">' . "\r\n";
+$output .= '<option value="" data-city="">Select State</option>';
+$output .= '<option value="Karnataka" data-city="Bangalore,Mangaluru">Karnataka</option>';
+$output .= '<option value="Maharashtra" data-city="Mumbai,Thane">Maharashtra</option>';
+$output .= '<option value="Punjab" data-city="Ludhiana,Chandigarh">Punjab</option>';
+$output .= '<option value="Telangana" data-city="Hyderabad">Telangana</option>';
+$output .= '<option value="Tamil Nadu" data-city="Chennai">Tamil Nadu</option>';
+$output .= '<option value="Delhi" data-city="Delhi">Delhi</option>';
+$output .= '<option value="Haryana" data-city="Gurugram">Haryana</option>';
+$output .= '<option value="Andhra Pradesh" data-city="Vijayawada">Andhra Pradesh</option>';
+$output .= '<option value="Uttar Pradesh" data-city="Noida">Uttar Pradesh</option>';
+$output .= '</select></div>';
+$output .= "\t\t\t" . '</div>' . "\r\n";
+
+
+$output .= "\t\t\t" . '<div class="wpsl-select-wrap">' . "\r\n";
+$output .= "\t\t\t\t" . '<div><label for="wpsl-search-city">City</label></div>' . "\r\n";
+$output .= "\t\t\t\t" . '<div><select name="wpsl-search-city" id="city-dropdown" style="display: block;" onchange="cityChange(this);">' . "\r\n";
+$output .= '<option value="">Select City</option>';
+$output .= '</select></div>';
+$output .= "\t\t\t" . '</div>' . "\r\n";
+
+$output .= "<script>
+    function stateChange(select){
+        var state = select.value;
+        var opt = select.options[select.selectedIndex];
+        var city = opt.dataset.city;
+        var citys = city.split(',');
+        var html = '<option value=\"\">Select City</option>';
+        for (let x in citys) {
+            html += '<option value=\"'+state+' '+citys[x]+'\">'+citys[x]+'</option>';
+        }
+        jQuery('#city-dropdown').html(html);
+        jQuery('#wpsl-search-input').val(state);
+    }
+    function cityChange(select){
+        city = select.value;
+        jQuery('#wpsl-search-input').val(city);
+    }
+</script>";
 
 if ( $wpsl_settings['radius_dropdown'] || $wpsl_settings['results_dropdown']  ) {
     $output .= "\t\t\t" . '<div class="wpsl-select-wrap">' . "\r\n";
