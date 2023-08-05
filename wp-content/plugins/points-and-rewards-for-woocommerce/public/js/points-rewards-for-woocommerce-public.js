@@ -31,6 +31,21 @@
 	$( document ).ready(
 		function() {
 
+				// Restrict rewards points settings features.
+				if ( 'active' == wps_wpr.is_restrict_status_set ) {
+					if ( wps_wpr.is_restrict_message_enable ) {
+						$('.wps_wpr_restrict_user_message').hide();
+						$('.wps_wpr_show_restrict_message').html(wps_wpr.wps_restrict_rewards_msg);
+						$('.wps_wpr_show_restrict_message').css('color', 'red');
+					}
+
+					// get current url and reset url.
+					var oldURL = window.location.protocol +"//" + window.location.host + window.location.pathname;
+					if (window.history !='undefined' && window.history.pushState !='undefined') {
+						window.history.pushState({ path: oldURL },'', oldURL);
+					}
+				}
+
 				/*create clipboard */
 				var btns      = document.querySelectorAll( 'button' );
 				var message   = '';
@@ -66,19 +81,19 @@
 					'#wps_cart_points_apply',
 					function(){
 						var user_id                  = $( this ).data( 'id' );
-						var user_total_point         = wps_wpr.wps_user_current_points;
+						var user_total_point         = wps_wpr.wps_user_current_points.trim();
 						var order_limit              = $( this ).data( 'order-limit' );
 						var message                  = '';
 						var html                     = '';
 						var wps_wpr_cart_points_rate = wps_wpr.wps_wpr_cart_points_rate;
 						var wps_wpr_cart_price_rate  = wps_wpr.wps_wpr_cart_price_rate;
-						var wps_cart_points          = $( '#wps_cart_points' ).val();
+						var wps_cart_points          = $( '#wps_cart_points' ).val().trim();
 
 						$( "#wps_wpr_cart_points_notice" ).html( "" );
 						$( "wps_wpr_cart_points_success" ).html( "" );
 
 						if (wps_cart_points !== 'undefined' && wps_cart_points !== '' && wps_cart_points !== null && wps_cart_points > 0) {
-							if (user_total_point !== null && user_total_point > 0 && user_total_point >= wps_cart_points ) {
+							if (user_total_point !== null && user_total_point > 0 && parseFloat( user_total_point ) >= parseFloat( wps_cart_points ) ) {
 
 								block( $( '.woocommerce-cart-form' ) );
 								block( $( '.woocommerce-checkout' ) );
@@ -113,7 +128,33 @@
 										complete: function(){
 											unblock( $( '.woocommerce-cart-form' ) );
 											unblock( $( '.woocommerce-cart-form' ) );
-											location.reload();
+
+											if ( ! wps_wpr.checkout_page ) {
+												$( 'html, body' ).animate(
+													{
+														scrollTop: jQuery( ".woocommerce-cart-form" ).offset().top
+													},
+													800
+												);
+											}
+											// Restrict rewards points settings features.
+											if ( wps_wpr.is_restrict_message_enable ) {
+
+												// set new url from here.
+												var oldURL = window.location.protocol +"//" + window.location.host + window.location.pathname;
+												var newUrl = oldURL +"?status=" + "active";
+												if (window.history !='undefined' && window.history.pushState !='undefined') {
+													window.history.pushState({ path: newUrl },'', newUrl);
+												}
+												setTimeout(() => {
+													location.reload();
+												}, 1500);
+											} else {
+
+												setTimeout(() => {
+													location.reload();
+												}, 1500);
+											}
 										}
 									}
 								);
@@ -285,7 +326,6 @@
 						$('#wps_wpr_custom_wallet').prop('disabled', false);
 						$( "#wps_wpr_wallet_notification" ).html( '<b style="color:red;">' + wps_wpr.empty_notice + '</b>' )
 					}
-			}
-	);
+				});
 		});
 })( jQuery );
