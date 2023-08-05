@@ -51,10 +51,13 @@ function wpcf7_reflection_form_tag_handler( $tag ) {
 
 	$content = array_reduce(
 		$values,
-		function ( $carry, $item ) use ( $tag ) {
+		static function ( $carry, $item ) use ( $tag ) {
 			$output_tag = sprintf(
-				'<output name="%1$s">%2$s</output>',
-				esc_attr( $tag->name ),
+				'<output %1$s>%2$s</output>',
+				wpcf7_format_atts( array(
+					'name' => $tag->name,
+					'data-default' => $item,
+				) ),
 				( '' !== $item ) ? esc_html( $item ) : '&nbsp;'
 			);
 
@@ -101,6 +104,7 @@ function wpcf7_output_form_tag_handler( $tag ) {
 		'<output %1$s>%2$s</output>',
 		wpcf7_format_atts( array(
 			'data-reflection-of' => $tag->name,
+			'data-default' => $value,
 			'name' => $tag->name,
 			'class' => $tag->get_class_option(
 				wpcf7_form_controls_class( $tag->type )
