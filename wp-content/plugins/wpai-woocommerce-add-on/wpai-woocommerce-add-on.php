@@ -3,7 +3,7 @@
 Plugin Name: WP All Import - WooCommerce Import Add-On Pro
 Plugin URI: http://www.wpallimport.com/
 Description: Import to WooCommerce. Adds a section to WP All Import that looks just like WooCommerce. Requires WP All Import.
-Version: 3.3.6
+Version: 3.3.7
 Author: Soflyy
 WC tested up to: 6.2
 */
@@ -20,7 +20,7 @@ if ( is_plugin_active('woocommerce-xml-csv-product-import/plugin.php') ) {
 }
 else {
 
-    define('PMWI_VERSION', '3.3.6');
+    define('PMWI_VERSION', '3.3.7');
 
 	define('PMWI_EDITION', 'paid');
 
@@ -361,6 +361,57 @@ else {
 			$page = strtolower($input->getpost('page', ''));
 			if (preg_match('%^' . preg_quote(str_replace('_', '-', self::PREFIX), '%') . '([\w-]+)$%', $page)) {
 				$this->adminDispatcher($page, strtolower($input->getpost('action', 'index')));
+			}
+
+			// Temporary JS to support older WP All Import versions.
+			wp_enqueue_script('pmwi-temp-notice-script', PMWI_ROOT_URL . '/static/js/temporary-beta-notice.js', array('jquery', 'jquery-ui-core', 'jquery-ui-resizable', 'jquery-ui-dialog', 'jquery-ui-datepicker', 'jquery-ui-draggable', 'jquery-ui-droppable', 'pmxi-admin-script'), PMWI_VERSION);
+
+			// Only process the notice code when on manage import pages.
+			if( 'pmxi-admin-manage' === $page) {
+				// Display a notice if there are order imports.
+				global $wpdb;
+
+				$query = "SELECT id FROM {$wpdb->prefix}pmxi_imports WHERE options LIKE '%s:11:\"custom_type\";s:10:\"shop_order\";%'";
+
+				$list = $wpdb->get_results($query);
+				$count = count($list);
+				$pmxi_instance = \PMXI_Plugin::getInstance();
+				$term = isset($_GET['id']) ? 'this import' : 'these imports';
+
+				$is_affected_import = false;
+
+				if( isset($_GET['id'])) {
+					foreach ( $list as $import ) {
+
+						if ($import->id == $_GET['id']){
+							$is_affected_import = true;
+							break;
+						}
+					}
+				}
+
+				// Only display the notice if there are WooCommerce Order imports.
+				if ( !empty($count) && (!isset($_GET['id']) || $is_affected_import)) {
+
+					// Workaround code for old versions of WP All Import without the updated notice handling.
+					$oldOptionValue = get_option('wpai_dismiss_warnings_wpai_woocommerce_addon_plugin_33858_notice_ignore', 'not-exists');
+					if( 'not-exists' !== $oldOptionValue && 'not-exists' === get_option('wpai_dismiss_warnings_wpai_woocommerce_addon_plugin_33858', 'not-exists')){
+						update_option('wpai_dismiss_warnings_wpai_woocommerce_addon_plugin_33858', $oldOptionValue, false);
+					}
+
+					$notice_reference = $this::TEXT_DOMAIN . '_33858';
+
+					$notice_text = <<<EOT
+<div id="wpai-wooco-beta-notice" rel="wpai_dismiss_warnings_$notice_reference" style="padding-left:15px;padding-right:15px;margin:0 auto;"><span style="font-weight:600;font-size:14px;">A new version of the WooCommerce Import Add-On is currently in beta.</span><br/> It features a new UI for order imports and while it will be able to map your import settings over, some import configurations will result in different behavior. If you intend to re-run $term in the future, we highly recommend that you test the beta in a testing environment to ensure orders are imported as expected before updating to the new version when it is released.<br/><br/>
+
+You can download the beta version of the WooCommerce Import Add-On at <a target="_blank" href="https://www.wpallimport.com/portal/downloads/">https://www.wpallimport.com/portal/downloads/</a>.<br/><br/>
+
+We are available at <a target="_blank" href="http://www.wpallimport.com/support/">https://www.wpallimport.com/support/</a> if you encounter any issues.
+</div>
+
+EOT;
+					$pmxi_instance->showDismissibleNotice( $notice_text, $this::TEXT_DOMAIN . '_33858' );
+				}
 			}
 		}
 
