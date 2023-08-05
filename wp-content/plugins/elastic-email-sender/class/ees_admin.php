@@ -132,9 +132,6 @@ class eeadmin5120420526
             $issub = $account['data']['issub'];
         }
 
-        if (get_option('ee_accountemail') !== null) {
-            $this->addToUserList('A');
-        }
 
         if (!filter_var(get_option('ee_is_created_channels'), FILTER_VALIDATE_BOOLEAN)) {
 
@@ -164,18 +161,6 @@ class eeadmin5120420526
         } catch (ElasticEmailClient\ApiException $e) {
             $error = $e->getMessage();
             $channelAdd = [];
-        }
-    }
-
-    public function addToUserList($status)
-    {
-        $this->initAPI();
-        try {
-            $addToUserListAPI = new \ElasticEmailClient\Contact();
-            $error = null;
-            $addToUserList = $addToUserListAPI->Add('d0bcb758-a55c-44bc-927c-34f48d5db864', get_option('ee_accountemail'), ['55c8fa37-4c77-45d0-8675-0937d034c605'], [], $status, get_site_url(), null, null, null, null, null, false, null, null, [], null);
-        } catch (Exception $ex) {
-            $addToUserList = [];
         }
     }
 
@@ -398,7 +383,7 @@ class eeadmin5120420526
     public function input_apikey($arg)
     {
         $apikey = $this->options[$arg['input_name']];
-        update_option('ee-apikey', $apikey);
+        update_option('ee-apikey', filter_var($apikey, FILTER_SANITIZE_NUMBER_INT));
         if (empty($apikey) === false) {
             $apikey = '**********' . substr($apikey, strlen($apikey) - 5, strlen($apikey));
         }
@@ -532,7 +517,8 @@ class eeadmin5120420526
             update_option('ee_config_from_name', null);
         } else {
             $config_from_name = $this->options[$arg['input_name']];
-            update_option('ee_config_from_name', $config_from_name);
+            update_option('ee_config_from_name', filter_var($config_from_name, FILTER_SANITIZE_STRING));
+
             /**Adding filter  to override wp_mail_from_name field , if the option is checked */
             if (get_option('ee_config_override_wooCommerce')) {
                 do_action('WooCommerce_name');
@@ -542,7 +528,7 @@ class eeadmin5120420526
                 type="text"
                 name="ee_options[' . $arg['input_name'] . ']"
                 placeholder="' . __('From name', 'elastic-email-sender') . '"
-                value="' . $config_from_name . '"
+                value="' . filter_var($config_from_name, FILTER_SANITIZE_STRING) . '"
                 style="width:' . $arg['width'] . 'px"
               />';
     }
@@ -552,18 +538,26 @@ class eeadmin5120420526
      */
     public function from_email_config_input($arg)
     {
+        $valid = true;
         if (!isset($this->options[$arg['input_name']]) || empty($this->options[$arg['input_name']])) {
             $config_from_email = '';
             update_option('ee_config_from_email', null);
 
         } else {
             $config_from_email = $this->options[$arg['input_name']];
-            update_option('ee_config_from_email', $config_from_email);
+
+            if (filter_var($config_from_email, FILTER_VALIDATE_EMAIL)) {
+                $valid = true;
+                update_option('ee_config_from_email', $config_from_email);
+            } else {
+                $valid = false;
+                $config_from_email = '';
+            }
+            
             /**Adding filter  to override wp_mail_from field , if the option is checked */
             if (get_option('ee_config_override_wooCommerce')) {
                 do_action('WooCommerce_email');
             }
-
         }
         echo '<input
                 type="text"
@@ -572,6 +566,10 @@ class eeadmin5120420526
                 value="' . $config_from_email . '"
                 style="width:' . $arg['width'] . 'px"
               />';
+
+        if (!$valid) {
+            _e(' is not a valid email address.', 'elastic-email-sender');
+        }
     }
 
     /**
