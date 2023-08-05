@@ -5,6 +5,7 @@
  */
 $config = array(
     "info_api_url" => "https://www.wpallimport.com",
+	"info_api_url_new" => "https://update.wpallimport.com",
 	"history_file_count" => 10000,
 	"history_file_age" => 365,
 	"highlight_limit" => 10000,

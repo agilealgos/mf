@@ -165,7 +165,7 @@
         <?php if ( $post_type == 'product' ): ?>
             <div class="input">
                 <input type="hidden" name="missing_records_stock_status" value="0" />
-                <input type="checkbox" id="missing_records_stock_status" name="missing_records_stock_status" value="1" <?php echo $post['missing_records_stock_status'] ? 'checked="checked"': '' ?>/>
+                <input type="checkbox" id="missing_records_stock_status" name="missing_records_stock_status" value="1" <?php echo !empty($post['missing_records_stock_status']) ? 'checked="checked"': '' ?>/>
                 <label for="missing_records_stock_status"><?php printf(__('Change stock status of removed %s to', 'wp_all_import_plugin'), $cpt_name); ?></label>
                 <select name="status_of_removed_products" style="height: 20px; width: 150px; font-size: 12px !important; padding-top: 2px;top:-1px;">
                     <option value="outofstock" <?php if ('outofstock' == $post['status_of_removed_products']):?>selected="selected"<?php endif; ?>><?php _e('Out of stock');?></option>

@@ -1,14 +1,14 @@
 <div class="wpallimport-collapsed closed wpallimport-section">
 	<div class="wpallimport-content-section">
 		<div class="wpallimport-collapsed-header">
-			<h3><?php _e('Configure Advanced Settings','wp_all_import_plugin');?></h3>	
+			<h3><?php _e('Configure Advanced Settings','wp_all_import_plugin');?></h3>
 		</div>
 		<div class="wpallimport-collapsed-content" style="padding: 0;">
-			<div class="wpallimport-collapsed-content-inner">				
+			<div class="wpallimport-collapsed-content-inner">
 				<table class="form-table" style="max-width:none;">
 					<tr>
 						<td colspan="3">
-							<h4><?php _e('Import Speed Optimization', 'wp_all_import_plugin'); ?></h4>									
+							<h4><?php _e('Import Speed Optimization', 'wp_all_import_plugin'); ?></h4>
 							<div class="input">
                                 <label for="processing_iteration_logic_custom"><?php _e('In each iteration, process', 'wp_all_import_plugin');?></label> <input type="text" name="records_per_request" style="vertical-align:middle; font-size:11px; background:#fff !important; width: 40px; text-align:center;" value="<?php echo esc_attr($post['records_per_request']) ?>" /> <?php _e('records', 'wp_all_import_plugin'); ?>
                                 <a href="#help" class="wpallimport-help" style="position: relative; top: -2px;" title="<?php _e('WP All Import must be able to process this many records in less than your server\'s timeout settings. If your import fails before completion, to troubleshoot you should lower this number. If you are importing images, especially high resolution images, high numbers here are probably a bad idea, since downloading the images can take lots of time - for example, 20 posts with 5 images each = 100 images. At 500Kb per image that\'s 50Mb that needs to be downloaded. Can your server download that before timing out? If not, the import will fail.', 'wp_all_import_plugin'); ?>">?</a>
@@ -19,13 +19,13 @@
                                     <label for="chuncking"><?php _e('Split file up into <strong>' . PMXI_Plugin::getInstance()->getOption('large_feed_limit') . '</strong> record chunks.', 'wp_all_import_plugin');?></label>
                                     <a href="#help" class="wpallimport-help" style="position: relative; top: -2px;" title="<?php _e('This option will decrease the amount of slowdown experienced at the end of large imports. The slowdown is partially caused by the need for WP All Import to read deeper and deeper into the file on each successive iteration. Splitting the file into pieces means that, for example, instead of having to read 19000 records into a 20000 record file when importing the last 1000 records, WP All Import will just split it into 20 chunks, and then read the last chunk from the beginning.','wp_all_import_plugin'); ?>">?</a>
                                 </div>
-							</div>				
+							</div>
 							<div class="input">
 								<input type="hidden" name="is_fast_mode" value="0" />
 								<input type="checkbox" id="is_fast_mode" name="is_fast_mode" value="1" class="fix_checkbox" <?php echo $post['is_fast_mode'] ? 'checked="checked"': '' ?>/>
-								<label for="is_fast_mode"><?php _e('Increase speed by disabling do_action calls in wp_insert_post during import.', 'wp_all_import_plugin') ?> 
+								<label for="is_fast_mode"><?php _e('Increase speed by disabling do_action calls in wp_insert_post during import.', 'wp_all_import_plugin') ?>
 									<a href="#help" class="wpallimport-help" style="position: relative; top: -2px;" title="<?php _e('This option is for advanced users with knowledge of WordPress development. Your theme or plugins may require these calls when posts are created. Next action will be disabled: \'transition_post_status\', \'save_post\', \'pre_post_update\', \'add_attachment\', \'edit_attachment\', \'edit_post\', \'post_updated\', \'wp_insert_post\'. Verify your created posts work properly if you check this box.', 'wp_all_import_plugin') ?>">?</a></label>
-							</div>					
+							</div>
 							<?php if ( ! $this->isWizard ): ?>
 
 								<?php if ( 'taxonomies' == $post['custom_type'] ):?>
@@ -35,7 +35,7 @@
 									<h4><?php _e('Post Type', 'wp_all_import_plugin'); ?></h4>
 									<p><?php _e('Editing this will change the post type of the posts processed by this import. Re-run the import for the changes to take effect.', 'wp_all_import_plugin');?></p> <br>
 								<?php endif; ?>
-									
+
 								<input type="hidden" name="custom_type" value="<?php echo $post['custom_type'];?>">
 
 								<?php if ( 'taxonomies' == $post['custom_type'] ):?>
@@ -67,9 +67,10 @@
 										'oembed_cache',
                                         'wp_block',
                                         'user_request',
-                                        'scheduled-action'
+                                        'scheduled-action',
+                                        'wp_navigation'
 									);
-									$custom_types = get_post_types(array('_builtin' => true), 'objects') + get_post_types(array('_builtin' => false, 'show_ui' => true), 'objects'); 
+									$custom_types = get_post_types(array('_builtin' => true), 'objects') + get_post_types(array('_builtin' => false, 'show_ui' => true), 'objects');
 									foreach ($custom_types as $key => $ct) {
 										if (in_array($key, $hiddenPosts)) unset($custom_types[$key]);
 									}
@@ -117,7 +118,7 @@
 									}
 									$hidden_post_types = apply_filters( 'pmxi_custom_types', $hidden_post_types, 'hidden_post_types' );
 
-								?>	
+								?>
 								<div class="wpallimport-change-custom-type">
 
 								    <select name="custom_type_selector" id="custom_type_selector" class="wpallimport-post-types">
@@ -138,15 +139,15 @@
                                         if ( ! in_array( $key, $ordered_posts ) ) {
                                             array_push( $ordered_posts, $key );
                                         }
-                                    }                                    
-                                    
-                                    $order_arr          = apply_filters( 'pmxi_post_list_order', $ordered_posts );                                    
+                                    }
+
+                                    $order_arr          = apply_filters( 'pmxi_post_list_order', $ordered_posts );
                                     $image_data         = apply_filters( 'wp_all_import_post_type_image', array() );
 
                                     foreach ( $order_arr as $key => $post_name ) {
                                         if ( array_key_exists( $post_name, $all_posts ) ) {
                                             $post_obj = $all_posts[ $post_name ];
-                                            
+
                                             if ( in_array( $post_name, $known_imgs ) ) {
                                                 $image_src = 'dashicon-' . $post_name;
                                             } else {
@@ -157,28 +158,28 @@
                                             } else {
                                                 $custom_img_defined = false;
                                             }
-                                            
-                                            $original_image_src = $image_src;                                                                                                 
+
+                                            $original_image_src = $image_src;
                                             $cpt = $post_name;
                                             $cpt_label = $post_obj->labels->name;
-                                            
+
                                             // Allows the MyListing add-on to select the listing type that was imported.
                                             $custom_selected_post = apply_filters( 'wpai_custom_selected_post', false, $post, $cpt, 'settings' );
 
                                             $img_to_echo = 'dashicon ';
 
-                                            if ( $custom_img_defined === true ) { 
-                                                $img_to_echo .= $image_data[ $cpt ]['image']; 
+                                            if ( $custom_img_defined === true ) {
+                                                $img_to_echo .= $image_data[ $cpt ]['image'];
                                             } else {
                                                 $img_to_echo .= $image_src;
                                             }
-                                            
+
                                             ?>
                                             <option value="<?php echo $cpt; ?>" data-imagesrc="<?php echo $img_to_echo; ?>" <?php if ( $custom_selected_post === true ):?>selected="selected"<?php else: if ( $cpt == $post['custom_type'] ):?>selected="selected"<?php endif; endif; ?>><?php echo $cpt_label; ?></option>
                                             <?php
                                         }
 
-                                    }                                    
+                                    }
                                     ?>
                                     </select>
 
@@ -254,32 +255,32 @@
 									</div>
 								</div>
 							</div>
-							<?php if (isset($source_type) and in_array($source_type, array('ftp', 'file'))): ?>						
+							<?php if (isset($source_type) and in_array($source_type, array('ftp', 'file'))): ?>
 								<div class="input">
 									<input type="hidden" name="is_delete_source" value="0" />
 									<input type="checkbox" id="is_delete_source" class="fix_checkbox" name="is_delete_source" value="1" <?php echo $post['is_delete_source'] ? 'checked="checked"': '' ?>/>
 									<label for="is_delete_source"><?php _e('Delete source XML file after importing', 'wp_all_import_plugin') ?> <a href="#help" class="wpallimport-help" style="position:relative; top:0;" title="<?php _e('This setting takes effect only when script has access rights to perform the action, e.g. file is not deleted when pulled via HTTP or delete permission is not granted to the user that script is executed under.', 'wp_all_import_plugin') ?>">?</a></label>
-								</div>						
+								</div>
 							<?php endif; ?>
-							<?php if (class_exists('PMLC_Plugin')): // option is only valid when `WP Wizard Cloak` pluign is enabled ?>						
+							<?php if (class_exists('PMLC_Plugin')): // option is only valid when `WP Wizard Cloak` pluign is enabled ?>
 								<div class="input">
 									<input type="hidden" name="is_cloak" value="0" />
 									<input type="checkbox" id="is_cloak" class="fix_checkbox" name="is_cloak" value="1" <?php echo $post['is_cloak'] ? 'checked="checked"': '' ?>/>
 									<label for="is_cloak"><?php _e('Auto-Cloak Links', 'wp_all_import_plugin') ?> <a href="#help" class="wpallimport-help" style="position:relative; top:0;" title="<?php printf(__('Automatically process all links present in body of created post or page with <b>%s</b> plugin', 'wp_all_import_plugin'), PMLC_Plugin::getInstance()->getName()) ?>">?</a></label>
-								</div> 						
-							<?php endif; ?>							
+								</div>
+							<?php endif; ?>
 							<div class="input">
 								<input type="hidden" name="xml_reader_engine" value="0" />
-								
+
 								<?php if ( PMXI_Plugin::getInstance()->getOption('force_stream_reader') ): ?>
 									<input type="checkbox" id="xml_reader_engine" class="fix_checkbox" name="xml_reader_engine" value="1" checked="checked" disabled="disabled"/>
 									<label for="xml_reader_engine"><?php _e('Use StreamReader instead of XMLReader to parse import file', 'wp_all_import_plugin') ?> <a href="#help" class="wpallimport-help" style="position:relative; top:0;" title="<?php _e('WP All Import is being forced to use Stream Reader for all imports. Go to WP All Import ▸ Settings to modify this setting.', 'wp_all_import_plugin'); ?>">?</a></label>
 								<?php else : ?>
 									<input type="checkbox" id="xml_reader_engine" class="fix_checkbox" name="xml_reader_engine" value="1" <?php echo $post['xml_reader_engine'] ? 'checked="checked"': '' ?>/>
 									<label for="xml_reader_engine"><?php _e('Use StreamReader instead of XMLReader to parse import file', 'wp_all_import_plugin') ?> <a href="#help" class="wpallimport-help" style="position:relative; top:0;" title="<?php _e('XMLReader is much faster, but has a bug that sometimes prevents certain records from being imported with import files that contain special cases.', 'wp_all_import_plugin'); ?>">?</a></label>
-								<?php endif; ?>																	
+								<?php endif; ?>
 							</div>
-							
+
 							<div class="input" style="margin-top: 15px;">
 								<p><?php _e('Friendly Name','wp_all_import_plugin');?></p> <br>
 								<div class="input">

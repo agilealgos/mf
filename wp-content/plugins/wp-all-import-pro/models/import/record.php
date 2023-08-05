@@ -2217,6 +2217,18 @@ class PMXI_Import_Record extends PMXI_Model_Record {
                                     'import_id' => $this->id,
                                     'post_id' => $post_to_update_id
                                 ]);
+                                // Assign post with current import.
+                                $recordData = array(
+                                    'post_id' => $post_to_update_id,
+                                    'import_id' => $this->id,
+                                    'unique_key' => $unique_keys[$i]
+                                );
+                                $product_key = (($post_type[$i] == "product" and PMXI_Admin_Addons::get_addon('PMWI_Plugin')) ? $addons_data['PMWI_Plugin']['single_product_ID'][$i] : '');
+                                if ($post_type[$i] == "taxonomies"){
+                                    $product_key = 'taxonomy_term';
+                                }
+                                $recordData['product_key'] = $product_key;
+                                $postRecord->isEmpty() and $postRecord->set($recordData)->insert();
                             }
 						} else {
 							$logger and call_user_func($logger, sprintf(__('Duplicate post wasn\'t found for post `%s`...', 'wp_all_import_plugin'), $this->getRecordTitle($articleData)));
@@ -2275,7 +2287,8 @@ class PMXI_Import_Record extends PMXI_Model_Record {
 					'ftp_port'                 => '',
 					'ftp_root'                 => '',
 					'ftp_path'                 => '',
-					'ftp_host'                 => ''
+					'ftp_host'                 => '',
+                    'security'                 => ''
 				);
 
                 // Added Add-On options to ignore hash invalidation options.
@@ -2288,6 +2301,8 @@ class PMXI_Import_Record extends PMXI_Model_Record {
                         $hash_ignore_options[] = $slug . 'do_not_remove_images';
                     }
                 }
+
+                $hash_ignore_options = apply_filters('wp_all_import_hash_ignore_options', $hash_ignore_options, $this->id);
 
 				$missing_images = array();
 				// Duplicate record is found

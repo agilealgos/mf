@@ -373,7 +373,7 @@ class PMXI_Chunk {
 }
 
 class preprocessXml_filter extends php_user_filter {
-
+    #[\ReturnTypeWillChange]
     public function filter($in, $out, &$consumed, $closing) {
       while ($bucket = stream_bucket_make_writeable($in)) {
         $is_preprocess_enabled = apply_filters('is_xml_preprocess_enabled', true);

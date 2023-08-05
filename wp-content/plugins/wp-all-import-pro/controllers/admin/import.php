@@ -770,7 +770,14 @@ class PMXI_Admin_Import extends PMXI_Controller_Admin {
 		$this->data['import_action'] = $this->input->getpost('import_action', false);
 
 		if ($this->data['tagno']) {
-			$local_paths = ( ! empty(PMXI_Plugin::$session->local_paths) ) ? PMXI_Plugin::$session->local_paths : array(PMXI_Plugin::$session->filePath);
+            if (empty(PMXI_Plugin::$session->local_paths) && !empty(PMXI_Plugin::$session->filePath) && !file_exists(PMXI_Plugin::$session->filePath) && !empty(PMXI_Plugin::$session->update_previous)) {
+                $history_file = new PMXI_File_Record();
+                $history_file->getBy( array('import_id' => PMXI_Plugin::$session->update_previous), 'id DESC' );
+                $local_paths = ( ! $history_file->isEmpty() ) ? array(wp_all_import_get_absolute_path($history_file->path)) : array();
+            } else {
+                $local_paths = ( ! empty(PMXI_Plugin::$session->local_paths) ) ? PMXI_Plugin::$session->local_paths : array(PMXI_Plugin::$session->filePath);
+            }
+            $local_paths = array_filter($local_paths);
 			PMXI_Plugin::$session->set('local_paths', $local_paths);
 			$loop = 0;
             $xpath_value = $this->input->getpost('xpath', PMXI_Plugin::$session->xpath);
@@ -778,49 +785,51 @@ class PMXI_Admin_Import extends PMXI_Controller_Admin {
                 $this->data['tagno'] = 1;
             }
             $this->data['node_list_count'] = $this->data['tagno'] == 1 ? 0 : PMXI_Plugin::$session->count;
-            $this->data['elements'] = FALSE;
-			foreach ($local_paths as $key => $path) {
-				if (@file_exists($path)){
-					$file = new PMXI_Chunk($path, array(
-						'element' => PMXI_Plugin::$session->source['root_element'],
-						'encoding' => PMXI_Plugin::$session->encoding
-					));
-				    // loop through the file until all lines are read
-				    while ($xml = $file->read()) {
-				    	if ( ! empty($xml) ) {
-				      		//PMXI_Import_Record::preprocessXml($xml);
-				      		$xml = "<?xml version=\"1.0\" encoding=\"". PMXI_Plugin::$session->encoding ."\"?>" . "\n" . $xml;
-					      	$dom = new DOMDocument('1.0', PMXI_Plugin::$session->encoding);
-							$old = libxml_use_internal_errors(true);
-							$dom->loadXML($xml);
-							libxml_use_internal_errors($old);
-							$xpath = new DOMXPath($dom);
-                            $elements = @$xpath->query($xpath_value);
-							if ($elements and $elements->length){
+            if (!empty($local_paths)) {
+                $this->data['elements'] = FALSE;
+                foreach ($local_paths as $key => $path) {
+                    if (@file_exists($path)){
+                        $file = new PMXI_Chunk($path, array(
+                            'element' => PMXI_Plugin::$session->source['root_element'],
+                            'encoding' => PMXI_Plugin::$session->encoding
+                        ));
+                        // loop through the file until all lines are read
+                        while ($xml = $file->read()) {
+                            if ( ! empty($xml) ) {
+                                //PMXI_Import_Record::preprocessXml($xml);
+                                $xml = "<?xml version=\"1.0\" encoding=\"". PMXI_Plugin::$session->encoding ."\"?>" . "\n" . $xml;
+                                $dom = new DOMDocument('1.0', PMXI_Plugin::$session->encoding);
+                                $old = libxml_use_internal_errors(true);
+                                $dom->loadXML($xml);
+                                libxml_use_internal_errors($old);
+                                $xpath = new DOMXPath($dom);
+                                $elements = @$xpath->query($xpath_value);
+                                if ($elements and $elements->length){
 
-                                if ( $this->data['tagno'] == 1 ){
-                                    $this->data['node_list_count'] += $elements->length;
-                                    if (!$loop) $this->data['dom'] = $dom;
-                                }
+                                    if ( $this->data['tagno'] == 1 ){
+                                        $this->data['node_list_count'] += $elements->length;
+                                        if (!$loop) $this->data['dom'] = $dom;
+                                    }
 
-								$loop += $elements->length;
+                                    $loop += $elements->length;
 
-                                if ($loop == $this->data['tagno']) {
-                                    $this->data['elements'] = $elements;
-                                }
+                                    if ($loop == $this->data['tagno']) {
+                                        $this->data['elements'] = $elements;
+                                    }
 
-                                if ( $this->data['tagno'] > 1 and ($loop == $this->data['tagno'] or $loop == PMXI_Plugin::$session->count)) {
+                                    if ( $this->data['tagno'] > 1 and ($loop == $this->data['tagno'] or $loop == PMXI_Plugin::$session->count)) {
+                                        unset($dom, $xpath, $elements);
+                                        break(2);
+                                    }
+
                                     unset($dom, $xpath, $elements);
-                                    break(2);
                                 }
-
-								unset($dom, $xpath, $elements);
-							}
-					    }
-					}
-					unset($file);
-				}
-			}
+                            }
+                        }
+                        unset($file);
+                    }
+                }
+            }
 		}
 
 		if ( $is_json ) {
@@ -1424,27 +1433,29 @@ class PMXI_Admin_Import extends PMXI_Controller_Admin {
 //            $this->data['update_previous'] = new PMXI_Import_Record();
 //            $old = libxml_use_internal_errors(true);
 //
-            $xml = $this->get_xml();
-            @$this->data['dom']->loadXML($xml);
-
-            $xpath = new DOMXPath($this->data['dom']);
             $this->data['is_csv'] = PMXI_Plugin::$session->is_csv;
 
-			$this->data['source_type'] = $this->data['import']->type;
-			foreach (PMXI_Admin_Addons::get_active_addons() as $class) {
-				if (class_exists($class)) $default += call_user_func(array($class, "get_default_import_options"));
-			}
-			$DefaultOptions = (is_array($this->data['import']->options)) ? array_replace_recursive($default, $this->data['import']->options) : $default;
-			$source = array(
-				'name' => $this->data['import']->name,
-				'type' => $this->data['import']->type,
-				'path' => wp_all_import_get_relative_path($this->data['import']->path),
-				'root_element' => $this->data['import']->root_element,
-			);
-			PMXI_Plugin::$session->set('source', $source);
-			$post = $this->input->post( apply_filters('pmxi_options_options', $DefaultOptions, $this->isWizard) );
+            $this->data['source_type'] = $this->data['import']->type;
+            foreach (PMXI_Admin_Addons::get_active_addons() as $class) {
+                if (class_exists($class)) $default += call_user_func(array($class, "get_default_import_options"));
+            }
+            $DefaultOptions = (is_array($this->data['import']->options)) ? array_replace_recursive($default, $this->data['import']->options) : $default;
+            $source = array(
+                'name' => $this->data['import']->name,
+                'type' => $this->data['import']->type,
+                'path' => wp_all_import_get_relative_path($this->data['import']->path),
+                'root_element' => $this->data['import']->root_element,
+            );
+            PMXI_Plugin::$session->set('source', $source);
+            $post = $this->input->post( apply_filters('pmxi_options_options', $DefaultOptions, $this->isWizard) );
             $post['xpath'] = $this->data['import']->xpath;
-            $this->data['elements'] = $elements = $xpath->query($post['xpath']);
+
+            $xml = $this->get_xml();
+            if ( ! empty($xml) ) {
+                @$this->data['dom']->loadXML($xml);
+                $xpath = new DOMXPath($this->data['dom']);
+                $this->data['elements'] = $elements = $xpath->query($post['xpath']);
+            }
 		}
 
 		$max_input_vars = @ini_get('max_input_vars');
@@ -3018,7 +3029,7 @@ COMPLETE;
 
                     $encoding = PMXI_Plugin::$session->encoding ?? 'UTF-8';
 
-					$file = new PMXI_Chunk($path, array('element' => $root_element, 'encoding' => PMXI_Plugin::$session->encoding) );
+					$file = new PMXI_Chunk($path, array('element' => $root_element, 'encoding' => $encoding) );
 
 				    while ($xml = $file->read()) {
 

@@ -289,7 +289,8 @@
                                         'oembed_cache',
                                         'wp_block',
                                         'user_request',
-                                        'scheduled-action'
+                                        'scheduled-action',
+                                        'wp_navigation'
                                     );
 
 									$custom_types = get_post_types(array('_builtin' => true), 'objects') + get_post_types(array('_builtin' => false, 'show_ui' => true), 'objects');

@@ -25,12 +25,7 @@ if ( ! class_exists('PMXI_Upload')){
 			}
             // Get import ID from CLI arguments.
             if (empty($import_id) && PMXI_Plugin::getInstance()->isCli()) {
-                global $argv;
-                foreach ($argv as $key => $arg) {
-                    if ($arg === 'run' && !empty($argv[$key + 1])) {
-                        $import_id = $argv[$key + 1];
-                    }
-                }
+                $import_id = wp_all_import_get_import_id();
             }
 			if ( $uploads['error'] ) {
                 $this->uploadsPath = false;

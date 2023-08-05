@@ -53,7 +53,19 @@ if( ! class_exists('PMXI_Updater') ) {
             add_action( 'after_plugin_row_' . $this->name, array( $this, 'show_update_notification' ), 11, 2 );
             add_filter( 'plugin_row_meta', array( $this, 'plugin_row_meta' ), 10, 2 );
             add_filter( 'plugin_auto_update_setting_html', array( $this, 'plugin_auto_update_setting_html' ), 10, 3 );
+	        add_action( 'in_plugin_update_message-'.$this->name, [$this, 'custom_update_note'], 10, 2);
         }
+
+	    public function custom_update_note( $data, $response ){
+
+		    // Only show a custom note if one was included in the update data.
+		    if ( is_object($response) && !empty($response->custom_update_note) && !empty($response->update_note_version)){
+			    // Ensure that this version is the same or older than the note's target version.
+			    if( version_compare($this->version, $response->update_note_version, '<=')) {
+				    echo wp_kses( $response->custom_update_note, 'post' );
+			    }
+		    }
+	    }
 
         /**
          * Hide the 'Enable auto-updates' link.
@@ -316,12 +328,15 @@ if( ! class_exists('PMXI_Updater') ) {
             // If something went wrong with retrieving the columns, default to 3 for colspan.
             $colspan = ! is_countable( $columns ) ? 3 : count( $columns );
 
+            // The 'in_plugin_update_message-' hook actions are performed to match default updater behavior and to allow
+            // custom messages to be shown as provided by the update service.
             ?>
             <tr class="plugin-update-tr <?php echo $active; ?> wp-all-import-pro-custom">
                 <td colspan="<?php echo $colspan;?>" class="plugin-update colspanchange">
                     <div class="update-message <?php echo $update_msg_classes; ?>">
                         <p>
                             <?php echo $new_version; ?>
+                            <?php do_action('in_plugin_update_message-'.$this->name, [], $version_info);?>
                         </p>
                     </div>
                 </td>
@@ -492,7 +507,8 @@ if( ! class_exists('PMXI_Updater') ) {
                 'signature'  => defined('WPALLIMPORT_SIGNATURE') ? WPALLIMPORT_SIGNATURE : ''
             );
 
-            $request = wp_remote_post( $this->api_url, array( 'timeout' => 15, 'sslverify' => true, 'body' => $api_params ) );
+
+            $request = wp_remote_get( esc_url_raw(add_query_arg($api_params, $this->api_url.'check_version/?')), array( 'timeout' => 15, 'sslverify' => true ) );
 
             if ( ! is_wp_error( $request ) ) {
                 $request = json_decode( wp_remote_retrieve_body( $request ) );

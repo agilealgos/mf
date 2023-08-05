@@ -84,7 +84,7 @@ class PMXI_Admin_License extends PMXI_Controller_Admin {
 						);
 						
 						// Call the custom API.
-						$response = wp_remote_get( esc_url_raw(add_query_arg( $api_params, $options['info_api_url'] )), array( 'timeout' => 15, 'sslverify' => true ) );
+						$response = wp_remote_get( esc_url_raw(add_query_arg( $api_params, $options['info_api_url_new'].'/check_license' )), array( 'timeout' => 15, 'sslverify' => true ) );
 
 						// make sure the response came back okay
 						if ( is_wp_error( $response ) )
@@ -135,7 +135,7 @@ class PMXI_Admin_License extends PMXI_Controller_Admin {
 						);
 						
 						// Call the custom API.
-						$response = wp_remote_get( esc_url_raw(add_query_arg( $api_params, $options['info_api_url'] )), array( 'timeout' => 15, 'sslverify' => true ) );
+						$response = wp_remote_get( esc_url_raw(add_query_arg( $api_params, $options['info_api_url_new'].'/check_license' )), array( 'timeout' => 15, 'sslverify' => true ) );
 
 						// make sure the response came back okay
 						if ( is_wp_error( $response ) )
@@ -182,7 +182,7 @@ class PMXI_Admin_License extends PMXI_Controller_Admin {
 				);
 
 				// Call the custom API.
-				$response = wp_remote_get( esc_url_raw(add_query_arg( $api_params, $options['info_api_url'] )), array( 'timeout' => 15, 'sslverify' => true ) );
+				$response = wp_remote_get( esc_url_raw(add_query_arg( $api_params, $options['info_api_url_new'].'/check_license' )), array( 'timeout' => 15, 'sslverify' => true ) );
 
 				if ( is_wp_error( $response ) )
 					return false;

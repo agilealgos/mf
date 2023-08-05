@@ -73,7 +73,7 @@ class LicensingManager
     public function getInfoApiUrl()
     {
         $options = $this->getOptions();
-        return $options['info_api_url'];
+        return $options['info_api_url_new'].'/check_license';
     }
 
     /**

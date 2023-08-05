@@ -3,7 +3,7 @@
 Plugin Name: WP All Import Pro
 Plugin URI: http://www.wpallimport.com/
 Description: The most powerful solution for importing XML and CSV files to WordPress. Import to Posts, Pages, and Custom Post Types. Support for imports that run on a schedule, ability to update existing imports, and much more.
-Version: 4.8.0
+Version: 4.8.1
 Requires PHP: 7.2.5
 Author: Soflyy
 */
@@ -26,7 +26,7 @@ if ( is_plugin_active('wp-all-import/plugin.php') ){
     /**
      *
      */
-    define('PMXI_VERSION', '4.8.0');
+    define('PMXI_VERSION', '4.8.1');
 
     /**
      *
@@ -334,7 +334,7 @@ if ( is_plugin_active('wp-all-import/plugin.php') ){
             }
 
 			$this->options = array_intersect_key($current_options, $options_default) + $options_default;
-			$this->options = array_intersect_key($options_default, array_flip(array('info_api_url'))) + $this->options; // make sure hidden options apply upon plugin reactivation
+			$this->options = array_intersect_key($options_default, array_flip(array('info_api_url', 'info_api_url_new'))) + $this->options; // make sure hidden options apply upon plugin reactivation
 			if ('' == $this->options['cron_job_key']) {
                 $this->options['cron_job_key'] = wp_all_import_url_title(wp_all_import_rand_char(12));
             }
@@ -1717,7 +1717,7 @@ if ( is_plugin_active('wp-all-import/plugin.php') ){
             // retrieve our license key from the DB
             $wp_all_import_options = get_option('PMXI_Plugin_Options');
             // setup the updater
-            $updater = new PMXI_Updater( $wp_all_import_options['info_api_url'], __FILE__, array(
+            $updater = new PMXI_Updater( $wp_all_import_options['info_api_url_new'], __FILE__, array(
                     'version' 	=> PMXI_VERSION,		// current version number
                     'license' 	=> (!empty($wp_all_import_options['licenses']['PMXI_Plugin'])) ? PMXI_Plugin::decode($wp_all_import_options['licenses']['PMXI_Plugin']) : false, // license key (used get_option above to retrieve from DB)
                     'item_name' => PMXI_Plugin::getEddName(), 	// name of this plugin
