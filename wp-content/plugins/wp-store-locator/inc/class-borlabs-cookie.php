@@ -122,14 +122,14 @@ if ( !class_exists( 'WPSL_Borlabs_Cookie' ) ) {
             $wpsl_data = BorlabsCookieHelper()->getBlockedContentTypeDataByTypeId( 'wpstorelocator' );
 
             // Workaround, fixed in newer versions of Borlabs Cookie
-            if ( !isset($wpsl_data['settings']['unblockAll'] ) ) {
+            if ( ! isset($wpsl_data['settings']['unblockAll'] ) ) {
                 $wpsl_data['settings']['unblockAll'] = false;
             }
 
             BorlabsCookieHelper()->updateBlockedContentTypeJavaScript(
                 'wpstorelocator',
                 'var myScriptTag = document.createElement("script"); myScriptTag.type = "text/javascript"; myScriptTag.src = "https://maps.google.com/maps/api/js' . wpsl_get_gmap_api_params( "browser_key" ) .'";jQuery("body").append(myScriptTag);',
-                'initWpslMap();',
+                'wpslBorlabsCallback();',
                 $wpsl_data['settings']
             );
 

@@ -48,7 +48,20 @@ if( ! class_exists('PMWI_Updater') ) {
 
             add_action( 'after_plugin_row_' . $this->name, array( $this, 'show_update_notification' ), 10, 2 );
             add_filter( 'plugin_row_meta', array( $this, 'plugin_row_meta' ), 10, 2 );
+
+			add_action( 'in_plugin_update_message-'.$this->name, [$this, 'custom_update_note'], 10, 2);
         }
+
+		public function custom_update_note( $data, $response ){
+
+			// Only show a custom note if one was included in the update data.
+			if ( is_object($response) && !empty($response->custom_update_note) && !empty($response->update_note_version)){
+				// Ensure that this version is the same or older than the note's target version.
+				if( version_compare($this->version, $response->update_note_version, '<=')) {
+					echo wp_kses( $response->custom_update_note, 'post' );
+				}
+			}
+		}
 
         /**
          * Show row meta on the plugin screen.

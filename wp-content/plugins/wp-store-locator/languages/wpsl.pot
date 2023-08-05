@@ -1,9 +1,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: WP Store Locator v2.2.22\n"
+"Project-Id-Version: WP Store Locator v2.2.240\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-22 12:18+0700\n"
+"POT-Creation-Date: 2023-06-28 14:06+0300\n"
 "PO-Revision-Date: 2015-09-01 13:49+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -21,68 +21,77 @@ msgstr ""
 "X-Poedit-SearchPath-0: .\n"
 "X-Poedit-SearchPathExcluded-0: admin/EDD_SL_Plugin_Updater.php\n"
 
-#: admin/class-admin.php:121
+#: admin/class-admin.php:133
 #, php-format
 msgid ""
 "You need to create %sAPI keys%s for Google Maps before you can use the store "
 "locator! %sDismiss%s"
 msgstr ""
 
-#: admin/class-admin.php:123
+#: admin/class-admin.php:135
 #, php-format
 msgid ""
 "Before adding the [wpsl] shortcode to a page, please don't forget to define "
 "a start point on the %ssettings%s page. %sDismiss%s"
 msgstr ""
 
-#: admin/class-admin.php:160
+#: admin/class-admin.php:141
+#, php-format
+msgid ""
+"%sWP Store Locator:%s To prevent any conflicts the required JavaScript files "
+"are automatically excluded from WP Rocket. %s If the store locator map still "
+"breaks, then make sure to flush the cache by going to %sWP Rocket -> Clear "
+"and preload cache%s. %sDismiss%s"
+msgstr ""
+
+#: admin/class-admin.php:176
 msgid "Security check failed. Please reload the page and try again."
 msgstr ""
 
-#: admin/class-admin.php:179 admin/class-admin.php:180
-#: admin/class-admin.php:511 admin/templates/map-settings.php:8
+#: admin/class-admin.php:195 admin/class-admin.php:196
+#: admin/class-admin.php:527 admin/templates/map-settings.php:8
 msgid "Settings"
 msgstr ""
 
-#: admin/class-admin.php:186 admin/class-admin.php:187
-#: admin/class-admin.php:531
+#: admin/class-admin.php:202 admin/class-admin.php:203
+#: admin/class-admin.php:547
 msgid "Add-Ons"
 msgstr ""
 
-#: admin/class-admin.php:300
+#: admin/class-admin.php:316
 msgid "Cannot determine the address at this location."
 msgstr ""
 
-#: admin/class-admin.php:301
+#: admin/class-admin.php:317
 msgid "Geocode was not successful for the following reason"
 msgstr ""
 
-#: admin/class-admin.php:302 admin/upgrade.php:471
+#: admin/class-admin.php:318 admin/upgrade.php:490
 msgid "Security check failed, reload the page and try again."
 msgstr ""
 
-#: admin/class-admin.php:303
+#: admin/class-admin.php:319
 msgid "Please fill in all the required store details."
 msgstr ""
 
-#: admin/class-admin.php:304
+#: admin/class-admin.php:320
 msgid "The map preview requires all the location details."
 msgstr ""
 
-#: admin/class-admin.php:305 admin/class-metaboxes.php:534
-#: frontend/class-frontend.php:583
+#: admin/class-admin.php:321 admin/class-metaboxes.php:539
+#: frontend/class-frontend.php:586
 msgid "Closed"
 msgstr ""
 
-#: admin/class-admin.php:306
+#: admin/class-admin.php:322
 msgid "The code for the map style is invalid."
 msgstr ""
 
-#: admin/class-admin.php:307
+#: admin/class-admin.php:323
 msgid "Dismiss this notice."
 msgstr ""
 
-#: admin/class-admin.php:308
+#: admin/class-admin.php:324
 #, php-format
 msgid ""
 "There's a problem with the provided %sbrowser key%s. %s You will have to "
@@ -93,40 +102,40 @@ msgid ""
 "%stroubleshooting section%s."
 msgstr ""
 
-#: admin/class-admin.php:309
+#: admin/class-admin.php:325
 msgid "No problems found with the browser key."
 msgstr ""
 
-#: admin/class-admin.php:310 admin/templates/map-settings.php:104
+#: admin/class-admin.php:326 admin/templates/map-settings.php:104
 msgid "Server key"
 msgstr ""
 
-#: admin/class-admin.php:311
+#: admin/class-admin.php:327
 #, php-format
 msgid "No %sserver key%s found!"
 msgstr ""
 
-#: admin/class-admin.php:312 admin/templates/map-settings.php:100
+#: admin/class-admin.php:328 admin/templates/map-settings.php:100
 msgid "Browser key"
 msgstr ""
 
-#: admin/class-admin.php:313
+#: admin/class-admin.php:329
 #, php-format
 msgid "No %sbrowser key%s found!"
 msgstr ""
 
-#: admin/class-admin.php:314
+#: admin/class-admin.php:330
 msgid "and will only work for zip codes."
 msgstr ""
 
-#: admin/class-admin.php:315
+#: admin/class-admin.php:331
 #, php-format
 msgid ""
 "because no %smap region%s is selected the geocode API will search for "
 "matching results around the world. This may result in unexpected results."
 msgstr ""
 
-#: admin/class-admin.php:316
+#: admin/class-admin.php:332
 #, php-format
 msgid ""
 "Google Maps didn't load correctly. Make sure you have an active %sbilling%s "
@@ -135,7 +144,7 @@ msgid ""
 "contact %sGoogle Billing Support%s."
 msgstr ""
 
-#: admin/class-admin.php:317
+#: admin/class-admin.php:333
 #, php-format
 msgid ""
 "Google Maps failed to load correctly. This is likely due to a problem with "
@@ -146,28 +155,28 @@ msgid ""
 "Common API errors are also covered in the %stroubleshooting section%s."
 msgstr ""
 
-#: admin/class-admin.php:318
+#: admin/class-admin.php:334
 msgid "Close"
 msgstr ""
 
-#: admin/class-admin.php:332
+#: admin/class-admin.php:348
 #, php-format
 msgid "with the current settings the results are %s to"
 msgstr ""
 
-#: admin/class-admin.php:466
+#: admin/class-admin.php:482
 msgid "Welcome to WP Store Locator"
 msgstr ""
 
-#: admin/class-admin.php:467
+#: admin/class-admin.php:483
 msgid "Sign up for the latest plugin updates and announcements."
 msgstr ""
 
-#: admin/class-admin.php:530
+#: admin/class-admin.php:546
 msgid "Documentation"
 msgstr ""
 
-#: admin/class-admin.php:553
+#: admin/class-admin.php:569
 #, php-format
 msgid "If you like this plugin please leave us a %s5 star%s rating."
 msgstr ""
@@ -336,7 +345,7 @@ msgstr ""
 
 #: admin/class-metaboxes.php:91 admin/templates/map-settings.php:574
 #: admin/templates/map-settings.php:575 frontend/underscore-functions.php:160
-#: inc/wpsl-functions.php:159
+#: inc/wpsl-functions.php:171
 msgid "Hours"
 msgstr ""
 
@@ -349,23 +358,23 @@ msgid "Tel"
 msgstr ""
 
 #: admin/class-metaboxes.php:100 admin/templates/map-settings.php:562
-#: admin/templates/map-settings.php:563 frontend/class-frontend.php:847
+#: admin/templates/map-settings.php:563 frontend/class-frontend.php:848
 #: frontend/underscore-functions.php:32 frontend/underscore-functions.php:68
-#: frontend/underscore-functions.php:150 inc/wpsl-functions.php:156
+#: frontend/underscore-functions.php:150 inc/wpsl-functions.php:168
 msgid "Fax"
 msgstr ""
 
 #: admin/class-metaboxes.php:103 admin/templates/map-settings.php:566
-#: admin/templates/map-settings.php:567 admin/upgrade.php:198
-#: frontend/class-frontend.php:851 frontend/underscore-functions.php:35
+#: admin/templates/map-settings.php:567 admin/upgrade.php:217
+#: frontend/class-frontend.php:852 frontend/underscore-functions.php:35
 #: frontend/underscore-functions.php:71 frontend/underscore-functions.php:153
-#: inc/wpsl-functions.php:157
+#: inc/wpsl-functions.php:169
 msgid "Email"
 msgstr ""
 
 #: admin/class-metaboxes.php:106 admin/templates/map-settings.php:570
-#: admin/templates/map-settings.php:571 admin/upgrade.php:202
-#: frontend/class-frontend.php:856 inc/wpsl-functions.php:158
+#: admin/templates/map-settings.php:571 admin/upgrade.php:221
+#: frontend/class-frontend.php:857 inc/wpsl-functions.php:170
 msgid "Url"
 msgstr ""
 
@@ -381,76 +390,76 @@ msgstr ""
 msgid "Opening Periods"
 msgstr ""
 
-#: admin/class-metaboxes.php:714
+#: admin/class-metaboxes.php:719
 msgid "Failed to publish the store. Please fill in the required store details."
 msgstr ""
 
-#: admin/class-metaboxes.php:850
+#: admin/class-metaboxes.php:855
 msgid "Preview Location"
 msgstr ""
 
-#: admin/class-metaboxes.php:851
+#: admin/class-metaboxes.php:856
 #, php-format
 msgid ""
 "The map preview is based on the provided address, city and country details. "
 "%s It will ignore any custom latitude or longitude values."
 msgstr ""
 
-#: admin/class-metaboxes.php:852
+#: admin/class-metaboxes.php:857
 msgid "You can drag the marker to adjust the exact location of the marker."
 msgstr ""
 
-#: admin/class-metaboxes.php:871
+#: admin/class-metaboxes.php:876
 msgid "Export Location Data"
 msgstr ""
 
-#: admin/class-metaboxes.php:891 admin/class-metaboxes.php:894
+#: admin/class-metaboxes.php:896 admin/class-metaboxes.php:899
 msgid "Store updated."
 msgstr ""
 
-#: admin/class-metaboxes.php:892
+#: admin/class-metaboxes.php:897
 msgid "Custom field updated."
 msgstr ""
 
-#: admin/class-metaboxes.php:893
-msgid "Custom field deleted."
-msgstr ""
-
-#: admin/class-metaboxes.php:895
-#, php-format
-msgid "Store restored to revision from %s"
-msgstr ""
-
-#: admin/class-metaboxes.php:896
-msgid "Store published."
-msgstr ""
-
-#: admin/class-metaboxes.php:897
-msgid "Store saved."
-msgstr ""
-
 #: admin/class-metaboxes.php:898
-msgid "Store submitted."
+msgid "Custom field deleted."
 msgstr ""
 
 #: admin/class-metaboxes.php:900
 #, php-format
-msgid "Store scheduled for: <strong>%1$s</strong>."
+msgid "Store restored to revision from %s"
 msgstr ""
 
 #: admin/class-metaboxes.php:901
-msgid "M j, Y @ G:i"
+msgid "Store published."
+msgstr ""
+
+#: admin/class-metaboxes.php:902
+msgid "Store saved."
 msgstr ""
 
 #: admin/class-metaboxes.php:903
+msgid "Store submitted."
+msgstr ""
+
+#: admin/class-metaboxes.php:905
+#, php-format
+msgid "Store scheduled for: <strong>%1$s</strong>."
+msgstr ""
+
+#: admin/class-metaboxes.php:906
+msgid "M j, Y @ G:i"
+msgstr ""
+
+#: admin/class-metaboxes.php:908
 msgid "Store draft updated."
 msgstr ""
 
-#: admin/class-metaboxes.php:909
+#: admin/class-metaboxes.php:914
 msgid "View store"
 msgstr ""
 
-#: admin/class-metaboxes.php:915
+#: admin/class-metaboxes.php:920
 msgid "Preview store"
 msgstr ""
 
@@ -1718,11 +1727,11 @@ msgid "World view"
 msgstr ""
 
 #: admin/class-settings.php:890 admin/class-settings.php:1004
-#: inc/wpsl-functions.php:225
+#: inc/wpsl-functions.php:237
 msgid "Default"
 msgstr ""
 
-#: admin/class-settings.php:893 inc/wpsl-functions.php:298
+#: admin/class-settings.php:893 inc/wpsl-functions.php:310
 msgid "Roadmap"
 msgstr ""
 
@@ -1937,7 +1946,7 @@ msgid "Validate API keys"
 msgstr ""
 
 #: admin/templates/map-settings.php:109
-msgid "Show response "
+msgid "Show response"
 msgstr ""
 
 #: admin/templates/map-settings.php:112
@@ -1976,7 +1985,7 @@ msgstr ""
 #: admin/templates/map-settings.php:138 admin/templates/map-settings.php:534
 #: admin/templates/map-settings.php:535 admin/templates/map-settings.php:686
 #: frontend/templates/default.php:44
-#: frontend/templates/store-listings-below.php:44 inc/wpsl-functions.php:142
+#: frontend/templates/store-listings-below.php:44 inc/wpsl-functions.php:154
 msgid "Search"
 msgstr ""
 
@@ -2451,18 +2460,18 @@ msgstr ""
 
 #: admin/templates/map-settings.php:522 admin/templates/map-settings.php:523
 #: frontend/templates/default.php:12
-#: frontend/templates/store-listings-below.php:12 inc/wpsl-functions.php:141
+#: frontend/templates/store-listings-below.php:12 inc/wpsl-functions.php:153
 msgid "Your location"
 msgstr ""
 
 #: admin/templates/map-settings.php:526 admin/templates/map-settings.php:527
 #: frontend/templates/default.php:21
-#: frontend/templates/store-listings-below.php:21 inc/wpsl-functions.php:144
+#: frontend/templates/store-listings-below.php:21 inc/wpsl-functions.php:156
 msgid "Search radius"
 msgstr ""
 
 #: admin/templates/map-settings.php:530 admin/templates/map-settings.php:531
-#: frontend/class-frontend.php:1857 inc/wpsl-functions.php:145
+#: frontend/class-frontend.php:1864 inc/wpsl-functions.php:157
 msgid "No results found"
 msgstr ""
 
@@ -2470,23 +2479,23 @@ msgstr ""
 msgid "Searching (preloader text)"
 msgstr ""
 
-#: admin/templates/map-settings.php:539 frontend/class-frontend.php:1856
-#: inc/wpsl-functions.php:143
+#: admin/templates/map-settings.php:539 frontend/class-frontend.php:1863
+#: inc/wpsl-functions.php:155
 msgid "Searching..."
 msgstr ""
 
 #: admin/templates/map-settings.php:542 admin/templates/map-settings.php:543
 #: frontend/templates/default.php:30
-#: frontend/templates/store-listings-below.php:30 inc/wpsl-functions.php:146
+#: frontend/templates/store-listings-below.php:30 inc/wpsl-functions.php:158
 msgid "Results"
 msgstr ""
 
-#: admin/templates/map-settings.php:546 admin/upgrade.php:206
-#: inc/wpsl-functions.php:160
+#: admin/templates/map-settings.php:546 admin/upgrade.php:225
+#: inc/wpsl-functions.php:172
 msgid "Category filter"
 msgstr ""
 
-#: admin/templates/map-settings.php:547 frontend/class-frontend.php:1426
+#: admin/templates/map-settings.php:547 frontend/class-frontend.php:1427
 msgid "Category"
 msgstr ""
 
@@ -2494,27 +2503,27 @@ msgstr ""
 msgid "Category first item"
 msgstr ""
 
-#: admin/templates/map-settings.php:551 admin/upgrade.php:367
-#: frontend/class-frontend.php:1429 inc/wpsl-functions.php:161
+#: admin/templates/map-settings.php:551 admin/upgrade.php:386
+#: frontend/class-frontend.php:1430 inc/wpsl-functions.php:173
 msgid "Any"
 msgstr ""
 
 #: admin/templates/map-settings.php:554 admin/templates/map-settings.php:555
-#: admin/upgrade.php:59 frontend/class-frontend.php:1858
+#: admin/upgrade.php:78 frontend/class-frontend.php:1865
 #: frontend/underscore-functions.php:138 frontend/underscore-functions.php:168
-#: inc/wpsl-functions.php:147
+#: inc/wpsl-functions.php:159
 msgid "More info"
 msgstr ""
 
 #: admin/templates/map-settings.php:558 admin/templates/map-settings.php:559
-#: frontend/class-frontend.php:843 frontend/underscore-functions.php:29
+#: frontend/class-frontend.php:844 frontend/underscore-functions.php:29
 #: frontend/underscore-functions.php:65 frontend/underscore-functions.php:147
-#: inc/wpsl-functions.php:155
+#: inc/wpsl-functions.php:167
 msgid "Phone"
 msgstr ""
 
 #: admin/templates/map-settings.php:578 admin/templates/map-settings.php:579
-#: frontend/class-frontend.php:1863 inc/wpsl-functions.php:140
+#: frontend/class-frontend.php:1870 inc/wpsl-functions.php:152
 msgid "Start location"
 msgstr ""
 
@@ -2522,8 +2531,8 @@ msgstr ""
 msgid "Get directions"
 msgstr ""
 
-#: admin/templates/map-settings.php:583 frontend/class-frontend.php:876
-#: frontend/class-frontend.php:1861 inc/wpsl-functions.php:148
+#: admin/templates/map-settings.php:583 frontend/class-frontend.php:877
+#: frontend/class-frontend.php:1868 inc/wpsl-functions.php:160
 msgid "Directions"
 msgstr ""
 
@@ -2531,26 +2540,26 @@ msgstr ""
 msgid "No directions found"
 msgstr ""
 
-#: admin/templates/map-settings.php:587 admin/upgrade.php:151
-#: frontend/class-frontend.php:1862 inc/wpsl-functions.php:149
+#: admin/templates/map-settings.php:587 admin/upgrade.php:170
+#: frontend/class-frontend.php:1869 inc/wpsl-functions.php:161
 msgid "No route could be found between the origin and destination"
 msgstr ""
 
 #: admin/templates/map-settings.php:590 admin/templates/map-settings.php:591
-#: admin/upgrade.php:77 frontend/class-frontend.php:1864
-#: inc/wpsl-functions.php:150
+#: admin/upgrade.php:96 frontend/class-frontend.php:1871
+#: inc/wpsl-functions.php:162
 msgid "Back"
 msgstr ""
 
 #: admin/templates/map-settings.php:594 admin/templates/map-settings.php:595
-#: admin/upgrade.php:143 frontend/class-frontend.php:1865
-#: inc/wpsl-functions.php:151
+#: admin/upgrade.php:162 frontend/class-frontend.php:1872
+#: inc/wpsl-functions.php:163
 msgid "Street view"
 msgstr ""
 
 #: admin/templates/map-settings.php:598 admin/templates/map-settings.php:599
-#: admin/upgrade.php:147 frontend/class-frontend.php:1866
-#: inc/wpsl-functions.php:152
+#: admin/upgrade.php:166 frontend/class-frontend.php:1873
+#: inc/wpsl-functions.php:164
 msgid "Zoom here"
 msgstr ""
 
@@ -2558,8 +2567,8 @@ msgstr ""
 msgid "General error"
 msgstr ""
 
-#: admin/templates/map-settings.php:603 frontend/class-frontend.php:1859
-#: inc/wpsl-functions.php:153
+#: admin/templates/map-settings.php:603 frontend/class-frontend.php:1866
+#: inc/wpsl-functions.php:165
 msgid "Something went wrong, please try again!"
 msgstr ""
 
@@ -2574,8 +2583,8 @@ msgid ""
 "the \"API key\" field at the top of this page."
 msgstr ""
 
-#: admin/templates/map-settings.php:607 frontend/class-frontend.php:1860
-#: inc/wpsl-functions.php:154
+#: admin/templates/map-settings.php:607 frontend/class-frontend.php:1867
+#: inc/wpsl-functions.php:166
 msgid "API usage limit reached"
 msgstr ""
 
@@ -2631,7 +2640,7 @@ msgid ""
 msgstr ""
 
 #: admin/templates/map-settings.php:659
-msgid "Show the Geocode API response for a location search "
+msgid "Show the Geocode API response for a location search"
 msgstr ""
 
 #: admin/templates/map-settings.php:660
@@ -2662,30 +2671,37 @@ msgstr ""
 msgid "API Response"
 msgstr ""
 
-#: admin/upgrade.php:73
+#: admin/upgrade.php:20
+#, php-format
+msgid ""
+"Please make sure to also upgrade the %sWP Store Locator - Widget%s plugin to "
+"the latest version."
+msgstr ""
+
+#: admin/upgrade.php:92
 msgid "info window"
 msgstr ""
 
-#: admin/upgrade.php:81
+#: admin/upgrade.php:100
 msgid "Reset"
 msgstr ""
 
-#: admin/upgrade.php:174 inc/wpsl-functions.php:133
+#: admin/upgrade.php:193 inc/wpsl-functions.php:145
 msgid "stores"
 msgstr ""
 
-#: admin/upgrade.php:178 inc/wpsl-functions.php:134
+#: admin/upgrade.php:197 inc/wpsl-functions.php:146
 msgid "store-category"
 msgstr ""
 
-#: admin/upgrade.php:449
+#: admin/upgrade.php:468
 #, php-format
 msgid ""
 "Because you updated WP Store Locator from version 1.x, the %s current store "
 "locations need to be %sconverted%s to custom post types."
 msgstr ""
 
-#: admin/upgrade.php:470
+#: admin/upgrade.php:489
 #, php-format
 msgid ""
 "The script converting the locations timed out. %s You can click the \"Start "
@@ -2696,52 +2712,52 @@ msgid ""
 "but if you are reading this then that failed."
 msgstr ""
 
-#: admin/upgrade.php:491
+#: admin/upgrade.php:510
 msgid "Store locations to convert:"
 msgstr ""
 
-#: admin/upgrade.php:493
+#: admin/upgrade.php:512
 msgid "Start Converting"
 msgstr ""
 
-#: admin/upgrade.php:615
+#: admin/upgrade.php:634
 #, php-format
 msgid ""
 "All the store locations are now converted to custom post types. %s You can "
 "view them on the %sAll Stores%s page."
 msgstr ""
 
-#: frontend/class-frontend.php:762
+#: frontend/class-frontend.php:763
 msgid ""
 "If you use the [wpsl_address] shortcode outside a store page you need to set "
 "the ID attribute."
 msgstr ""
 
-#: frontend/class-frontend.php:917
+#: frontend/class-frontend.php:918
 msgid ""
 "If you use the [wpsl_hours] shortcode outside a store page you need to set "
 "the ID attribute."
 msgstr ""
 
-#: frontend/class-frontend.php:965
+#: frontend/class-frontend.php:966
 msgid ""
 "If you use the [wpsl_map] shortcode outside a store page, then you need to "
 "set the ID or category attribute."
 msgstr ""
 
-#: frontend/class-frontend.php:1627
+#: frontend/class-frontend.php:1628
 msgid "The application does not have permission to use the Geolocation API."
 msgstr ""
 
-#: frontend/class-frontend.php:1628
+#: frontend/class-frontend.php:1629
 msgid "Location information is unavailable."
 msgstr ""
 
-#: frontend/class-frontend.php:1629
+#: frontend/class-frontend.php:1630
 msgid "The geolocation request timed out."
 msgstr ""
 
-#: frontend/class-frontend.php:1630
+#: frontend/class-frontend.php:1631
 msgid "An unknown error occurred."
 msgstr ""
 
@@ -2751,7 +2767,7 @@ msgstr ""
 msgid "Search provided by %sWP Store Locator%s"
 msgstr ""
 
-#: inc/class-borlabs-cookie.php:68
+#: inc/class-borlabs-cookie.php:72
 msgctxt "Borlabs Cookie"
 msgid ""
 "To protect your personal data, your connection to Google Maps has been "
@@ -2762,12 +2778,12 @@ msgid ""
 "\">Google - Privacy &amp; Terms</a> . "
 msgstr ""
 
-#: inc/class-borlabs-cookie.php:69
+#: inc/class-borlabs-cookie.php:73
 msgctxt "Borlabs Cookie"
 msgid "Do not block Google Maps in the future anymore."
 msgstr ""
 
-#: inc/class-borlabs-cookie.php:70
+#: inc/class-borlabs-cookie.php:74
 msgctxt "Borlabs Cookie"
 msgid "Load map"
 msgstr ""
@@ -2872,75 +2888,75 @@ msgid ""
 "parameters."
 msgstr ""
 
-#: inc/wpsl-functions.php:230
+#: inc/wpsl-functions.php:242
 msgid "Show the store list below the map"
 msgstr ""
 
-#: inc/wpsl-functions.php:247
+#: inc/wpsl-functions.php:259
 msgid "Monday"
 msgstr ""
 
-#: inc/wpsl-functions.php:248
+#: inc/wpsl-functions.php:260
 msgid "Tuesday"
 msgstr ""
 
-#: inc/wpsl-functions.php:249
+#: inc/wpsl-functions.php:261
 msgid "Wednesday"
 msgstr ""
 
-#: inc/wpsl-functions.php:250
+#: inc/wpsl-functions.php:262
 msgid "Thursday"
 msgstr ""
 
-#: inc/wpsl-functions.php:251
+#: inc/wpsl-functions.php:263
 msgid "Friday"
 msgstr ""
 
-#: inc/wpsl-functions.php:252
+#: inc/wpsl-functions.php:264
 msgid "Saturday"
 msgstr ""
 
-#: inc/wpsl-functions.php:253
+#: inc/wpsl-functions.php:265
 msgid "Sunday"
 msgstr ""
 
-#: inc/wpsl-functions.php:283
+#: inc/wpsl-functions.php:295
 #, php-format
 msgid "Mon %sTue %sWed %sThu %sFri %sSat Closed %sSun Closed"
 msgstr ""
 
-#: inc/wpsl-functions.php:299
+#: inc/wpsl-functions.php:311
 msgid "Satellite"
 msgstr ""
 
-#: inc/wpsl-functions.php:300
+#: inc/wpsl-functions.php:312
 msgid "Hybrid"
 msgstr ""
 
-#: inc/wpsl-functions.php:301
+#: inc/wpsl-functions.php:313
 msgid "Terrain"
 msgstr ""
 
-#: inc/wpsl-functions.php:316
+#: inc/wpsl-functions.php:328
 msgid "(city) (state) (zip code)"
 msgstr ""
 
-#: inc/wpsl-functions.php:317
+#: inc/wpsl-functions.php:329
 msgid "(city), (state) (zip code)"
 msgstr ""
 
-#: inc/wpsl-functions.php:318
+#: inc/wpsl-functions.php:330
 msgid "(city) (zip code)"
 msgstr ""
 
-#: inc/wpsl-functions.php:319
+#: inc/wpsl-functions.php:331
 msgid "(city), (zip code)"
 msgstr ""
 
-#: inc/wpsl-functions.php:320
+#: inc/wpsl-functions.php:332
 msgid "(zip code) (city) (state)"
 msgstr ""
 
-#: inc/wpsl-functions.php:321
+#: inc/wpsl-functions.php:333
 msgid "(zip code) (city)"
 msgstr ""

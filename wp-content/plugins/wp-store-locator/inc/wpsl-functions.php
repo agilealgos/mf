@@ -7,9 +7,10 @@
  * @since 1.0.0
  * @param  string  $api_key_type   The type of API key we need to include ( server_key or browser_key ).
  * @param  boolean $geocode_params
+ * @param  string  $callback       Defaults to wpslCallback, but add-ons can pass a custom one.
  * @return string  $api_params     The API parameters.
  */
-function wpsl_get_gmap_api_params( $api_key_type, $geocode_params = false ) {
+function wpsl_get_gmap_api_params( $api_key_type, $geocode_params = false, $callback = 'wpslCallback' ) {
 
     global $wpsl, $wpsl_settings;
 
@@ -45,6 +46,16 @@ function wpsl_get_gmap_api_params( $api_key_type, $geocode_params = false ) {
         $api_params = $first_sep . rtrim( $api_params, '&' );
     }
 
+    /**
+     * Check if we need to enable the autocomplete for the search widget.
+     *
+     * If the search widget is used by itself, then this happens automatically.
+     * But when the Borlabs Cookie plugin is also used, we need to do it here.
+     */
+    if ( ! $wpsl_settings['autocomplete'] && function_exists( 'BorlabsCookieHelper' ) && function_exists( 'wpsl_borlabs_autocomplete_check' ) ) {
+        $wpsl_settings = wpsl_borlabs_autocomplete_check( $wpsl_settings );
+    }
+
     // Do we need to include the autocomplete library?
     if ( ( $wpsl_settings['autocomplete'] && $api_key_type == 'browser_key' ) || is_admin() ) {
         $api_params .= '&libraries=places';
@@ -53,6 +64,7 @@ function wpsl_get_gmap_api_params( $api_key_type, $geocode_params = false ) {
     if ( $api_key_type == 'browser_key' ) {
         $api_version = apply_filters( 'wpsl_gmap_api_version', 'quarterly' );
         $api_params .= '&v=' . $api_version;
+        $api_params .= '&callback=' . $callback ;
     }
 
     return apply_filters( 'wpsl_gmap_api_params', $api_params );

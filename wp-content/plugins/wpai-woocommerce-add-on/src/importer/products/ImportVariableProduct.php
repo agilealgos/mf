@@ -598,6 +598,10 @@ class ImportVariableProduct extends ImportProduct {
                             $variation = new \WC_Product_Variation($child->get_id());
                             $variation->set_status('publish');
                             $variation->save();
+                            wp_update_post([
+                                'ID' => $child->get_id(),
+                                'post_author'  => get_post_field( 'post_author', $this->product->get_id() ),
+                            ]);
                             $postRecord->set(array('iteration' => $this->getImport()->iteration))->update();
                             break;
                         }
@@ -638,7 +642,7 @@ class ImportVariableProduct extends ImportProduct {
                     }
                 }
             }
-            update_post_meta($this->product->get_id(), '_product_attributes', array_unique($currentAttributes));
+            update_post_meta($this->product->get_id(), '_product_attributes', array_unique($currentAttributes, SORT_REGULAR));
         }
 
 	    if (!$this->getImportService()->isUpdateDataAllowed('is_update_attributes', $this->isNewProduct())) {
@@ -647,12 +651,12 @@ class ImportVariableProduct extends ImportProduct {
 
         // Created posts will all have the following data.
         $variation_post_data = array(
-            'post_title' => 'Product #' . $this->product->get_id() . ' Variation',
+            'post_title'   => 'Product #' . $this->product->get_id() . ' Variation',
             'post_content' => '',
-            'post_status' => 'publish',
-            'post_author' => get_current_user_id(),
-            'post_parent' => $this->product->get_id(),
-            'post_type' => 'product_variation',
+            'post_status'  => 'publish',
+            'post_author'  => get_post_field( 'post_author', $this->product->get_id() ),
+            'post_parent'  => $this->product->get_id(),
+            'post_type'    => 'product_variation',
         );
 
         $variation_ids = array();

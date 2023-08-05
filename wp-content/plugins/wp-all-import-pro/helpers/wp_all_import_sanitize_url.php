@@ -45,16 +45,16 @@ if ( ! function_exists('wp_all_import_sanitize_url')) {
                             case 'file':
                                 $pattern = '/(?<=\/file\/d\/).*?(?=\/edit)/';
                                 preg_match( $pattern, $link, $match );
-                                $file_id = $match[0];
-                                if ( !empty( $file_id ) ) {
-                                    return 'https://drive.google.com/uc?export=download&id=' . $file_id;
-                                }
+								if (!empty($match[0])) {
+									$file_id = $match[0];
+									return 'https://drive.google.com/uc?export=download&id=' . $file_id;
+								}
                                 break;
                             case 'spreadsheets':
                                 $pattern = '/(?<=\/spreadsheets\/d\/).*?(?=\/edit)/';
                                 preg_match( $pattern, $link, $match );
-                                $file_id = $match[0];
-                                if ( !empty( $file_id ) ) {
+                                if ( !empty( $match[0] ) ) {
+	                                $file_id = $match[0];
                                     return 'https://docs.google.com/spreadsheets/d/' . $file_id . '/export?format=' . $format;
                                 }
                                 break;

@@ -51,7 +51,7 @@ class Scheduling
     {
         $response = $this->schedulingApi->getSchedules($elementId, Config::TYPE);
 
-        return count($response);
+        return !empty($response);
     }
 
     /**
@@ -62,7 +62,7 @@ class Scheduling
     {
         $response = $this->schedulingApi->getSchedules($elementId, Config::TYPE);
 
-        if (count($response)) {
+        if (!empty($response)) {
             return $response[0];
         } else {
             return false;
@@ -88,7 +88,8 @@ class Scheduling
      */
     public function checkConnection()
     {
-        return $this->schedulingApi->checkConnection();
+		// Only check connection if a valid license is set.
+        return $this->checkLicense() && $this->schedulingApi->checkConnection();
     }
 
     /**
@@ -115,6 +116,11 @@ class Scheduling
      */
     public function handleScheduling($id, $post)
     {
+
+        if (!$this->checkLicense()) {
+            return false;
+        }
+
         $schedulingEnabled = $post['scheduling_enable'];
 
         if ($schedulingEnabled == 1) {

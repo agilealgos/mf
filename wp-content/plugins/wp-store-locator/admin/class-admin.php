@@ -87,6 +87,10 @@ if ( !class_exists( 'WPSL_Admin' ) ) {
             require_once( WPSL_PLUGIN_DIR . 'admin/class-settings.php' );
             require_once( WPSL_PLUGIN_DIR . 'admin/upgrade.php' );
             require_once( WPSL_PLUGIN_DIR . 'admin/data-export.php' );
+
+            if ( ! defined( 'DOING_AJAX' ) || ! DOING_AJAX  ) {
+                require_once( WPSL_PLUGIN_DIR . 'admin/class-exit-survey.php' );
+            }
 		}
 
         /**
@@ -133,6 +137,10 @@ if ( !class_exists( 'WPSL_Admin' ) ) {
                     }
                 }
 
+                if ( defined( 'WP_ROCKET_VERSION' ) && ! get_user_meta( $current_user->ID, 'wpsl_disable_wp_rocket_warning' ) ) {
+                    $this->setting_warning['wp_rocket'] = sprintf( __( "%sWP Store Locator:%s To prevent any conflicts the required JavaScript files are automatically excluded from WP Rocket. %s If the store locator map still breaks, then make sure to flush the cache by going to %sWP Rocket -> Clear and preload cache%s. %sDismiss%s", "wpsl" ), '<strong>', '</strong>', '<br><br>', '<strong>', '</strong>', "<a href='" . esc_url( wp_nonce_url( add_query_arg( 'wpsl-notice', 'wp_rocket' ), 'wpsl_notices_nonce', '_wpsl_notice_nonce' ) ) . "'>", "</a>" );
+                }
+
                 if ( $this->setting_warning ) {
                     add_action( 'admin_notices', array( $this, 'show_warning' ) );
                 }
@@ -164,7 +172,7 @@ if ( !class_exists( 'WPSL_Admin' ) ) {
 
             if ( isset( $_GET['wpsl-notice'] ) && isset( $_GET['_wpsl_notice_nonce'] ) ) {
 
-                if ( !wp_verify_nonce( $_GET['_wpsl_notice_nonce'], 'wpsl_notices_nonce' ) ) {
+                if ( ! wp_verify_nonce( $_GET['_wpsl_notice_nonce'], 'wpsl_notices_nonce' ) ) {
                     wp_die( __( 'Security check failed. Please reload the page and try again.', 'wpsl' ) );
                 }
 
@@ -422,13 +430,13 @@ if ( !class_exists( 'WPSL_Admin' ) ) {
                 // Make sure no other Google Map scripts can interfere with the one from the store locator.
                 wpsl_deregister_other_gmaps();
 
-                wp_enqueue_style( 'jquery-style', '//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/themes/smoothness/jquery-ui.css' );
+                wp_enqueue_style( 'jquery-style', 'https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/themes/smoothness/jquery-ui.css' );
                 wp_enqueue_style( 'wpsl-admin-css', plugins_url( '/css/style'. $min .'.css', __FILE__ ), false );
 
                 wp_enqueue_media();
                 wp_enqueue_script( 'jquery-ui-dialog' );
                 wp_enqueue_script( 'jquery-ui-tabs' );
-                wp_enqueue_script( 'wpsl-gmap', ( '//maps.google.com/maps/api/js' . wpsl_get_gmap_api_params( 'browser_key' ) ), false, WPSL_VERSION_NUM, true );
+                wp_enqueue_script( 'wpsl-gmap', ( 'https://maps.google.com/maps/api/js' . wpsl_get_gmap_api_params( 'browser_key' ) ), false, WPSL_VERSION_NUM, true );
 
                 wp_enqueue_script( 'wpsl-queue', plugins_url( '/js/ajax-queue'. $min .'.js', __FILE__ ), array( 'jquery' ), WPSL_VERSION_NUM, true );
                 wp_enqueue_script( 'wpsl-retina', plugins_url( '/js/retina'. $min .'.js', __FILE__ ), array( 'jquery' ), WPSL_VERSION_NUM, true );

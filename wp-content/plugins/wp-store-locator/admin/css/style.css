@@ -717,3 +717,12 @@ div.wpsl-active {
 #wpsl-geocode-tabs {
     width: auto;
 }
+
+.wpsl-callout {
+    float: left;
+    padding: 15px;
+    margin-bottom: 22px;
+    background: #faeaec;
+    border-left: 5px solid #dba2ac;
+    color: #404040;
+}
