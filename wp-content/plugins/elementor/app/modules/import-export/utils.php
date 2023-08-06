@@ -80,4 +80,39 @@ class Utils {
 
 		return array_keys( $post_types );
 	}
+
+	/**
+	 * Transform a string name to title format.
+	 *
+	 * @param $name
+	 *
+	 * @return string
+	 */
+	public static function transform_name_to_title( $name ): string {
+		if ( empty( $name ) ) {
+			return '';
+		}
+
+		$title = str_replace( [ '-', '_' ], ' ', $name );
+
+		return ucwords( $title );
+	}
+
+	public static function get_import_sessions( $should_run_cleanup = false ) {
+		$import_sessions = get_option( Module::OPTION_KEY_ELEMENTOR_IMPORT_SESSIONS, [] );
+
+		if ( $should_run_cleanup ) {
+			foreach ( $import_sessions as $session_id => $import_session ) {
+				if ( ! isset( $import_session['runners'] ) && isset( $import_session['instance_data'] ) ) {
+					$import_sessions[ $session_id ]['runners'] = $import_session['instance_data']['runners_import_metadata'] ?? [];
+
+					unset( $import_sessions[ $session_id ]['instance_data'] );
+				}
+			}
+
+			update_option( Module::OPTION_KEY_ELEMENTOR_IMPORT_SESSIONS, $import_sessions );
+		}
+
+		return $import_sessions;
+	}
 }

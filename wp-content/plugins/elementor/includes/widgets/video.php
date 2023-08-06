@@ -138,6 +138,9 @@ class Widget_Video extends Widget_Base {
 				'condition' => [
 					'video_type' => 'youtube',
 				],
+				'ai' => [
+					'active' => false,
+				],
 				'frontend_available' => true,
 			]
 		);
@@ -160,6 +163,9 @@ class Widget_Video extends Widget_Base {
 				'condition' => [
 					'video_type' => 'vimeo',
 				],
+				'ai' => [
+					'active' => false,
+				],
 			]
 		);
 
@@ -181,6 +187,9 @@ class Widget_Video extends Widget_Base {
 				'condition' => [
 					'video_type' => 'dailymotion',
 				],
+				'ai' => [
+					'active' => false,
+				],
 			]
 		);
 
@@ -198,7 +207,7 @@ class Widget_Video extends Widget_Base {
 		$this->add_control(
 			'hosted_url',
 			[
-				'label' => esc_html__( 'Choose File', 'elementor' ),
+				'label' => esc_html__( 'Choose Video File', 'elementor' ),
 				'type' => Controls_Manager::MEDIA,
 				'dynamic' => [
 					'active' => true,
@@ -206,7 +215,9 @@ class Widget_Video extends Widget_Base {
 						TagsModule::MEDIA_CATEGORY,
 					],
 				],
-				'media_type' => 'video',
+				'media_types' => [
+					'video',
+				],
 				'condition' => [
 					'video_type' => 'hosted',
 					'insert_url' => '',
@@ -230,7 +241,6 @@ class Widget_Video extends Widget_Base {
 						TagsModule::URL_CATEGORY,
 					],
 				],
-				'media_type' => 'video',
 				'placeholder' => esc_html__( 'Enter your URL', 'elementor' ),
 				'condition' => [
 					'video_type' => 'hosted',
@@ -246,6 +256,7 @@ class Widget_Video extends Widget_Base {
 				'type' => Controls_Manager::NUMBER,
 				'description' => esc_html__( 'Specify a start time (in seconds)', 'elementor' ),
 				'frontend_available' => true,
+				'separator' => 'before',
 			]
 		);
 
@@ -615,6 +626,9 @@ class Widget_Video extends Widget_Base {
 				'label' => esc_html__( 'Play Icon', 'elementor' ),
 				'type' => Controls_Manager::SWITCHER,
 				'default' => 'yes',
+				'label_off' => esc_html__( 'Hide', 'elementor' ),
+				'label_on' => esc_html__( 'Show', 'elementor' ),
+				'separator' => 'before',
 				'condition' => [
 					'show_image_overlay' => 'yes',
 					'image_overlay[url]!' => '',
@@ -696,9 +710,18 @@ class Widget_Video extends Widget_Base {
 					'11' => '1:1',
 					'916' => '9:16',
 				],
+				'selectors_dictionary' => [
+					'169' => '1.77777', // 16 / 9
+					'219' => '2.33333', // 21 / 9
+					'43' => '1.33333', // 4 / 3
+					'32' => '1.5', // 3 / 2
+					'11' => '1', // 1 / 1
+					'916' => '0.5625', // 9 / 16
+				],
 				'default' => '169',
-				'prefix_class' => 'elementor-aspect-ratio-',
-				'frontend_available' => true,
+				'selectors' => [
+					'{{WRAPPER}} .elementor-wrapper' => '--video-aspect-ratio: {{VALUE}}',
+				],
 			]
 		);
 
@@ -707,6 +730,20 @@ class Widget_Video extends Widget_Base {
 			[
 				'name' => 'css_filters',
 				'selector' => '{{WRAPPER}} .elementor-wrapper',
+			]
+		);
+
+		$this->end_controls_section();
+
+		$this->start_controls_section(
+			'section_image_overlay_style',
+			[
+				'label' => esc_html__( 'Image Overlay', 'elementor' ),
+				'tab' => Controls_Manager::TAB_STYLE,
+				'condition' => [
+					'show_image_overlay' => 'yes',
+					'show_play_icon' => 'yes',
+				],
 			]
 		);
 
@@ -719,7 +756,6 @@ class Widget_Video extends Widget_Base {
 					'show_image_overlay' => 'yes',
 					'show_play_icon' => 'yes',
 				],
-				'separator' => 'before',
 			]
 		);
 
@@ -744,6 +780,7 @@ class Widget_Video extends Widget_Base {
 			[
 				'label' => esc_html__( 'Size', 'elementor' ),
 				'type' => Controls_Manager::SLIDER,
+				'size_units' => [ 'px', 'em', 'rem', 'custom' ],
 				'range' => [
 					'px' => [
 						'min' => 10,
@@ -827,29 +864,54 @@ class Widget_Video extends Widget_Base {
 					'#elementor-lightbox-{{ID}} .dialog-lightbox-close-button:hover' => 'color: {{VALUE}}',
 					'#elementor-lightbox-{{ID}} .dialog-lightbox-close-button:hover svg' => 'fill: {{VALUE}}',
 				],
-				'separator' => 'after',
 			]
 		);
 
+		$this->add_responsive_control(
+			'lightbox_content_animation',
+			[
+				'label' => esc_html__( 'Entrance Animation', 'elementor' ),
+				'type' => Controls_Manager::ANIMATION,
+				'frontend_available' => true,
+				'separator' => 'before',
+			]
+		);
+
+		$this->add_control(
+			'deprecation_warning',
+			[
+				'type' => Controls_Manager::RAW_HTML,
+				'raw' => esc_html__( 'Note: These controls have been deprecated and are only visible if they were previously in use. The video’s width and position are now set based on its aspect ratio.', 'elementor' ),
+				'content_classes' => 'elementor-panel-alert elementor-panel-alert-danger',
+				'separator' => 'before',
+				'condition' => [
+					'lightbox_video_width!' => '',
+					'lightbox_content_position!' => '',
+				],
+			]
+		);
+
+		// Deprecated control. Visible only if it was previously in use.
 		$this->add_control(
 			'lightbox_video_width',
 			[
 				'label' => esc_html__( 'Content Width', 'elementor' ),
 				'type' => Controls_Manager::SLIDER,
+				'size_units' => [ 'px', '%', 'em', 'rem', 'vw', 'custom' ],
 				'default' => [
 					'unit' => '%',
 				],
-				'range' => [
-					'%' => [
-						'min' => 30,
-					],
-				],
-				'selectors' => [
-					'(desktop+)#elementor-lightbox-{{ID}} .elementor-video-container' => 'width: {{SIZE}}{{UNIT}};',
+				// 'selectors' => [
+				// 	'(desktop+)#elementor-lightbox-{{ID}} .elementor-video-container' => 'width: {{SIZE}}{{UNIT}};',
+				// ],
+				'condition' => [
+					'lightbox_video_width!' => '',
+					'lightbox_content_position!' => '',
 				],
 			]
 		);
 
+		// Deprecated control. Visible only if it was previously in use.
 		$this->add_control(
 			'lightbox_content_position',
 			[
@@ -860,21 +922,16 @@ class Widget_Video extends Widget_Base {
 					'' => esc_html__( 'Center', 'elementor' ),
 					'top' => esc_html__( 'Top', 'elementor' ),
 				],
-				'selectors' => [
-					'#elementor-lightbox-{{ID}} .elementor-video-container' => '{{VALUE}}; transform: translateX(-50%);',
-				],
+				// 'selectors' => [
+				// 	'#elementor-lightbox-{{ID}} .elementor-video-container' => '{{VALUE}}; transform: translateX(-50%);',
+				// ],
 				'selectors_dictionary' => [
 					'top' => 'top: 60px',
 				],
-			]
-		);
-
-		$this->add_responsive_control(
-			'lightbox_content_animation',
-			[
-				'label' => esc_html__( 'Entrance Animation', 'elementor' ),
-				'type' => Controls_Manager::ANIMATION,
-				'frontend_available' => true,
+				'condition' => [
+					'lightbox_video_width!' => '',
+					'lightbox_content_position!' => '',
+				],
 			]
 		);
 
@@ -945,10 +1002,6 @@ class Widget_Video extends Widget_Base {
 
 		$this->add_render_attribute( 'video-wrapper', 'class', 'elementor-wrapper' );
 
-		if ( ! $settings['lightbox'] ) {
-			$this->add_render_attribute( 'video-wrapper', 'class', 'elementor-fit-aspect-ratio' );
-		}
-
 		$this->add_render_attribute( 'video-wrapper', 'class', 'elementor-open-' . ( $settings['lightbox'] ? 'lightbox' : 'inline' ) );
 		?>
 		<div <?php $this->print_render_attribute_string( 'video-wrapper' ); ?>>
@@ -987,7 +1040,7 @@ class Widget_Video extends Widget_Base {
 					$this->add_render_attribute( 'image-overlay', [
 						'data-elementor-open-lightbox' => 'yes',
 						'data-elementor-lightbox' => wp_json_encode( $lightbox_options ),
-						'e-action-hash' => Plugin::instance()->frontend->create_action_hash( 'lightbox', $lightbox_options ),
+						'data-e-action-hash' => Plugin::instance()->frontend->create_action_hash( 'lightbox', $lightbox_options ),
 					] );
 
 					if ( Plugin::$instance->editor->is_edit_mode() ) {

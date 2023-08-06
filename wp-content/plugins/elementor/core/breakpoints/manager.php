@@ -311,22 +311,22 @@ class Manager extends Module {
 	public static function get_default_config() {
 		return [
 			self::BREAKPOINT_KEY_MOBILE => [
-				'label' => esc_html__( 'Mobile', 'elementor' ),
+				'label' => esc_html__( 'Mobile Portrait', 'elementor' ),
 				'default_value' => 767,
 				'direction' => 'max',
 			],
 			self::BREAKPOINT_KEY_MOBILE_EXTRA => [
-				'label' => esc_html__( 'Mobile Extra', 'elementor' ),
+				'label' => esc_html__( 'Mobile Landscape', 'elementor' ),
 				'default_value' => 880,
 				'direction' => 'max',
 			],
 			self::BREAKPOINT_KEY_TABLET => [
-				'label' => esc_html__( 'Tablet', 'elementor' ),
+				'label' => esc_html__( 'Tablet Portrait', 'elementor' ),
 				'default_value' => 1024,
 				'direction' => 'max',
 			],
 			self::BREAKPOINT_KEY_TABLET_EXTRA => [
-				'label' => esc_html__( 'Tablet Extra', 'elementor' ),
+				'label' => esc_html__( 'Tablet Landscape', 'elementor' ),
 				'default_value' => 1200,
 				'direction' => 'max',
 			],
@@ -533,5 +533,17 @@ class Manager extends Module {
 		$templates = $deprecation_module->apply_deprecated_filter( $deprecated_hook, [ $templates ], '3.2.0', $replacement_hook );
 
 		return apply_filters( $replacement_hook, $templates );
+	}
+
+	public function __construct() {
+		add_action( 'elementor/css_file/parse_content', function( $css_file ) {
+			$handle_id = $css_file->get_id();
+			$is_edit_mode = Plugin::$instance->editor->is_edit_mode();
+			$additional_breakpoints_active = Plugin::$instance->experiments->is_feature_active( 'additional_custom_breakpoints' );
+
+			if ( ! $is_edit_mode && $handle_id && $additional_breakpoints_active ) {
+				Plugin::$instance->controls_manager->clear_stacks( $handle_id );
+			}
+		} );
 	}
 }
