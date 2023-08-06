@@ -93,7 +93,6 @@ class SCFW_Size_Chart_For_Woocommerce {
 		$this->post_type_name = $post_type_name;
 
 		$this->scfw_load_dependencies();
-		$this->scfw_set_locale();
 		$this->scfw_define_admin_hooks();
 		$this->scfw_define_public_hooks();
 
@@ -110,7 +109,6 @@ class SCFW_Size_Chart_For_Woocommerce {
 	 * Include the following files that make up the plugin:
 	 *
 	 * - SCFW_Size_Chart_For_Woocommerce_Loader. Orchestrates the hooks of the plugin.
-	 * - SCFW_Size_Chart_For_Woocommerce_i18n. Defines internationalization functionality.
 	 * - SCFW_Size_Chart_For_Woocommerce_Admin. Defines all hooks for the admin area.
 	 * - SCFW_Size_Chart_For_Woocommerce_Public. Defines all hooks for the public side of the site.
 	 *
@@ -130,12 +128,6 @@ class SCFW_Size_Chart_For_Woocommerce {
 
 		/**
 		 * The class responsible for defining internationalization functionality of the plugin.
-		 *
-		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-size-chart-for-woocommerce-i18n.php';
-
-		/**
-		 * The class responsible for defining internationalization functionality of the plugin.
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-size-chart-for-woocommerce-functions.php';
 
@@ -150,26 +142,7 @@ class SCFW_Size_Chart_For_Woocommerce {
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-size-chart-for-woocommerce-public.php';
 
-		/**
-		 * The class responsible for defining all actions that occur in the public-facing side of the site.
-		 *
-		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-size-chart-for-woocommerce-user-feedback.php';
-
 		$this->loader = new SCFW_Size_Chart_For_Woocommerce_Loader();
-	}
-
-	/**
-	 * Define the locale for this plugin for internationalization.
-	 *
-	 * Uses the SCFW_Size_Chart_For_Woocommerce_i18n class in order to set the domain and to register the hook
-	 * with WordPress.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 */
-	private function scfw_set_locale() {
-		// Currently loading languages file from main plugin class file. as it's not working from here
 	}
 
 	/**
@@ -184,17 +157,18 @@ class SCFW_Size_Chart_For_Woocommerce {
 
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'scfw_enqueue_styles_scripts_callback' );
 		$this->loader->add_action( 'init', $plugin_admin, 'scfw_size_chart_register_post_type_chart_callback' );
-		$this->loader->add_action( 'admin_init', $plugin_admin, 'scfw_size_chart_pro_welcome_screen_and_default_posts_callback' );
-		$this->loader->add_action( 'admin_menu', $plugin_admin, 'scfw_size_chart_pro_welcome_page_screen_and_menu_callback' );
+		$this->loader->add_action( 'admin_init', $plugin_admin, 'scfw_size_chart_welcome_screen_and_default_posts_callback' );
+		$this->loader->add_action( 'admin_menu', $plugin_admin, 'scfw_size_chart_welcome_page_screen_and_menu_callback' );
 		$this->loader->add_action( 'admin_head', $plugin_admin, 'scfw_welcome_screen_remove_menus_callback' );
+		$this->loader->add_action( 'admin_head', $plugin_admin, 'scfw_size_chart_custom_styles_and_scripts' );
 		$this->loader->add_action( 'admin_footer', $plugin_admin, 'scfw_size_chart_preview_dialog_box_callback' );
 		$this->loader->add_action( 'add_meta_boxes', $plugin_admin, 'scfw_size_chart_add_meta_box_callback' );
-		$this->loader->add_action( 'save_post', $plugin_admin, 'scfw_size_chart_pro_product_and_size_chart_save_callback' );
+		$this->loader->add_action( 'save_post', $plugin_admin, 'scfw_size_chart_product_and_size_chart_save_callback' );
+		$this->loader->add_filter( 'post_updated_messages', $plugin_admin, 'scfw_post_updated_messages' );
 
 		$this->loader->add_action( 'admin_action_size_chart_duplicate_post', $plugin_admin, 'scfw_size_chart_duplicate_post_callback' );
 		$this->loader->add_action( 'admin_action_size_chart_preview_post', $plugin_admin, 'scfw_size_chart_preview_post_callback' );
-
-		$this->loader->add_action( 'wp_ajax_size_chart_delete_image', $plugin_admin, 'scfw_size_chart_delete_image_callback' );
+		
 		$this->loader->add_action( 'wp_ajax_size_chart_preview_post', $plugin_admin, 'scfw_size_chart_preview_post_callback' );
 		$this->loader->add_action( 'wp_ajax_size_chart_search_chart', $plugin_admin, 'scfw_size_chart_search_chart_callback' );
 		$this->loader->add_action( 'wp_ajax_size_chart_product_assign', $plugin_admin, 'scfw_size_chart_product_assign_callback' );
@@ -206,14 +180,15 @@ class SCFW_Size_Chart_For_Woocommerce {
 		$this->loader->add_action( 'wp_ajax_scfw_import_settings_action', $plugin_admin, 'scfw_import_settings_action__premium_only' );
 		$this->loader->add_filter( 'manage_edit-size-chart_columns', $plugin_admin, 'scfw_size_chart_column_callback' );
 		$this->loader->add_filter( 'manage_size-chart_posts_custom_column', $plugin_admin, 'scfw_size_chart_manage_column_callback' );
-
-		$this->loader->add_action( 'size_chart_about', $plugin_admin, 'scfw_size_chart_about_callback' );
+		$this->loader->add_filter( 'views_edit-size-chart', $plugin_admin, 'scfw_size_chart_view_edit_callback' );
 		$this->loader->add_filter( 'post_row_actions', $plugin_admin, 'scfw_size_chart_remove_row_actions_callback', apply_filters( 'size_chart_post_row_actions_priority', 99 ), 2 );
 		$this->loader->add_action( 'restrict_manage_posts', $plugin_admin, 'scfw_size_chart_filter_default_template_callback' );
 		$this->loader->add_filter( 'parse_query', $plugin_admin, 'scfw_size_chart_filter_default_template_query_callback' );
 		$this->loader->add_action( 'trashed_post', $plugin_admin, 'scfw_size_chart_selected_chart_delete_callback' );
 
-		$this->loader->add_action( 'admin_notices', $plugin_admin, 'scfw_size_chart_pro_admin_notice_review_callback' );
+		$this->loader->add_action( 'admin_notices', $plugin_admin, 'scfw_size_chart_admin_notice_review_callback' );
+		$this->loader->add_action( 'wp_ajax_scfw_plugin_setup_wizard_submit', $plugin_admin, 'scfw_plugin_setup_wizard_submit' );
+		$this->loader->add_action( 'admin_init', $plugin_admin, 'scfw_send_wizard_data_after_plugin_activation' );
 	}
 
 	/**

@@ -1,5 +1,4 @@
 (function($) {
-
 	/**
 	 * All of the code for your public-facing JavaScript source
 	 * should reside in this file.
@@ -28,26 +27,66 @@
 	 * practising this, we should strive to set a better example in our own work.
 	 */
 
-	/*** Open popup ***/
-	$('.md-size-chart-btn').click(function(e) {
-		e.preventDefault();
-		var chart_btn_ID = $(this).attr('chart-data-id');
-		$('.scfw-size-chart-modal[chart-data-id="'+ chart_btn_ID +'"]').show();
+    $('.md-size-chart-btn').click(function (t) {
+        t.preventDefault();
+        var c = $(this).attr('chart-data-id');
+        $('.scfw-size-chart-modal[chart-data-id="' + c + '"]').show();
+        $('.scfw-size-chart-modal[chart-data-id="' + c + '"]').removeClass('md-size-chart-hide');
+        $('.scfw-size-chart-modal[chart-data-id="' + c + '"]').addClass('md-size-chart-show');
+        $('body').addClass('scfw-size-chart-active');
+
+        if ( $('.scfw_size-chart-details-tab').length !== 0 ) {
+        	setTimeout(function() {
+	        	// Set tab wdith and position on tab change
+				var actTabPosition = $('.scfw_size-chart-details-tab span.active-tab').position();
+				var actTabWidth = $('.scfw_size-chart-details-tab span.active-tab').outerWidth();
+			    $('.scfw_size-chart-details-tab .scfw_tab_underline').css({'left':+ actTabPosition.left, 'width':actTabWidth});
+	        }, 400);
+        }
+    });
+
+    $('div#md-size-chart-modal .remodal-close').click(function (t) {
+        t.preventDefault();
+        $(this).parents('.scfw-size-chart-modal').removeClass('md-size-chart-show');
+        $(this).parents('.scfw-size-chart-modal').addClass('md-size-chart-hide');
+        $('body').removeClass('scfw-size-chart-active');
+    });
+
+    $('div.md-size-chart-overlay').click(function (t) {
+        t.preventDefault();
+        $(this).parents('.scfw-size-chart-modal').removeClass('md-size-chart-show');
+        $(this).parents('.scfw-size-chart-modal').addClass('md-size-chart-hide');
+        $('body').removeClass('scfw-size-chart-active');
+    });
+
+    $('.md-size-chart-modal').each(function () {
+        var c = $(this).attr('chart-data-id');
+        $('.md-size-chart-modal[chart-data-id="' + c + '"]').slice(1).remove();
+    });
+
+    $('.scfw_size-chart-details-tab span').click(function() {
+		var tab_id = $(this).attr('data-tab');
+		$('.scfw_size-chart-details-tab span').removeClass('active-tab');
+		$('.scfw_size-chart-details-tab + .chart-container .scfw-tab-content').removeClass('active-tab');
+
+		$(this).addClass('active-tab');
+		$('.scfw_size-chart-details-tab + .chart-container #' + tab_id).addClass('active-tab');
+
+		// Set tab wdith and position on tab change
+		var tabPosition = $(this).position();
+		var tabWidth = $(this).outerWidth();
+		$('.scfw_size-chart-details-tab span').css('border-color','transparent');
+	    $('.scfw_size-chart-details-tab .scfw_tab_underline').css({'visibility': 'visible', 'left':+ tabPosition.left, 'width':tabWidth});
 	});
 
-	$('div#md-size-chart-modal .remodal-close').click(function(e) {
-		e.preventDefault();
-		$(this).parents('.scfw-size-chart-modal').hide();
+	$('.scfw-chart-table td, .scfw-chart-table th').mouseenter(function() {
+		var columnIndex = $(this).prevAll().length + 1;
+		var rowIndex = $(this).closest('tr').prevAll().length + 1;
+	    
+		if (columnIndex > 1) {
+	        $(this).closest('table').find('tr:lt(' + rowIndex + ') > td:nth-child(' + columnIndex + '), tr:lt(' + rowIndex + ') > th:nth-child(' + columnIndex + ')').addClass('col-highlight');
+	    }
+	}).mouseleave(function() {
+	    $(this).closest('table').find('tr > .col-highlight').removeClass('col-highlight');
 	});
-
-	$('div.md-size-chart-overlay').click(function(e) {
-		e.preventDefault();
-		$(this).parents('.scfw-size-chart-modal').hide();
-	});
-
-	$('.md-size-chart-modal').each(function () {
-		var chart_btn_ID = $(this).attr('chart-data-id');
-		$('.md-size-chart-modal[chart-data-id="' + chart_btn_ID + '"]').slice(1).remove();
-	});
-
 })(jQuery);

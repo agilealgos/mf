@@ -25,7 +25,7 @@ $chart_id = (is_array($chart_id)) ? $chart_id : [$chart_id];
 ?>
 
 <div id="size-chart-meta-fields">
-    <div id="field">
+    <div class="field">
         <div class="field-item">
             <label for="prod-chart"></label>
             <select name="prod-chart[]" id="prod-chart" multiple="multiple" data-placeholder="<?php esc_attr_e( 'Type the size chart name', 'size-chart-for-woocommerce' ); ?>" data-minimum_input_length="3" data-nonce="<?php echo esc_attr( wp_create_nonce( 'size_chart_search_nonce' ) ); ?>">

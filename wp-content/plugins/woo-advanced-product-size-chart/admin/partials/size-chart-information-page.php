@@ -1,7 +1,13 @@
 <?php
 
+/**
+ * Handles free plugin user dashboard
+ * 
+ * @package SCFW_Size_Chart_For_Woocommerce
+ * @since   2.4.3
+ */
 // Exit if accessed directly
-if ( !defined( 'ABSPATH' ) ) {
+if ( !defined( 'WPINC' ) ) {
     exit;
 }
 $file_dir_path = 'header/plugin-header.php';
@@ -30,7 +36,7 @@ esc_html_e( 'WooCommerce Plugin', 'size-chart-for-woocommerce' );
 esc_html_e( 'Product Name', 'size-chart-for-woocommerce' );
 ?></td>
                 <td class="fr-2"><?php 
-esc_html_e( $this->get_plugin_name(), 'size-chart-for-woocommerce' );
+esc_html_e( SCFW_PLUGIN_NAME, 'size-chart-for-woocommerce' );
 ?></td>
             </tr>
             <tr>
@@ -39,7 +45,7 @@ esc_html_e( 'Installed Version', 'size-chart-for-woocommerce' );
 ?></td>
                 <td class="fr-2"><?php 
 echo  esc_html( $plugin_mode ) ;
-echo  esc_html( $this->get_plugin_version() ) ;
+echo  esc_html( SCFW_PLUGIN_VERSION ) ;
 ?></td>
             </tr>
             <tr>
@@ -71,9 +77,9 @@ esc_html_e( 'Help & Support', 'size-chart-for-woocommerce' );
                     <ul>
                         <li>
                             <a href="<?php 
-echo  esc_url( $this->scfw_get_size_chart_menu_url( 'admin.php', array(
+echo  esc_url( add_query_arg( array(
     'page' => 'size-chart-get-started',
-) ) ) ;
+), admin_url( 'admin.php' ) ) ) ;
 ?>" target="_blank">
 								<?php 
 esc_html_e( 'Quick Start', 'size-chart-for-woocommerce' );
@@ -119,13 +125,21 @@ esc_html_e( 'Polish', 'size-chart-for-woocommerce' );
 ?>
                 </td>
             </tr>
-            <?php 
+            <tr>
+                <td class="fr-1">
+                    <?php 
+esc_html_e( 'Shortcode', 'size-chart-for-woocommerce' );
 ?>
+                </td>
+                <td class="fr-2">
+                    <?php 
+esc_html_e( '[scfw_product_size_chart]', 'size-chart-for-woocommerce' );
+?>
+                </td>
+            </tr>
             </tbody>
         </table>
     </div>
-<?php 
-$file_dir_path = 'header/plugin-sidebar.php';
-if ( file_exists( plugin_dir_path( __FILE__ ) . $file_dir_path ) ) {
-    require_once plugin_dir_path( __FILE__ ) . $file_dir_path;
-}
+</div>
+</div>
+</div>

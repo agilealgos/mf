@@ -95,7 +95,6 @@ function scfw_size_chart_get_sub_title_text()
     if ( isset( $size_chart_field_value ) && !empty($size_chart_field_value) ) {
         return $size_chart_field_value;
     }
-    // return apply_filters( 'size_chart_how_to_measure_text', esc_html__( 'How to measure', 'size-chart-for-woocommerce' ) );
     return '';
 }
 
@@ -106,7 +105,7 @@ function scfw_size_chart_get_sub_title_text()
  *
  * @return mixed|string css string value.
  */
-function scfw_size_chart_get_inline_styles_by_post_id( $post_id = 0, $table_style = '' )
+function scfw_size_chart_get_inline_styles_by_post_id( $post_id = 0, $table_style = '', $chart_table_font_size = '' )
 {
     if ( empty($table_style) ) {
         $table_style = scfw_size_chart_get_chart_table_style_by_chart_id( $post_id );
@@ -136,26 +135,91 @@ function scfw_size_chart_get_inline_styles_by_post_id( $post_id = 0, $table_styl
  */
 function scfw_size_chart_get_chart_table( $chart_table, $chart_id, $table_style = '' )
 {
-    global  $post ;
     if ( empty($table_style) ) {
         $table_style = scfw_size_chart_get_chart_table_style_by_chart_id( $chart_id );
     }
     ob_start();
     
     if ( !empty($chart_table) && array_filter( $chart_table ) ) {
-        echo  "<table id='size-chart' class=" . esc_attr( $table_style ) . ">" ;
         $i = 0;
+        $tableOpen = false;
+        // Flag to track if a table is open
         foreach ( $chart_table as $chart ) {
+            $hasNewTableValue = false;
+            // Flag to check if a new table value exists in the current chart
+            $hasNewTitleValue = false;
+            // Flag to check if a title value exists in the current chart
+            $titleValue = '';
+            foreach ( $chart as $value ) {
+                
+                if ( substr( $value, 0, 3 ) === '***' && substr( $value, -3 ) === '***' ) {
+                    $hasNewTitleValue = true;
+                    $titleValue = trim( $value, '*' );
+                    // Remove ** signs from the starting and ending of the value
+                    break;
+                }
+                
+                
+                if ( substr( $value, 0, 2 ) === '**' && substr( $value, -2 ) === '**' ) {
+                    $hasNewTableValue = true;
+                    break;
+                }
+            
+            }
+            
+            if ( $hasNewTableValue || $hasNewTitleValue ) {
+                
+                if ( $tableOpen ) {
+                    echo  "</table>" ;
+                    // Close the previous table if any
+                }
+                
+                if ( $hasNewTitleValue ) {
+                    echo  '<p class="scfw-chart-table-title">' . esc_html( $titleValue ) . '</p>' ;
+                }
+                
+                if ( $hasNewTableValue ) {
+                    echo  "<table id='size-chart' class='scfw-chart-table " . esc_attr( $table_style ) . "'>" ;
+                    $tableOpen = true;
+                    $i = 0;
+                }
+            
+            }
+            
             
             if ( array_filter( $chart ) ) {
-                echo  "<tr>" ;
-                for ( $j = 0 ;  $j < count( $chart ) ;  $j++ ) {
-                    //If data available.
+                $skipArray = false;
+                // Flag to skip the array
+                foreach ( $chart as $value ) {
                     
-                    if ( isset( $chart[$j] ) && '' !== $chart[$j] ) {
-                        echo  ( 0 === $i ? "<th>" . esc_html( $chart[$j] ) . "</th>" : "<td>" . esc_html( $chart[$j] ) . "</td>" ) ;
+                    if ( substr( $value, 0, 3 ) === '***' && substr( $value, -3 ) === '***' ) {
+                        $skipArray = true;
+                        break;
+                    }
+                
+                }
+                
+                if ( $skipArray ) {
+                    continue;
+                    // Skip the current array and move to the next iteration
+                }
+                
+                
+                if ( !$tableOpen ) {
+                    echo  "<table id='size-chart' class='scfw-chart-table " . esc_attr( $table_style ) . "'>" ;
+                    $tableOpen = true;
+                }
+                
+                echo  "<tr>" ;
+                foreach ( $chart as $value ) {
+                    // If data available.
+                    
+                    if ( !empty($value) ) {
+                        $value = trim( $value, '*' );
+                        // Remove ** signs from the starting and ending of the value
+                        echo  ( $i === 0 ? "<th>" . esc_html( $value ) . "</th>" : "<td>" . esc_html( $value ) . "</td>" ) ;
                     } else {
-                        echo  ( 0 === $i ? "<th>" . esc_html( 'N/A' ) . "</th>" : "<td>" . esc_html( 'N/A' ) . "</td>" ) ;
+                        echo  ( $i === 0 ? "<th>" . esc_html( 'N/A' ) . "</th>" : "<td>" . esc_html( 'N/A' ) . "</td>" ) ;
                     }
                 
                 }
@@ -164,7 +228,12 @@ function scfw_size_chart_get_chart_table( $chart_table, $chart_id, $table_style 
             }
         
         }
-        echo  "</table>" ;
+        
+        if ( $tableOpen ) {
+            echo  "</table>" ;
+            // Close the last table if any
+        }
+    
     }
     
     return apply_filters( 'size_chart_table_html', ob_get_clean(), $chart_table );
@@ -331,7 +400,7 @@ function scfw_size_chart_get_label_by_chart_id( $size_chart_id )
  *
  * @param int $size_chart_id size chart id.
  *
- * @return mixed|string a label name.
+ * @return mixed|string a sub title.
  */
 function scfw_size_chart_get_sub_title_by_chart_id( $size_chart_id )
 {
@@ -357,11 +426,11 @@ function scfw_size_chart_popup_note( $size_chart_id )
 }
 
 /**
- * Get the chart sub title value.
+ * Get the chart tab label value.
  *
  * @param int $size_chart_id size chart id.
  *
- * @return mixed|string a label name.
+ * @return mixed|string a tab label.
  */
 function scfw_size_chart_get_tab_label_by_chart_id( $size_chart_id )
 {
@@ -372,11 +441,11 @@ function scfw_size_chart_get_tab_label_by_chart_id( $size_chart_id )
 }
 
 /**
- * Get the chart sub title value.
+ * Get the chart popup label value.
  *
  * @param int $size_chart_id size chart id.
  *
- * @return mixed|string a label name.
+ * @return mixed|string a popup label.
  */
 function scfw_size_chart_get_popup_label_by_chart_id( $size_chart_id )
 {
@@ -387,7 +456,7 @@ function scfw_size_chart_get_popup_label_by_chart_id( $size_chart_id )
 }
 
 /**
- * Get the chart sub title value.
+ * Get the chart popup icon.
  *
  * @param int $size_chart_id size chart id.
  *
@@ -402,7 +471,7 @@ function scfw_size_chart_get_popup_icon_by_chart_id( $size_chart_id )
 }
 
 /**
- * Get the chart sub title value.
+ * Get the chart popup type value.
  *
  * @param int $size_chart_id size chart id.
  *
@@ -413,6 +482,21 @@ function scfw_size_chart_get_popup_type_by_chart_id( $size_chart_id )
     $chart_popup_type = get_post_meta( $size_chart_id, 'chart-popup-type', true );
     if ( isset( $chart_popup_type ) && !empty($chart_popup_type) ) {
         return $chart_popup_type;
+    }
+}
+
+/**
+ * Get the size chart style value.
+ *
+ * @param int $size_chart_id size chart id.
+ *
+ * @return mixed|string a size chart style.
+ */
+function scfw_size_chart_style_value_by_chart_id( $size_chart_id )
+{
+    $size_chart_style = get_post_meta( $size_chart_id, 'size-chart-style', true );
+    if ( isset( $size_chart_style ) && !empty($size_chart_style) ) {
+        return $size_chart_style;
     }
 }
 
@@ -509,40 +593,10 @@ function scfw_size_chart_get_chart_table_by_chart_id( $size_chart_id, $return_js
     if ( false === $return_json_decode ) {
         return $chart_table;
     }
-    
     if ( isset( $chart_table ) && !empty($chart_table) ) {
-        // if ( false !== scfw_is_size_chart_table_empty( $chart_table ) ) {
         return json_decode( $chart_table );
-        // }
     }
-    
     return array();
-}
-
-/**
- * Multidimensional array check is not empty.
- *
- * @param array|mixed|object $chart_table chart table data.
- *
- * @return bool a valid or not.
- */
-function scfw_is_size_chart_table_empty( $chart_table )
-{
-    if ( !is_array( $chart_table ) ) {
-        $chart_table = json_decode( $chart_table );
-    }
-    
-    if ( is_array( $chart_table ) ) {
-        foreach ( $chart_table as $value ) {
-            if ( !array_filter( $value ) ) {
-                return false;
-            }
-        }
-    } elseif ( !empty($chart_table) ) {
-        return false;
-    }
-    
-    return true;
 }
 
 /**
@@ -932,4 +986,21 @@ function scfw_size_chart_get_size()
     }
     
     return $size_chart_field_value;
+}
+
+/**
+ * Remove empty arrays and elements from an array.
+ *
+ */
+function scfw_size_chart_check_empty_array( $array )
+{
+    foreach ( $array as &$value ) {
+        if ( is_array( $value ) ) {
+            $value = scfw_size_chart_check_empty_array( $value );
+        }
+    }
+    return array_filter( $array, function ( $item ) {
+        return !empty($item) || $item === 0;
+        // Add additional checks if needed
+    } );
 }

@@ -312,14 +312,12 @@
 
 
 jQuery(window).ready(function ($) {
-        	
-        	// Initialize table example 0
-        	$('#chart-table').editTable();
-        	// Initialize table example 1
-	        var eTable = $('#edittable').editTable({
-	        	data : [
-	        		["Click on the plus symbols on the top and right to add cols or rows"]
-	        	]
-	        });
-			
-			 });
+	// Initialize table example 0
+	$('#chart-table').editTable();
+	// Initialize table example 1
+    var eTable = $('#edittable').editTable({
+    	data : [
+    		["Click on the plus symbols on the top and right to add cols or rows"]
+    	]
+    });			
+});
